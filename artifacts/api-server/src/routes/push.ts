@@ -17,8 +17,13 @@ router.get("/public-key", (_req, res) => {
 
 router.post("/subscribe", authMiddleware, async (req: any, res) => {
   try {
-    const userId = req.user.id;
-    const { endpoint, keys } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { endpoint, keys } = req.body ?? {};
 
     if (!endpoint || !keys?.p256dh || !keys?.auth) {
       return res.status(400).json({ error: "Invalid subscription data" });
@@ -38,10 +43,10 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       });
     }
 
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (error) {
     console.error("Subscribe error:", error);
-    res.status(500).json({ error: "Failed to subscribe" });
+    return res.status(500).json({ error: "Failed to subscribe" });
   }
 });
 
@@ -67,7 +72,7 @@ export async function sendPushToUser(
           },
           JSON.stringify(payload)
         );
-      } catch (error: any) {
+      } catch (error) {
         console.error("Push send error:", error);
       }
     }
