@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation, type Locale } from "../i18n";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 type CurrentUserLike = {
   id?: string;
@@ -177,6 +178,7 @@ function getRequestBadgeClasses(status: OutgoingRequest["status"]) {
 export default function TripDetails() {
   const { id } = useParams();
   const { t, locale } = useTranslation();
+  const { refresh: refreshNotificationCounts } = useNotificationCounts();
 
   const [trip, setTrip] = useState<TripDetailsData | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
@@ -375,6 +377,7 @@ export default function TripDetails() {
 
       setMessage(t("tripDetails.requestSent"));
       await Promise.all([loadTrip(), loadMyRequest()]);
+      void refreshNotificationCounts();
     } catch {
       setMessage(t("tripDetails.connectError"));
     } finally {

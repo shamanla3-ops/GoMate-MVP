@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 type CurrentUserLike = {
   id?: string;
@@ -74,6 +75,7 @@ function formatDateTime(value: string) {
 }
 
 export default function Chats() {
+  const { refresh: refreshNotificationCounts } = useNotificationCounts();
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
   const [chats, setChats] = useState<ChatItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,13 +126,14 @@ export default function Chats() {
   useEffect(() => {
     loadCurrentUser();
     loadChats();
+    void refreshNotificationCounts();
 
     const interval = setInterval(() => {
       loadChats();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshNotificationCounts]);
 
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? "";
 

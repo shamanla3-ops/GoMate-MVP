@@ -101,5 +101,9 @@ export default {
     "Дозволь сповіщення, щоб отримувати новини про заявки, повідомлення в чаті та зміни по поїздках.",
   "pushPrompt.allow": "Дозволити",
   "pushPrompt.later": "Пізніше",
-  "pushPrompt.requesting": "Запитуємо..."
+  "pushPrompt.requesting": "Запитуємо...",
+
+  "nav.badge.chatsAria": "Чати: {{count}} непрочитаних повідомлень",
+  "nav.badge.requestsAria": "Заявки: {{count}} очікують",
+  "nav.badge.totalHint": "У вас {{count}} сповіщень у застосунку"
 } as const;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, type CurrentUser } from "../lib/auth";
 import { useTranslation, LanguageSwitcher } from "../i18n";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 function getUserShortName(name: string, profileFallback: string) {
   const clean = name.trim();
@@ -10,8 +11,26 @@ function getUserShortName(name: string, profileFallback: string) {
   return parts[0] || profileFallback;
 }
 
+function NavBadge({ count }: { count: number }) {
+  if (count < 1) {
+    return null;
+  }
+
+  const display = count > 99 ? "99+" : String(count);
+
+  return (
+    <span
+      className="pointer-events-none absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#b42318] px-1 text-[10px] font-bold leading-none text-white shadow-sm"
+      aria-hidden
+    >
+      {display}
+    </span>
+  );
+}
+
 export default function Landing() {
   const { t } = useTranslation();
+  const { chatsUnread, requestsPending, refresh } = useNotificationCounts();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +43,12 @@ export default function Landing() {
 
     loadUser();
   }, []);
+
+  useEffect(() => {
+    if (!loading && user) {
+      void refresh();
+    }
+  }, [loading, user, refresh]);
 
   if (loading) {
     return (
@@ -39,6 +64,8 @@ export default function Landing() {
   const requestsHref = user ? "/requests" : "/login";
   const chatsHref = user ? "/chats" : "/login";
   const profileHref = user ? "/profile" : "/login";
+
+  const totalNotifications = user ? chatsUnread + requestsPending : 0;
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#eef4f8] text-[#193549]">
@@ -57,12 +84,26 @@ export default function Landing() {
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-28 pt-6 sm:px-6 lg:px-10">
           <header className="flex items-center justify-between gap-3 py-2">
-            <a href="/" className="flex min-w-0 shrink items-center">
+            <a
+              href="/"
+              className="relative flex min-w-0 shrink items-center"
+              title={
+                user && totalNotifications > 0
+                  ? t("nav.badge.totalHint", { count: totalNotifications })
+                  : undefined
+              }
+            >
               <img
                 src="/gomate-logo.png"
                 alt="GoMate"
                 className="h-14 w-auto sm:h-16 lg:h-20"
               />
+              {user && totalNotifications > 0 ? (
+                <span
+                  className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-[#b42318] ring-2 ring-white"
+                  aria-hidden
+                />
+              ) : null}
             </a>
 
             <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
@@ -88,15 +129,27 @@ export default function Landing() {
                 </a>
                 <a
                   href={requestsHref}
-                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  className="relative rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  aria-label={
+                    user && requestsPending > 0
+                      ? t("nav.badge.requestsAria", { count: requestsPending })
+                      : undefined
+                  }
                 >
                   {t("nav.requests")}
+                  {user ? <NavBadge count={requestsPending} /> : null}
                 </a>
                 <a
                   href={chatsHref}
-                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  className="relative rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  aria-label={
+                    user && chatsUnread > 0
+                      ? t("nav.badge.chatsAria", { count: chatsUnread })
+                      : undefined
+                  }
                 >
                   {t("nav.chats")}
+                  {user ? <NavBadge count={chatsUnread} /> : null}
                 </a>
 
                 {user ? (
@@ -161,9 +214,17 @@ export default function Landing() {
 
                     <a
                       href={requestsHref}
-                      className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      className="relative flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      aria-label={
+                        user && requestsPending > 0
+                          ? t("nav.badge.requestsAria", {
+                              count: requestsPending,
+                            })
+                          : undefined
+                      }
                     >
                       {t("landing.requests")}
+                      {user ? <NavBadge count={requestsPending} /> : null}
                       <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
                         ›
                       </span>
@@ -171,9 +232,15 @@ export default function Landing() {
 
                     <a
                       href={chatsHref}
-                      className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      className="relative flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      aria-label={
+                        user && chatsUnread > 0
+                          ? t("nav.badge.chatsAria", { count: chatsUnread })
+                          : undefined
+                      }
                     >
                       {t("landing.chats")}
+                      {user ? <NavBadge count={chatsUnread} /> : null}
                       <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
                         ›
                       </span>
@@ -240,13 +307,35 @@ export default function Landing() {
               </span>
             </a>
 
-            <a href={requestsHref} className="flex flex-col items-center gap-1">
-              <span className="text-[18px] leading-none">📩</span>
+            <a
+              href={requestsHref}
+              className="relative flex flex-col items-center gap-1"
+              aria-label={
+                user && requestsPending > 0
+                  ? t("nav.badge.requestsAria", { count: requestsPending })
+                  : undefined
+              }
+            >
+              <span className="relative text-[18px] leading-none">
+                📩
+                {user ? <NavBadge count={requestsPending} /> : null}
+              </span>
               <span>{t("nav.requests")}</span>
             </a>
 
-            <a href={chatsHref} className="flex flex-col items-center gap-1">
-              <span className="text-[18px] leading-none">💬</span>
+            <a
+              href={chatsHref}
+              className="relative flex flex-col items-center gap-1"
+              aria-label={
+                user && chatsUnread > 0
+                  ? t("nav.badge.chatsAria", { count: chatsUnread })
+                  : undefined
+              }
+            >
+              <span className="relative text-[18px] leading-none">
+                💬
+                {user ? <NavBadge count={chatsUnread} /> : null}
+              </span>
               <span>{t("nav.chats")}</span>
             </a>
 

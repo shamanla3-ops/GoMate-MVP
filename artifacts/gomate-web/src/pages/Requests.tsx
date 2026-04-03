@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 type RequestStatus =
   | "pending"
@@ -187,6 +188,7 @@ function isHistoryStatus(status: RequestStatus) {
 }
 
 export default function Requests() {
+  const { refresh: refreshNotificationCounts } = useNotificationCounts();
   const [incomingRequests, setIncomingRequests] = useState<IncomingRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<OutgoingRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -281,6 +283,7 @@ export default function Requests() {
     setLoading(true);
     loadRequests();
     loadChatUnreadCount();
+    void refreshNotificationCounts();
 
     const interval = setInterval(() => {
       loadRequests();
@@ -288,7 +291,7 @@ export default function Requests() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshNotificationCounts]);
 
   async function handleIncomingAction(id: string, action: "accept" | "reject") {
     const token = localStorage.getItem("token");

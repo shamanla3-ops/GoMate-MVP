@@ -104,5 +104,9 @@ export default {
     "Zezwól na powiadomienia, aby otrzymywać informacje o prośbach, wiadomościach na czacie i zmianach przejazdów.",
   "pushPrompt.allow": "Zezwól",
   "pushPrompt.later": "Później",
-  "pushPrompt.requesting": "Prosimy o zgodę..."
+  "pushPrompt.requesting": "Prosimy o zgodę...",
+
+  "nav.badge.chatsAria": "Czaty: {{count}} nieprzeczytanych wiadomości",
+  "nav.badge.requestsAria": "Prośby: {{count}} oczekujących",
+  "nav.badge.totalHint": "Masz {{count}} nieprzeczytanych powiadomień w aplikacji"
 } as const;

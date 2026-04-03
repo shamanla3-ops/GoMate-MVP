@@ -101,5 +101,9 @@ export default {
     "Erlaube Benachrichtigungen, um Updates zu Anfragen, Chat-Nachrichten und Fahrten zu erhalten.",
   "pushPrompt.allow": "Erlauben",
   "pushPrompt.later": "Später",
-  "pushPrompt.requesting": "Anfrage läuft..."
+  "pushPrompt.requesting": "Anfrage läuft...",
+
+  "nav.badge.chatsAria": "Chats: {{count}} ungelesene Nachrichten",
+  "nav.badge.requestsAria": "Anfragen: {{count}} ausstehend",
+  "nav.badge.totalHint": "Du hast {{count}} Benachrichtigungen in der App"
 } as const;

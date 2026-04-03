@@ -40,7 +40,7 @@ function getInitialLocale(): Locale {
 type I18nContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -62,13 +62,21 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string) => {
+    (key: string, vars?: Record<string, string | number>) => {
       const table = translations[locale];
-      const value = table[key];
-      if (value !== undefined) return value;
-      const fallback = translations.pl[key];
-      if (fallback !== undefined) return fallback;
-      return key;
+      let text = table[key];
+      if (text === undefined) {
+        text = translations.pl[key];
+      }
+      if (text === undefined) {
+        return key;
+      }
+      if (vars) {
+        for (const [name, replacement] of Object.entries(vars)) {
+          text = text.replaceAll(`{{${name}}}`, String(replacement));
+        }
+      }
+      return text;
     },
     [locale]
   );

@@ -100,5 +100,9 @@ export default {
     "Allow notifications to receive updates about requests, chat messages and trip changes.",
   "pushPrompt.allow": "Allow",
   "pushPrompt.later": "Later",
-  "pushPrompt.requesting": "Requesting..."
+  "pushPrompt.requesting": "Requesting...",
+
+  "nav.badge.chatsAria": "Chats: {{count}} unread messages",
+  "nav.badge.requestsAria": "Requests: {{count}} pending",
+  "nav.badge.totalHint": "You have {{count}} in-app notifications"
 } as const;

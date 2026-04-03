@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 type CurrentUserLike = {
   id?: string;
@@ -97,6 +98,7 @@ function formatDateTime(value: string) {
 
 export default function Chat() {
   const { chatId } = useParams();
+  const { refresh: refreshNotificationCounts } = useNotificationCounts();
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
   const [chat, setChat] = useState<ChatDetails | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -163,6 +165,7 @@ export default function Chat() {
       setMessages(Array.isArray(data.messages) ? data.messages : []);
       setMessage("");
       await markChatAsRead();
+      void refreshNotificationCounts();
     } catch {
       setMessage("Не удалось подключиться к серверу");
     } finally {

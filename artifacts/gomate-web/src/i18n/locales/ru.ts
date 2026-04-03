@@ -100,5 +100,9 @@ export default {
     "Разреши уведомления, чтобы получать новости о заявках, сообщениях в чате и изменениях по поездкам.",
   "pushPrompt.allow": "Разрешить",
   "pushPrompt.later": "Позже",
-  "pushPrompt.requesting": "Запрашиваем..."
+  "pushPrompt.requesting": "Запрашиваем...",
+
+  "nav.badge.chatsAria": "Чаты: {{count}} непрочитанных сообщений",
+  "nav.badge.requestsAria": "Заявки: {{count}} в ожидании",
+  "nav.badge.totalHint": "У вас {{count}} уведомлений в приложении"
 } as const;

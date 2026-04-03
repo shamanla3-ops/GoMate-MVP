@@ -1,6 +1,6 @@
 import { Router } from "express";
 import webpush from "web-push";
-import { db } from "@gomate/db";
+import { db, pushSubscriptions, eq } from "@gomate/db";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router: Router = Router();
@@ -13,37 +13,38 @@ type PushSubscriptionBody = {
   };
 };
 
-type PushPayload = {
+export type PushPayload = {
   title: string;
   body: string;
   url?: string;
 };
 
-type QueryRow = {
-  endpoint: string;
-  p256dh: string;
-  auth: string;
-};
+let vapidConfigured = false;
 
-type PgLikeClient = {
-  query: (
-    text: string,
-    params?: unknown[]
-  ) => Promise<{ rows: QueryRow[] }>;
-};
+function ensureVapidConfigured(): boolean {
+  if (vapidConfigured) {
+    return true;
+  }
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+  const email = process.env.VAPID_EMAIL;
+  const publicKey = process.env.VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
 
-function getClient(): PgLikeClient {
-  return db.$client as unknown as PgLikeClient;
+  if (!email || !publicKey || !privateKey) {
+    console.warn(
+      "[push] VAPID_EMAIL, VAPID_PUBLIC_KEY, or VAPID_PRIVATE_KEY missing; push sending disabled"
+    );
+    return false;
+  }
+
+  webpush.setVapidDetails(email, publicKey, privateKey);
+  vapidConfigured = true;
+  return true;
 }
 
 router.get("/public-key", (_req, res) => {
-  res.json({ key: process.env.VAPID_PUBLIC_KEY });
+  const key = process.env.VAPID_PUBLIC_KEY ?? null;
+  res.json({ key });
 });
 
 router.post("/subscribe", authMiddleware, async (req: any, res) => {
@@ -63,52 +64,64 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       return res.status(400).json({ error: "Invalid subscription" });
     }
 
-    console.log("Saving push subscription:", {
-      userId,
-      endpoint: subscription.endpoint,
-    });
-
-    const client = getClient();
-
-    await client.query(
-      `
-        INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (endpoint) DO NOTHING
-      `,
-      [
+    await db
+      .insert(pushSubscriptions)
+      .values({
         userId,
-        subscription.endpoint,
-        subscription.keys.p256dh,
-        subscription.keys.auth,
-      ]
-    );
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      })
+      .onConflictDoUpdate({
+        target: pushSubscriptions.endpoint,
+        set: {
+          userId,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
+      });
 
-    console.log("Subscription saved!");
+    console.log("[push] Subscription upserted", {
+      userId,
+      endpointPrefix: subscription.endpoint.slice(0, 48),
+    });
 
     return res.json({ success: true });
   } catch (error) {
-    console.error("Subscribe error:", error);
+    console.error("[push] Subscribe error:", error);
     return res.status(500).json({ error: "Failed to subscribe" });
   }
 });
 
+function isGoneSubscriptionError(error: unknown): boolean {
+  const err = error as { statusCode?: number };
+  return err?.statusCode === 404 || err?.statusCode === 410;
+}
+
 export async function sendPushToUser(userId: string, payload: PushPayload) {
+  if (!ensureVapidConfigured()) {
+    return;
+  }
+
+  const body = JSON.stringify({
+    title: payload.title,
+    body: payload.body,
+    url: payload.url ?? "/",
+  });
+
   try {
-    const client = getClient();
+    const rows = await db
+      .select({
+        endpoint: pushSubscriptions.endpoint,
+        p256dh: pushSubscriptions.p256dh,
+        auth: pushSubscriptions.auth,
+      })
+      .from(pushSubscriptions)
+      .where(eq(pushSubscriptions.userId, userId));
 
-    const result = await client.query(
-      `
-        SELECT endpoint, p256dh, auth
-        FROM push_subscriptions
-        WHERE user_id = $1
-      `,
-      [userId]
-    );
+    console.log("[push] Sending to user", { userId, subscriptions: rows.length });
 
-    console.log("Found subscriptions:", result.rows.length);
-
-    for (const row of result.rows) {
+    for (const row of rows) {
       try {
         await webpush.sendNotification(
           {
@@ -118,14 +131,22 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
               auth: row.auth,
             },
           },
-          JSON.stringify(payload)
+          body
         );
       } catch (error) {
-        console.error("Push send error:", error);
+        console.error("[push] Send error:", error);
+        if (isGoneSubscriptionError(error)) {
+          await db
+            .delete(pushSubscriptions)
+            .where(eq(pushSubscriptions.endpoint, row.endpoint));
+          console.log("[push] Removed invalid subscription", {
+            endpointPrefix: row.endpoint.slice(0, 48),
+          });
+        }
       }
     }
   } catch (error) {
-    console.error("Load subscriptions error:", error);
+    console.error("[push] Load subscriptions error:", error);
   }
 }
 
