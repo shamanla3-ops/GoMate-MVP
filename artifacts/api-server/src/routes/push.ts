@@ -1,6 +1,6 @@
 import { Router } from "express";
 import webpush from "web-push";
-import { db, pushSubscriptions, eq } from "@gomate/db";
+import { db } from "@gomate/db";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router: Router = Router();
@@ -19,11 +19,28 @@ type PushPayload = {
   url?: string;
 };
 
+type QueryRow = {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+};
+
+type PgLikeClient = {
+  query: (
+    text: string,
+    params?: unknown[]
+  ) => Promise<{ rows: QueryRow[] }>;
+};
+
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL!,
   process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
+
+function getClient(): PgLikeClient {
+  return db.$client as unknown as PgLikeClient;
+}
 
 router.get("/public-key", (_req, res) => {
   res.json({ key: process.env.VAPID_PUBLIC_KEY });
@@ -51,19 +68,23 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       endpoint: subscription.endpoint,
     });
 
-    const existing = await db
-      .select()
-      .from(pushSubscriptions)
-      .where(eq(pushSubscriptions.endpoint, subscription.endpoint));
+    const client = getClient();
 
-    if (existing.length === 0) {
-      await db.insert(pushSubscriptions).values({
+    await client.query(
+      `
+        INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (endpoint) DO NOTHING
+      `,
+      [
         userId,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
-      });
-    }
+        subscription.endpoint,
+        subscription.keys.p256dh,
+        subscription.keys.auth,
+      ]
+    );
+
+    console.log("Subscription saved!");
 
     return res.json({ success: true });
   } catch (error) {
@@ -74,19 +95,27 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
 
 export async function sendPushToUser(userId: string, payload: PushPayload) {
   try {
-    const subscriptions = await db
-      .select()
-      .from(pushSubscriptions)
-      .where(eq(pushSubscriptions.userId, userId));
+    const client = getClient();
 
-    for (const subscription of subscriptions) {
+    const result = await client.query(
+      `
+        SELECT endpoint, p256dh, auth
+        FROM push_subscriptions
+        WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    console.log("Found subscriptions:", result.rows.length);
+
+    for (const row of result.rows) {
       try {
         await webpush.sendNotification(
           {
-            endpoint: subscription.endpoint,
+            endpoint: row.endpoint,
             keys: {
-              p256dh: subscription.p256dh,
-              auth: subscription.auth,
+              p256dh: row.p256dh,
+              auth: row.auth,
             },
           },
           JSON.stringify(payload)
