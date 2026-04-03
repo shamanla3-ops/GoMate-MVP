@@ -38,6 +38,7 @@ export default function Landing() {
   const templatesHref = user ? "/templates" : "/login";
   const requestsHref = user ? "/requests" : "/login";
   const chatsHref = user ? "/chats" : "/login";
+  const profileHref = user ? "/profile" : "/login";
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#eef4f8] text-[#193549]">
@@ -216,7 +217,7 @@ export default function Landing() {
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
-          <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
+          <div className="mx-auto grid max-w-3xl grid-cols-6 items-end px-2 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
             <a
               href="/"
               className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
@@ -247,6 +248,11 @@ export default function Landing() {
             <a href={chatsHref} className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">💬</span>
               <span>{t("nav.chats")}</span>
+            </a>
+
+            <a href={profileHref} className="flex flex-col items-center gap-1">
+              <span className="text-[18px] leading-none">👤</span>
+              <span>{t("nav.profile")}</span>
             </a>
           </div>
         </div>
