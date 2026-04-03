@@ -14,12 +14,21 @@ export const userRoleEnum = pgEnum("user_role", [
   "both",
 ]);
 
+export const userLanguageEnum = pgEnum("user_language", [
+  "pl",
+  "en",
+  "de",
+  "ru",
+  "uk",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   role: userRoleEnum("role").notNull().default("passenger"),
+  language: userLanguageEnum("language").notNull().default("pl"),
 
   avatarUrl: text("avatar_url"),
   phoneNumber: varchar("phone_number", { length: 50 }),

@@ -7,11 +7,21 @@ import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 const router: Router = Router();
 const SALT_ROUNDS = 10;
 
+type UserLanguage = "pl" | "en" | "de" | "ru" | "uk";
+
 function signToken(userId: string, email: string): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET is not set");
 
   return jwt.sign({ userId, email }, secret, { expiresIn: "7d" });
+}
+
+function normalizeLanguage(value?: string): UserLanguage {
+  if (value === "pl" || value === "en" || value === "de" || value === "ru" || value === "uk") {
+    return value;
+  }
+
+  return "pl";
 }
 
 function mapUser(user: typeof users.$inferSelect) {
@@ -20,6 +30,7 @@ function mapUser(user: typeof users.$inferSelect) {
     email: user.email,
     name: user.name,
     role: user.role,
+    language: user.language,
     avatarUrl: user.avatarUrl,
     phoneNumber: user.phoneNumber,
     carBrand: user.carBrand,
@@ -35,10 +46,11 @@ function mapUser(user: typeof users.$inferSelect) {
 
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { email, password, name } = req.body as {
+    const { email, password, name, language } = req.body as {
       email?: string;
       password?: string;
       name?: string;
+      language?: string;
     };
 
     if (!email || !password || !name) {
@@ -58,6 +70,7 @@ router.post("/register", async (req: Request, res: Response) => {
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const normalizedLanguage = normalizeLanguage(language);
 
     const [user] = await db
       .insert(users)
@@ -65,6 +78,7 @@ router.post("/register", async (req: Request, res: Response) => {
         email: email.toLowerCase(),
         passwordHash,
         name: name.trim(),
+        language: normalizedLanguage,
       })
       .returning();
 
@@ -82,9 +96,10 @@ router.post("/register", async (req: Request, res: Response) => {
 
 router.post("/login", async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body as {
+    const { email, password, language } = req.body as {
       email?: string;
       password?: string;
+      language?: string;
     };
 
     if (!email || !password) {
@@ -109,11 +124,27 @@ router.post("/login", async (req: Request, res: Response) => {
       return;
     }
 
-    const token = signToken(user.id, user.email);
+    const normalizedLanguage = normalizeLanguage(language);
+
+    let finalUser = user;
+
+    if (user.language !== normalizedLanguage) {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ language: normalizedLanguage })
+        .where(eq(users.id, user.id))
+        .returning();
+
+      if (updatedUser) {
+        finalUser = updatedUser;
+      }
+    }
+
+    const token = signToken(finalUser.id, finalUser.email);
 
     res.json({
       token,
-      user: mapUser(user),
+      user: mapUser(finalUser),
     });
   } catch (err) {
     console.error("Login error:", err);

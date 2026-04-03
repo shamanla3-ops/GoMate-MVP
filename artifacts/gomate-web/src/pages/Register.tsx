@@ -1,6 +1,42 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 
+function getCurrentLocale(): "pl" | "en" | "de" | "ru" | "uk" {
+  try {
+    const stored = localStorage.getItem("gomate-locale");
+    if (
+      stored === "pl" ||
+      stored === "en" ||
+      stored === "de" ||
+      stored === "ru" ||
+      stored === "uk"
+    ) {
+      return stored;
+    }
+  } catch {
+    // ignore
+  }
+
+  const browserLocale =
+    typeof navigator !== "undefined"
+      ? navigator.language || navigator.languages?.[0] || "pl"
+      : "pl";
+
+  const short = browserLocale.split("-")[0]?.toLowerCase();
+
+  if (
+    short === "pl" ||
+    short === "en" ||
+    short === "de" ||
+    short === "ru" ||
+    short === "uk"
+  ) {
+    return short;
+  }
+
+  return "pl";
+}
+
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,6 +59,7 @@ export default function Register() {
           name: name.trim(),
           email: email.trim(),
           password,
+          language: getCurrentLocale(),
         }),
       });
 
