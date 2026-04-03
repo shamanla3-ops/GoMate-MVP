@@ -29,32 +29,45 @@ export default function PushPermissionPrompt() {
   const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const browserSupportsNotifications = isNotificationsSupported();
+    async function checkState() {
+      const token = localStorage.getItem("token");
+      const browserSupportsNotifications = isNotificationsSupported();
 
-    setSupported(browserSupportsNotifications);
+      setSupported(browserSupportsNotifications);
 
-    if (!browserSupportsNotifications) {
-      setVisible(false);
-      return;
+      if (!browserSupportsNotifications || !token) {
+        setVisible(false);
+        return;
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const existingSubscription =
+          await registration.pushManager.getSubscription();
+
+        const dismissed = localStorage.getItem(DISMISS_KEY) === "1";
+
+        if (Notification.permission === "default") {
+          setVisible(!dismissed);
+          return;
+        }
+
+        if (
+          Notification.permission === "granted" &&
+          !existingSubscription
+        ) {
+          setVisible(true);
+          return;
+        }
+
+        setVisible(false);
+      } catch (error) {
+        console.error("Push state check error:", error);
+        setVisible(false);
+      }
     }
 
-    if (!token) {
-      setVisible(false);
-      return;
-    }
-
-    if (Notification.permission !== "default") {
-      setVisible(false);
-      return;
-    }
-
-    try {
-      const dismissed = localStorage.getItem(DISMISS_KEY) === "1";
-      setVisible(!dismissed);
-    } catch {
-      setVisible(true);
-    }
+    checkState();
   }, []);
 
   function handleLater() {
@@ -77,7 +90,11 @@ export default function PushPermissionPrompt() {
     try {
       setRequesting(true);
 
-      const permission = await Notification.requestPermission();
+      let permission = Notification.permission;
+
+      if (permission === "default") {
+        permission = await Notification.requestPermission();
+      }
 
       if (permission !== "granted") {
         setVisible(false);
@@ -117,7 +134,9 @@ export default function PushPermissionPrompt() {
       const subscribeData = await subscribeResponse.json().catch(() => null);
 
       if (!subscribeResponse.ok) {
-        throw new Error(subscribeData?.error || "Failed to save push subscription");
+        throw new Error(
+          subscribeData?.error || "Failed to save push subscription"
+        );
       }
 
       try {
