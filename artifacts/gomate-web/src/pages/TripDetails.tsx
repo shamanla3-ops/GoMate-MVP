@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
+import { useTranslation, type Locale } from "../i18n";
 
 type CurrentUserLike = {
   id?: string;
@@ -47,24 +48,65 @@ type ChatSummary = {
   unreadCount: number;
 };
 
-const WEEKDAY_LABELS: Record<string, string> = {
-  mon: "Пн",
-  tue: "Вт",
-  wed: "Ср",
-  thu: "Чт",
-  fri: "Пт",
-  sat: "Сб",
-  sun: "Вс",
+const WEEKDAY_LABELS_BY_LOCALE: Record<Locale, Record<string, string>> = {
+  pl: {
+    mon: "Pon",
+    tue: "Wt",
+    wed: "Śr",
+    thu: "Czw",
+    fri: "Pt",
+    sat: "Sob",
+    sun: "Nd",
+  },
+  en: {
+    mon: "Mon",
+    tue: "Tue",
+    wed: "Wed",
+    thu: "Thu",
+    fri: "Fri",
+    sat: "Sat",
+    sun: "Sun",
+  },
+  de: {
+    mon: "Mo",
+    tue: "Di",
+    wed: "Mi",
+    thu: "Do",
+    fri: "Fr",
+    sat: "Sa",
+    sun: "So",
+  },
+  ru: {
+    mon: "Пн",
+    tue: "Вт",
+    wed: "Ср",
+    thu: "Чт",
+    fri: "Пт",
+    sat: "Сб",
+    sun: "Вс",
+  },
+  uk: {
+    mon: "Пн",
+    tue: "Вт",
+    wed: "Ср",
+    thu: "Чт",
+    fri: "Пт",
+    sat: "Сб",
+    sun: "Нд",
+  },
 };
 
-function formatPrice(price: number, currency: "EUR" | "USD" | "PLN") {
-  return new Intl.NumberFormat(undefined, {
+function formatPrice(price: number, currency: "EUR" | "USD" | "PLN", locale: Locale) {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
   }).format(price / 100);
 }
 
-function formatWeekdays(weekdays: string[] | null | undefined): string {
+function formatWeekdays(
+  weekdays: string[] | null | undefined,
+  locale: Locale
+): string {
   if (!weekdays || weekdays.length === 0) return "";
 
   const order = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -72,17 +114,18 @@ function formatWeekdays(weekdays: string[] | null | undefined): string {
     (a, b) => order.indexOf(a) - order.indexOf(b)
   );
 
-  return sorted.map((day) => WEEKDAY_LABELS[day] ?? day).join(", ");
+  const labels = WEEKDAY_LABELS_BY_LOCALE[locale] ?? WEEKDAY_LABELS_BY_LOCALE.pl;
+  return sorted.map((day) => labels[day] ?? day).join(", ");
 }
 
-function formatDepartureTime(value: string) {
+function formatDepartureTime(value: string, locale: Locale) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -110,12 +153,16 @@ function getInitials(name: string) {
 
 export default function TripDetails() {
   const { id } = useParams();
+  const { t, locale } = useTranslation();
+
   const [trip, setTrip] = useState<TripDetailsData | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [openingChat, setOpeningChat] = useState(false);
+  const [joiningTrip, setJoiningTrip] = useState(false);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [seatsRequested, setSeatsRequested] = useState(1);
 
   async function loadTrip() {
     try {
@@ -123,15 +170,23 @@ export default function TripDetails() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || "Не удалось загрузить поездку");
+        setMessage(data.error || t("tripDetails.loadError"));
         setTrip(null);
         return;
       }
 
-      setTrip(data.trip ?? null);
+      const loadedTrip = data.trip ?? null;
+      setTrip(loadedTrip);
       setMessage("");
+
+      if (loadedTrip) {
+        setSeatsRequested((prev) => {
+          const maxSeats = Math.max(1, loadedTrip.availableSeats);
+          return Math.min(Math.max(1, prev), maxSeats);
+        });
+      }
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("tripDetails.connectError"));
       setTrip(null);
     } finally {
       setLoading(false);
@@ -197,15 +252,79 @@ export default function TripDetails() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Ошибка создания чата");
+        alert(data.error || t("tripDetails.createChatError"));
         return;
       }
 
       window.location.href = `/chat/${data.chat.id}`;
     } catch {
-      alert("Ошибка соединения");
+      alert(t("tripDetails.connectionError"));
     } finally {
       setOpeningChat(false);
+    }
+  }
+
+  async function handleJoinTrip() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!trip) {
+      return;
+    }
+
+    if (isOwnTrip) {
+      setMessage(t("tripDetails.ownerCannotJoin"));
+      return;
+    }
+
+    if (trip.status !== "scheduled") {
+      setMessage(t("tripDetails.tripUnavailable"));
+      return;
+    }
+
+    if (trip.availableSeats < 1) {
+      setMessage(t("tripDetails.noFreeSeats"));
+      return;
+    }
+
+    if (seatsRequested < 1 || seatsRequested > trip.availableSeats) {
+      setMessage(t("tripDetails.invalidSeatCount"));
+      return;
+    }
+
+    try {
+      setJoiningTrip(true);
+      setMessage("");
+
+      const response = await fetch(`${API_BASE_URL}/api/trip-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          tripId: trip.id,
+          seatsRequested,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.error || t("tripDetails.joinError"));
+        return;
+      }
+
+      setMessage(t("tripDetails.requestSent"));
+      await loadTrip();
+    } catch {
+      setMessage(t("tripDetails.connectError"));
+    } finally {
+      setJoiningTrip(false);
     }
   }
 
@@ -219,7 +338,7 @@ export default function TripDetails() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, locale]);
 
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? "";
   const isOwnTrip = useMemo(() => {
@@ -230,7 +349,7 @@ export default function TripDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#eef4f8]">
-        <div className="text-lg text-[#35556c]">Загрузка поездки...</div>
+        <div className="text-lg text-[#35556c]">{t("tripDetails.loading")}</div>
       </div>
     );
   }
@@ -239,14 +358,14 @@ export default function TripDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#eef4f8] px-4">
         <div className="rounded-[24px] border border-white/80 bg-white/80 px-6 py-5 text-[#b42318] shadow-sm">
-          {message || "Поездка не найдена"}
+          {message || t("tripDetails.notFound")}
         </div>
       </div>
     );
   }
 
   const rating = trip.driver.rating ?? 0;
-  const weekdaysLabel = formatWeekdays(trip.weekdays);
+  const weekdaysLabel = formatWeekdays(trip.weekdays, locale);
   const carInfo = [trip.driver.carBrand, trip.driver.carModel, trip.driver.carColor]
     .filter(Boolean)
     .join(", ");
@@ -279,25 +398,26 @@ export default function TripDetails() {
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("nav.trips")}
               </a>
               <a
                 href="/requests"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Заявки
+                {t("nav.requests")}
               </a>
               <a
                 href="/chats"
                 className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
-                Чаты{chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
+                {t("nav.chats")}
+                {chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
               </a>
               <a
                 href="/profile"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Профиль
+                {t("nav.profile")}
               </a>
             </div>
           </div>
@@ -311,7 +431,9 @@ export default function TripDetails() {
                   </h1>
 
                   <span className="rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-4 py-2 text-xs font-bold text-white shadow-sm">
-                    {trip.tripType === "regular" ? "Регулярная" : "Разовая"}
+                    {trip.tripType === "regular"
+                      ? t("tripDetails.type.regular")
+                      : t("tripDetails.type.oneTime")}
                   </span>
 
                   {trip.status !== "scheduled" && (
@@ -322,27 +444,70 @@ export default function TripDetails() {
                 </div>
 
                 <p className="mt-3 text-[#4a6678]">
-                  Подробности поездки, водитель, авто, цена и быстрый переход в чат.
+                  {t("tripDetails.summary")}
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:w-[260px]">
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:w-[320px]">
                 <a
                   href="/trips"
                   className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-semibold text-[#29485d] shadow-sm"
                 >
-                  Назад к поездкам
+                  {t("tripDetails.backToTrips")}
                 </a>
 
                 {!isOwnTrip && (
-                  <button
-                    type="button"
-                    onClick={handleChat}
-                    disabled={openingChat}
-                    className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {openingChat ? "Открываем чат..." : "Написать водителю"}
-                  </button>
+                  <>
+                    <div className="rounded-[22px] border border-white/80 bg-white/88 p-4 shadow-sm">
+                      <label
+                        htmlFor="seatsRequested"
+                        className="mb-2 block text-sm font-semibold text-[#35556c]"
+                      >
+                        {t("tripDetails.seatsRequested.label")}
+                      </label>
+
+                      <select
+                        id="seatsRequested"
+                        value={seatsRequested}
+                        onChange={(e) => setSeatsRequested(Number(e.target.value))}
+                        disabled={joiningTrip || trip.availableSeats < 1}
+                        className="w-full rounded-2xl border border-[#d7e4eb] bg-white px-4 py-3 text-[#193549] outline-none"
+                      >
+                        {Array.from(
+                          { length: Math.max(1, trip.availableSeats) },
+                          (_, index) => index + 1
+                        ).map((count) => (
+                          <option key={count} value={count}>
+                            {count}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleJoinTrip}
+                      disabled={joiningTrip || trip.availableSeats < 1}
+                      className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {joiningTrip
+                        ? t("tripDetails.joinSending")
+                        : trip.availableSeats < 1
+                        ? t("tripDetails.noSeats")
+                        : t("tripDetails.joinButton")}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleChat}
+                      disabled={openingChat}
+                      className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-bold text-[#29485d] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {openingChat
+                        ? t("tripDetails.chatOpening")
+                        : t("tripDetails.writeDriver")}
+                    </button>
+                  </>
                 )}
 
                 {isOwnTrip && (
@@ -350,7 +515,7 @@ export default function TripDetails() {
                     href="/chats"
                     className="flex h-12 items-center justify-center rounded-full bg-[#163c59] px-6 text-sm font-bold text-white shadow-sm"
                   >
-                    Открыть чаты
+                    {t("tripDetails.openChats")}
                   </a>
                 )}
               </div>
@@ -358,41 +523,49 @@ export default function TripDetails() {
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
               <div className="rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
-                <h2 className="text-xl font-extrabold text-[#173651]">Информация о поездке</h2>
+                <h2 className="text-xl font-extrabold text-[#173651]">
+                  {t("tripDetails.section.tripInfo")}
+                </h2>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <DetailCard
-                    label="Отправление"
-                    value={formatDepartureTime(trip.departureTime)}
+                    label={t("tripDetails.departure")}
+                    value={formatDepartureTime(trip.departureTime, locale)}
                   />
                   <DetailCard
-                    label="Цена за место"
-                    value={formatPrice(trip.price, trip.currency)}
+                    label={t("tripDetails.pricePerSeat")}
+                    value={formatPrice(trip.price, trip.currency, locale)}
                   />
                   <DetailCard
-                    label="Свободно мест"
-                    value={`${trip.availableSeats} из ${trip.seatsTotal}`}
+                    label={t("tripDetails.seatsAvailable")}
+                    value={`${trip.availableSeats} / ${trip.seatsTotal}`}
                   />
                   <DetailCard
-                    label="Экономия CO₂"
-                    value={`${trip.estimatedCo2SavingKg} кг`}
+                    label={t("tripDetails.co2Saving")}
+                    value={`${trip.estimatedCo2SavingKg} kg`}
                   />
                 </div>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <DetailCard
-                    label="Тип поездки"
-                    value={trip.tripType === "regular" ? "Регулярная" : "Разовая"}
+                    label={t("tripDetails.tripType")}
+                    value={
+                      trip.tripType === "regular"
+                        ? t("tripDetails.type.regular")
+                        : t("tripDetails.type.oneTime")
+                    }
                   />
                   <DetailCard
-                    label="Дни"
-                    value={weekdaysLabel || "Не указаны"}
+                    label={t("tripDetails.weekdays")}
+                    value={weekdaysLabel || t("tripDetails.weekdaysNotSpecified")}
                   />
                 </div>
               </div>
 
               <div className="rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
-                <h2 className="text-xl font-extrabold text-[#173651]">Водитель</h2>
+                <h2 className="text-xl font-extrabold text-[#173651]">
+                  {t("tripDetails.section.driver")}
+                </h2>
 
                 <div className="mt-5 flex gap-4">
                   {trip.driver.avatarUrl ? (
@@ -413,25 +586,29 @@ export default function TripDetails() {
                     </div>
                     <div className="mt-1 text-sm text-[#f4b400]">
                       {renderStars(rating)}
-                      <span className="ml-2 text-[#4a6678]">{rating} из 5</span>
+                      <span className="ml-2 text-[#4a6678]">
+                        {rating} {t("tripDetails.outOf5")}
+                      </span>
                     </div>
                     <div className="mt-2 text-sm text-[#4a6678]">
-                      Возраст: {trip.driver.age ?? "Не указан"}
+                      {t("tripDetails.age")}:{" "}
+                      {trip.driver.age ?? t("tripDetails.notSpecified")}
                     </div>
                     <div className="mt-1 text-sm text-[#4a6678]">
-                      Телефон: {trip.driver.phoneNumber || "Станет доступен после подтверждения / в чате"}
+                      {t("tripDetails.phone")}:{" "}
+                      {trip.driver.phoneNumber || t("tripDetails.phoneHidden")}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-5 grid gap-4">
                   <DetailCard
-                    label="Автомобиль"
-                    value={carInfo || "Не указано"}
+                    label={t("tripDetails.car")}
+                    value={carInfo || t("tripDetails.notProvided")}
                   />
                   <DetailCard
-                    label="Номер авто"
-                    value={trip.driver.carPlateNumber || "Не указан"}
+                    label={t("tripDetails.plateNumber")}
+                    value={trip.driver.carPlateNumber || t("tripDetails.notSpecified")}
                   />
                 </div>
               </div>
