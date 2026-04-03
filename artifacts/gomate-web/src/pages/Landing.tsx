@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, type CurrentUser } from "../lib/auth";
+import { useTranslation, LanguageSwitcher } from "../i18n";
 
-function getUserShortName(name: string) {
+function getUserShortName(name: string, profileFallback: string) {
   const clean = name.trim();
-  if (!clean) return "Профиль";
+  if (!clean) return profileFallback;
 
   const parts = clean.split(" ").filter(Boolean);
-  return parts[0] || "Профиль";
+  return parts[0] || profileFallback;
 }
 
 export default function Landing() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +28,7 @@ export default function Landing() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#eef4f8]">
-        <div className="text-lg text-gray-600">Загрузка...</div>
+        <div className="text-lg text-gray-600">{t("landing.loading")}</div>
       </div>
     );
   }
@@ -34,7 +36,6 @@ export default function Landing() {
   const findTripHref = user ? "/trips" : "/login";
   const publishTripHref = user ? "/create-trip" : "/register";
   const templatesHref = user ? "/templates" : "/login";
-  const profileHref = user ? "/profile" : "/login";
   const requestsHref = user ? "/requests" : "/login";
   const chatsHref = user ? "/chats" : "/login";
 
@@ -54,8 +55,8 @@ export default function Landing() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-28 pt-6 sm:px-6 lg:px-10">
-          <header className="flex items-center justify-between py-2">
-            <a href="/" className="flex items-center">
+          <header className="flex items-center justify-between gap-3 py-2">
+            <a href="/" className="flex min-w-0 shrink items-center">
               <img
                 src="/gomate-logo.png"
                 alt="GoMate"
@@ -63,54 +64,57 @@ export default function Landing() {
               />
             </a>
 
-            <nav className="hidden items-center gap-3 md:flex">
-              <a
-                href="/"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
-                Главная
-              </a>
-              <a
-                href={findTripHref}
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
-                Поездки
-              </a>
-              <a
-                href={templatesHref}
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
-                Маршруты
-              </a>
-              <a
-                href={requestsHref}
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
-                Заявки
-              </a>
-              <a
-                href={chatsHref}
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
-                Чаты
-              </a>
+            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+              <LanguageSwitcher />
+              <nav className="hidden items-center gap-3 md:flex">
+                <a
+                  href="/"
+                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                >
+                  {t("nav.home")}
+                </a>
+                <a
+                  href={findTripHref}
+                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                >
+                  {t("nav.trips")}
+                </a>
+                <a
+                  href={templatesHref}
+                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                >
+                  {t("nav.templates")}
+                </a>
+                <a
+                  href={requestsHref}
+                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                >
+                  {t("nav.requests")}
+                </a>
+                <a
+                  href={chatsHref}
+                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                >
+                  {t("nav.chats")}
+                </a>
 
-              {user ? (
-                <a
-                  href="/profile"
-                  className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-                >
-                  {getUserShortName(user.name)}
-                </a>
-              ) : (
-                <a
-                  href="/login"
-                  className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-                >
-                  Войти
-                </a>
-              )}
-            </nav>
+                {user ? (
+                  <a
+                    href="/profile"
+                    className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                  >
+                    {getUserShortName(user.name, t("profile.shortName"))}
+                  </a>
+                ) : (
+                  <a
+                    href="/login"
+                    className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                  >
+                    {t("nav.login")}
+                  </a>
+                )}
+              </nav>
+            </div>
           </header>
 
           <main className="flex flex-1 items-center">
@@ -118,23 +122,21 @@ export default function Landing() {
               <section className="mx-auto w-full max-w-2xl lg:mx-0">
                 <div className="rounded-[34px] border border-white/60 bg-white/30 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
                   <h1 className="max-w-3xl text-4xl font-extrabold leading-[0.95] text-[#173651] sm:text-5xl lg:text-6xl">
-                    Езди на работу
+                    {t("landing.title.line1")}
                     <br />
-                    вместе —
+                    {t("landing.title.line2")}
                     <br />
-                    дешевле и
+                    {t("landing.title.line3")}
                     <br />
-                    быстрее
+                    {t("landing.title.line4")}
                   </h1>
 
                   <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#35556c] sm:text-xl">
-                    Миллионы людей каждый день едут по одним и тем же маршрутам.
-                    Объединяйтесь. Делите расходы. Едьте дешевле, чем на такси,
-                    и быстрее, чем на автобусе.
+                    {t("landing.subtitle")}
                   </p>
 
                   <p className="mt-4 text-base font-medium text-[#426277] sm:text-lg">
-                    🍃 Сокращай CO₂, делясь поездками
+                    {t("landing.ecoLine")}
                   </p>
 
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -142,7 +144,7 @@ export default function Landing() {
                       href={findTripHref}
                       className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01]"
                     >
-                      Найти поездку
+                      {t("landing.findTrip")}
                       <span className="ml-3 text-2xl leading-none">›</span>
                     </a>
 
@@ -150,7 +152,7 @@ export default function Landing() {
                       href={publishTripHref}
                       className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
                     >
-                      Опубликовать поездку
+                      {t("landing.publishTrip")}
                       <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
                         ›
                       </span>
@@ -160,7 +162,7 @@ export default function Landing() {
                       href={requestsHref}
                       className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
                     >
-                      Заявки
+                      {t("landing.requests")}
                       <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
                         ›
                       </span>
@@ -170,7 +172,7 @@ export default function Landing() {
                       href={chatsHref}
                       className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
                     >
-                      Чаты
+                      {t("landing.chats")}
                       <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
                         ›
                       </span>
@@ -179,8 +181,7 @@ export default function Landing() {
 
                   {!user && (
                     <p className="mt-5 text-sm text-[#4a6678]">
-                      Смотреть сервис можно без регистрации. Вход понадобится
-                      только при действии.
+                      {t("landing.guestNote")}
                     </p>
                   )}
                 </div>
@@ -190,23 +191,23 @@ export default function Landing() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                   <FeatureCard
                     icon="🚌"
-                    title="Комфорт"
-                    text="Больше не нужно ждать автобус в плохую погоду и ехать в переполненном транспорте."
+                    title={t("landing.feature.comfort.title")}
+                    text={t("landing.feature.comfort.text")}
                   />
                   <FeatureCard
                     icon="💶"
-                    title="Экономия"
-                    text="Дешевле, чем такси. Делите расходы на поездку с попутчиками."
+                    title={t("landing.feature.savings.title")}
+                    text={t("landing.feature.savings.text")}
                   />
                   <FeatureCard
                     icon="⏱️"
-                    title="Быстрее"
-                    text="Быстрее, чем общественный транспорт. Без лишних остановок и пересадок."
+                    title={t("landing.feature.faster.title")}
+                    text={t("landing.feature.faster.text")}
                   />
                   <FeatureCard
                     icon="⛽"
-                    title="Для водителей"
-                    text="Экономьте на топливе, заполняя свободные места пассажирами."
+                    title={t("landing.feature.drivers.title")}
+                    text={t("landing.feature.drivers.text")}
                   />
                 </div>
               </section>
@@ -221,12 +222,12 @@ export default function Landing() {
               className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
             >
               <span className="text-[22px] leading-none">⌂</span>
-              <span>Главная</span>
+              <span>{t("nav.home")}</span>
             </a>
 
             <a href={findTripHref} className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">🧳</span>
-              <span>Поездки</span>
+              <span>{t("nav.trips")}</span>
             </a>
 
             <a
@@ -240,12 +241,12 @@ export default function Landing() {
 
             <a href={requestsHref} className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">📩</span>
-              <span>Заявки</span>
+              <span>{t("nav.requests")}</span>
             </a>
 
             <a href={chatsHref} className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">💬</span>
-              <span>Чаты</span>
+              <span>{t("nav.chats")}</span>
             </a>
           </div>
         </div>

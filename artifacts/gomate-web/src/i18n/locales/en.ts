@@ -1,0 +1,37 @@
+export default {
+  "nav.home": "Home",
+  "nav.trips": "Trips",
+  "nav.templates": "Templates",
+  "nav.requests": "Requests",
+  "nav.chats": "Chats",
+  "nav.profile": "Profile",
+  "nav.login": "Log in",
+  "nav.routes": "Routes",
+  "landing.loading": "Loading...",
+  "landing.title.line1": "Commute to work",
+  "landing.title.line2": "together —",
+  "landing.title.line3": "cheaper and",
+  "landing.title.line4": "faster",
+  "landing.subtitle":
+    "Millions of people take the same routes every day. Team up. Split costs. Ride cheaper than a taxi and faster than the bus.",
+  "landing.ecoLine": "🍃 Cut CO₂ by sharing rides",
+  "landing.findTrip": "Find a ride",
+  "landing.publishTrip": "Publish a ride",
+  "landing.requests": "Requests",
+  "landing.chats": "Chats",
+  "landing.guestNote":
+    "You can browse without signing up. You’ll only need to log in when you take an action.",
+  "landing.feature.comfort.title": "Comfort",
+  "landing.feature.comfort.text":
+    "No more waiting for the bus in bad weather or riding overcrowded transit.",
+  "landing.feature.savings.title": "Savings",
+  "landing.feature.savings.text":
+    "Cheaper than a taxi. Split the ride cost with others.",
+  "landing.feature.faster.title": "Faster",
+  "landing.feature.faster.text":
+    "Faster than public transport. Fewer stops and no awkward transfers.",
+  "landing.feature.drivers.title": "For drivers",
+  "landing.feature.drivers.text":
+    "Save on fuel by filling empty seats with passengers.",
+  "profile.shortName": "Profile",
+} as const;
