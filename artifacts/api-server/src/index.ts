@@ -18,11 +18,29 @@ dotenv.config({
 });
 
 const app = express();
-const PORT = 4000;
+const PORT = Number(process.env.PORT) || 4000;
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  process.env.FRONTEND_URL,
+].filter((value): value is string => typeof value === "string" && value.trim().length > 0);
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
@@ -42,4 +60,5 @@ app.use("/api/trip-chats", tripChatsRoutes);
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
+  console.log("Allowed CORS origins:", allowedOrigins);
 });
