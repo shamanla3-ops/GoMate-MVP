@@ -1,6 +1,12 @@
 import { Router, Response } from "express";
 import { db, tripRequests, trips, users, eq, and, or, desc } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import {
+  sendNewRequestNotification,
+  sendRequestAcceptedNotification,
+  sendRequestRejectedNotification,
+  sendRequestCancelledByPassengerNotification,
+} from "../lib/notifications.js";
 
 const router: Router = Router();
 
@@ -158,6 +164,19 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       })
       .returning();
 
+    const passenger = await db.query.users.findFirst({
+      where: eq(users.id, user.userId),
+    });
+
+    if (passenger) {
+      await sendNewRequestNotification(
+        trip.driverId,
+        passenger.name,
+        trip.origin,
+        trip.destination
+      );
+    }
+
     res.status(201).json({
       message: "Request sent to the driver",
       request,
@@ -293,6 +312,19 @@ router.patch("/:id/accept", authMiddleware, async (req: AuthRequest, res: Respon
       .where(eq(trips.id, row.trip.id))
       .returning();
 
+    const driver = await db.query.users.findFirst({
+      where: eq(users.id, user.userId),
+    });
+
+    if (driver) {
+      await sendRequestAcceptedNotification(
+        row.request.passengerId,
+        driver.name,
+        row.trip.origin,
+        row.trip.destination
+      );
+    }
+
     res.json({
       message: "Request accepted",
       request: updatedRequest,
@@ -351,6 +383,19 @@ router.patch("/:id/reject", authMiddleware, async (req: AuthRequest, res: Respon
       .set({ status: "rejected" })
       .where(eq(tripRequests.id, requestId))
       .returning();
+
+    const driver = await db.query.users.findFirst({
+      where: eq(users.id, user.userId),
+    });
+
+    if (driver) {
+      await sendRequestRejectedNotification(
+        row.request.passengerId,
+        driver.name,
+        row.trip.origin,
+        row.trip.destination
+      );
+    }
 
     res.json({
       message: "Request rejected",
@@ -431,6 +476,19 @@ router.patch("/:id/cancel", authMiddleware, async (req: AuthRequest, res: Respon
         .returning();
 
       updatedTrip = tripAfterRestore;
+    }
+
+    const passenger = await db.query.users.findFirst({
+      where: eq(users.id, user.userId),
+    });
+
+    if (passenger) {
+      await sendRequestCancelledByPassengerNotification(
+        row.trip.driverId,
+        passenger.name,
+        row.trip.origin,
+        row.trip.destination
+      );
     }
 
     res.json({

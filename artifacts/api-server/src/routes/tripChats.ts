@@ -11,6 +11,7 @@ import {
   asc,
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { sendNewChatMessageNotification } from "../lib/notifications.js";
 
 const router: Router = Router();
 
@@ -425,6 +426,18 @@ router.post("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: R
     const sender = await db.query.users.findFirst({
       where: eq(users.id, user.userId),
     });
+
+    const recipientUserId =
+      chat.driverId === user.userId ? chat.passengerId : chat.driverId;
+
+    if (sender) {
+      await sendNewChatMessageNotification(
+        recipientUserId,
+        sender.name,
+        createdMessage.text,
+        chatId
+      );
+    }
 
     res.status(201).json({
       message: {
