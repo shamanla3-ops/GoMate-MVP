@@ -41,7 +41,8 @@ export default {
   "tripDetails.connectError": "Nie udało się połączyć z serwerem",
   "tripDetails.createChatError": "Nie udało się utworzyć czatu",
   "tripDetails.connectionError": "Błąd połączenia",
-  "tripDetails.ownerCannotJoin": "Nie możesz wysłać prośby do własnego przejazdu",
+  "tripDetails.ownerCannotJoin":
+    "Nie możesz wysłać prośby do własnego przejazdu",
   "tripDetails.tripUnavailable": "Ten przejazd nie jest już dostępny",
   "tripDetails.noFreeSeats": "Brak wolnych miejsc",
   "tripDetails.invalidSeatCount": "Wybierz prawidłową liczbę miejsc",
@@ -76,4 +77,32 @@ export default {
   "tripDetails.car": "Samochód",
   "tripDetails.plateNumber": "Numer rejestracyjny",
   "tripDetails.notProvided": "Nie podano",
+  "tripDetails.cancelError": "Nie udało się anulować prośby",
+  "tripDetails.cancelSuccess": "Prośba została anulowana",
+  "tripDetails.requestStatus.pending":
+    "Wysłałeś prośbę. Poczekaj na potwierdzenie kierowcy",
+  "tripDetails.requestStatus.accepted":
+    "Twoja prośba została zaakceptowana",
+  "tripDetails.requestStatus.rejected":
+    "Twoja prośba została odrzucona",
+  "tripDetails.requestStatus.cancelled":
+    "Anulowałeś prośbę",
+  "tripDetails.requestSeatsLabel": "Zarezerwowane miejsca:",
+  "tripDetails.pendingHint":
+    "Dopóki kierowca nie potwierdzi, miejsca nie są jeszcze ostatecznie zarezerwowane.",
+  "tripDetails.acceptedHint":
+    "Kierowca zaakceptował Twoją prośbę. Miejsca są już zarezerwowane dla Ciebie.",
+  "tripDetails.rejectedHint":
+    "Kierowca odrzucił prośbę. Możesz wybrać inny przejazd.",
+  "tripDetails.cancelledHint":
+    "Anulowałeś rezerwację. Jeśli miejsca były już przypisane, wróciły do przejazdu.",
+  "tripDetails.cancelButton": "Anuluj prośbę",
+  "tripDetails.cancelling": "Anulowanie...",
+
+  "pushPrompt.title": "Włączyć powiadomienia GoMate?",
+  "pushPrompt.body":
+    "Zezwól na powiadomienia, aby otrzymywać informacje o prośbach, wiadomościach na czacie i zmianach przejazdów.",
+  "pushPrompt.allow": "Zezwól",
+  "pushPrompt.later": "Później",
+  "pushPrompt.requesting": "Prosimy o zgodę..."
 } as const;

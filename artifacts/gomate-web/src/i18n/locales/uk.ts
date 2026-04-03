@@ -41,7 +41,8 @@ export default {
   "tripDetails.connectError": "Не вдалося підключитися до сервера",
   "tripDetails.createChatError": "Не вдалося створити чат",
   "tripDetails.connectionError": "Помилка з'єднання",
-  "tripDetails.ownerCannotJoin": "Не можна надіслати заявку на власну поїздку",
+  "tripDetails.ownerCannotJoin":
+    "Не можна надіслати заявку на власну поїздку",
   "tripDetails.tripUnavailable": "Ця поїздка вже недоступна",
   "tripDetails.noFreeSeats": "Вільних місць більше немає",
   "tripDetails.invalidSeatCount": "Вкажи правильну кількість місць",
@@ -76,4 +77,29 @@ export default {
   "tripDetails.car": "Автомобіль",
   "tripDetails.plateNumber": "Номер авто",
   "tripDetails.notProvided": "Не вказано",
+  "tripDetails.cancelError": "Не вдалося скасувати заявку",
+  "tripDetails.cancelSuccess": "Заявку скасовано",
+  "tripDetails.requestStatus.pending":
+    "Ви подали заявку. Очікуйте підтвердження від водія",
+  "tripDetails.requestStatus.accepted": "Вашу заявку підтверджено",
+  "tripDetails.requestStatus.rejected": "Вашу заявку відхилено",
+  "tripDetails.requestStatus.cancelled": "Ви скасували заявку",
+  "tripDetails.requestSeatsLabel": "Заброньовано місць:",
+  "tripDetails.pendingHint":
+    "Поки водій не підтвердив заявку, місця в авто ще не закріплені остаточно.",
+  "tripDetails.acceptedHint":
+    "Водій підтвердив вашу заявку. Місця в авто вже закріплені за вами.",
+  "tripDetails.rejectedHint":
+    "Водій відхилив заявку. Ви можете обрати іншу поїздку.",
+  "tripDetails.cancelledHint":
+    "Ви скасували бронювання. Якщо місця були закріплені, вони повернулися назад у поїздку.",
+  "tripDetails.cancelButton": "Скасувати заявку",
+  "tripDetails.cancelling": "Скасовуємо...",
+
+  "pushPrompt.title": "Увімкнути сповіщення GoMate?",
+  "pushPrompt.body":
+    "Дозволь сповіщення, щоб отримувати новини про заявки, повідомлення в чаті та зміни по поїздках.",
+  "pushPrompt.allow": "Дозволити",
+  "pushPrompt.later": "Пізніше",
+  "pushPrompt.requesting": "Запитуємо..."
 } as const;

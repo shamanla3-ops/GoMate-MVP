@@ -77,4 +77,29 @@ export default {
   "tripDetails.car": "Auto",
   "tripDetails.plateNumber": "Kennzeichen",
   "tripDetails.notProvided": "Nicht angegeben",
+  "tripDetails.cancelError": "Anfrage konnte nicht storniert werden",
+  "tripDetails.cancelSuccess": "Anfrage storniert",
+  "tripDetails.requestStatus.pending":
+    "Du hast eine Anfrage gesendet. Bitte warte auf die Bestätigung des Fahrers",
+  "tripDetails.requestStatus.accepted": "Deine Anfrage wurde bestätigt",
+  "tripDetails.requestStatus.rejected": "Deine Anfrage wurde abgelehnt",
+  "tripDetails.requestStatus.cancelled": "Du hast die Anfrage storniert",
+  "tripDetails.requestSeatsLabel": "Reservierte Plätze:",
+  "tripDetails.pendingHint":
+    "Bis der Fahrer bestätigt, sind die Plätze noch nicht endgültig reserviert.",
+  "tripDetails.acceptedHint":
+    "Der Fahrer hat deine Anfrage bestätigt. Die Plätze sind jetzt für dich reserviert.",
+  "tripDetails.rejectedHint":
+    "Der Fahrer hat deine Anfrage abgelehnt. Du kannst eine andere Fahrt wählen.",
+  "tripDetails.cancelledHint":
+    "Du hast die Reservierung storniert. Falls Plätze reserviert waren, wurden sie zur Fahrt zurückgegeben.",
+  "tripDetails.cancelButton": "Anfrage stornieren",
+  "tripDetails.cancelling": "Wird storniert...",
+
+  "pushPrompt.title": "GoMate-Benachrichtigungen aktivieren?",
+  "pushPrompt.body":
+    "Erlaube Benachrichtigungen, um Updates zu Anfragen, Chat-Nachrichten und Fahrten zu erhalten.",
+  "pushPrompt.allow": "Erlauben",
+  "pushPrompt.later": "Später",
+  "pushPrompt.requesting": "Anfrage läuft..."
 } as const;

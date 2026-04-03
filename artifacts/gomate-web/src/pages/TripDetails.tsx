@@ -48,6 +48,15 @@ type ChatSummary = {
   unreadCount: number;
 };
 
+type OutgoingRequest = {
+  id: string;
+  tripId: string;
+  passengerId: string;
+  seatsRequested: number;
+  status: "pending" | "accepted" | "rejected" | "cancelled";
+  createdAt: string;
+};
+
 const WEEKDAY_LABELS_BY_LOCALE: Record<Locale, Record<string, string>> = {
   pl: {
     mon: "Pon",
@@ -151,6 +160,20 @@ function getInitials(name: string) {
     .join("");
 }
 
+function getRequestBadgeClasses(status: OutgoingRequest["status"]) {
+  switch (status) {
+    case "accepted":
+      return "bg-[#dff7d4] text-[#24613a]";
+    case "rejected":
+      return "bg-[#fde7e7] text-[#9f2f2f]";
+    case "cancelled":
+      return "bg-[#eef1f4] text-[#5a7284]";
+    case "pending":
+    default:
+      return "bg-[#fff6d8] text-[#8b6a14]";
+  }
+}
+
 export default function TripDetails() {
   const { id } = useParams();
   const { t, locale } = useTranslation();
@@ -161,8 +184,10 @@ export default function TripDetails() {
   const [message, setMessage] = useState("");
   const [openingChat, setOpeningChat] = useState(false);
   const [joiningTrip, setJoiningTrip] = useState(false);
+  const [cancellingRequest, setCancellingRequest] = useState(false);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [seatsRequested, setSeatsRequested] = useState(1);
+  const [myRequest, setMyRequest] = useState<OutgoingRequest | null>(null);
 
   async function loadTrip() {
     try {
@@ -224,6 +249,35 @@ export default function TripDetails() {
       setChatUnreadCount(total);
     } catch {
       setChatUnreadCount(0);
+    }
+  }
+
+  async function loadMyRequest() {
+    const token = localStorage.getItem("token");
+
+    if (!token || !id) {
+      setMyRequest(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/trip-requests/outgoing`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        setMyRequest(null);
+        return;
+      }
+
+      const data = await response.json();
+      const requests = Array.isArray(data.requests) ? (data.requests as OutgoingRequest[]) : [];
+      const requestForThisTrip = requests.find((request) => request.tripId === id) ?? null;
+      setMyRequest(requestForThisTrip);
+    } catch {
+      setMyRequest(null);
     }
   }
 
@@ -320,7 +374,7 @@ export default function TripDetails() {
       }
 
       setMessage(t("tripDetails.requestSent"));
-      await loadTrip();
+      await Promise.all([loadTrip(), loadMyRequest()]);
     } catch {
       setMessage(t("tripDetails.connectError"));
     } finally {
@@ -328,13 +382,57 @@ export default function TripDetails() {
     }
   }
 
+  async function handleCancelRequest() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!myRequest) {
+      return;
+    }
+
+    try {
+      setCancellingRequest(true);
+      setMessage("");
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/trip-requests/${myRequest.id}/cancel`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.error || t("tripDetails.cancelError"));
+        return;
+      }
+
+      setMessage(t("tripDetails.cancelSuccess"));
+      await Promise.all([loadTrip(), loadMyRequest()]);
+    } catch {
+      setMessage(t("tripDetails.connectError"));
+    } finally {
+      setCancellingRequest(false);
+    }
+  }
+
   useEffect(() => {
     loadTrip();
     loadCurrentUser();
     loadChatUnreadCount();
+    loadMyRequest();
 
     const interval = setInterval(() => {
       loadChatUnreadCount();
+      loadMyRequest();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -345,6 +443,22 @@ export default function TripDetails() {
     if (!trip || !currentUserId) return false;
     return trip.driverId === currentUserId;
   }, [trip, currentUserId]);
+
+  const hasActiveRequest =
+    myRequest?.status === "pending" || myRequest?.status === "accepted";
+
+  const canCancelRequest =
+    myRequest?.status === "pending" || myRequest?.status === "accepted";
+
+  const requestStatusText = myRequest
+    ? myRequest.status === "pending"
+      ? t("tripDetails.requestStatus.pending")
+      : myRequest.status === "accepted"
+      ? t("tripDetails.requestStatus.accepted")
+      : myRequest.status === "rejected"
+      ? t("tripDetails.requestStatus.rejected")
+      : t("tripDetails.requestStatus.cancelled")
+    : "";
 
   if (loading) {
     return (
@@ -456,7 +570,7 @@ export default function TripDetails() {
                   {t("tripDetails.backToTrips")}
                 </a>
 
-                {!isOwnTrip && (
+                {!isOwnTrip && !hasActiveRequest && (
                   <>
                     <div className="rounded-[22px] border border-white/80 bg-white/88 p-4 shadow-sm">
                       <label
@@ -496,18 +610,74 @@ export default function TripDetails() {
                         ? t("tripDetails.noSeats")
                         : t("tripDetails.joinButton")}
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={handleChat}
-                      disabled={openingChat}
-                      className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-bold text-[#29485d] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {openingChat
-                        ? t("tripDetails.chatOpening")
-                        : t("tripDetails.writeDriver")}
-                    </button>
                   </>
+                )}
+
+                {!isOwnTrip && myRequest && (
+                  <div className="rounded-[22px] border border-white/80 bg-white/88 p-4 shadow-sm">
+                    <div
+                      className={`inline-flex rounded-full px-3 py-2 text-xs font-bold ${getRequestBadgeClasses(
+                        myRequest.status
+                      )}`}
+                    >
+                      {requestStatusText}
+                    </div>
+
+                    <p className="mt-3 text-sm text-[#35556c]">
+                      {t("tripDetails.requestSeatsLabel")}{" "}
+                      <strong>{myRequest.seatsRequested}</strong>
+                    </p>
+
+                    {myRequest.status === "pending" && (
+                      <p className="mt-2 text-sm text-[#35556c]">
+                        {t("tripDetails.pendingHint")}
+                      </p>
+                    )}
+
+                    {myRequest.status === "accepted" && (
+                      <p className="mt-2 text-sm text-[#35556c]">
+                        {t("tripDetails.acceptedHint")}
+                      </p>
+                    )}
+
+                    {myRequest.status === "rejected" && (
+                      <p className="mt-2 text-sm text-[#35556c]">
+                        {t("tripDetails.rejectedHint")}
+                      </p>
+                    )}
+
+                    {myRequest.status === "cancelled" && (
+                      <p className="mt-2 text-sm text-[#35556c]">
+                        {t("tripDetails.cancelledHint")}
+                      </p>
+                    )}
+
+                    {canCancelRequest && (
+                      <button
+                        type="button"
+                        onClick={handleCancelRequest}
+                        disabled={cancellingRequest}
+                        className="mt-4 flex h-11 w-full items-center justify-center rounded-full border border-white/90 bg-white px-5 text-sm font-bold text-[#29485d] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        {cancellingRequest
+                          ? t("tripDetails.cancelling")
+                          : t("tripDetails.cancelButton")}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {!isOwnTrip && (
+                  <button
+                    type="button"
+                    onClick={handleChat}
+                    disabled={openingChat}
+                    className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-bold text-[#29485d] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {openingChat
+                      ? t("tripDetails.chatOpening")
+                      : t("tripDetails.writeDriver")}
+                  </button>
                 )}
 
                 {isOwnTrip && (

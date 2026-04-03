@@ -12,6 +12,7 @@ import MyRequests from "./pages/MyRequests";
 import Requests from "./pages/Requests";
 import Chat from "./pages/Chat";
 import Chats from "./pages/Chats";
+import PushPermissionPrompt from "./components/PushPermissionPrompt";
 
 export default function App() {
   return (
@@ -31,6 +32,8 @@ export default function App() {
         <Route path="/chat/:chatId" element={<Chat />} />
         <Route path="/chats" element={<Chats />} />
       </Routes>
+
+      <PushPermissionPrompt />
     </BrowserRouter>
   );
 }

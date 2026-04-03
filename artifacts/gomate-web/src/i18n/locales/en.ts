@@ -76,4 +76,29 @@ export default {
   "tripDetails.car": "Car",
   "tripDetails.plateNumber": "Plate number",
   "tripDetails.notProvided": "Not provided",
+  "tripDetails.cancelError": "Failed to cancel request",
+  "tripDetails.cancelSuccess": "Request cancelled",
+  "tripDetails.requestStatus.pending":
+    "You submitted a request. Please wait for driver confirmation",
+  "tripDetails.requestStatus.accepted": "Your request has been accepted",
+  "tripDetails.requestStatus.rejected": "Your request has been rejected",
+  "tripDetails.requestStatus.cancelled": "You cancelled the request",
+  "tripDetails.requestSeatsLabel": "Seats requested:",
+  "tripDetails.pendingHint":
+    "Until the driver confirms, the seats are not fully reserved yet.",
+  "tripDetails.acceptedHint":
+    "The driver accepted your request. The seats are now reserved for you.",
+  "tripDetails.rejectedHint":
+    "The driver rejected the request. You can choose another trip.",
+  "tripDetails.cancelledHint":
+    "You cancelled the reservation. If seats had been reserved, they were returned to the trip.",
+  "tripDetails.cancelButton": "Cancel request",
+  "tripDetails.cancelling": "Cancelling...",
+
+  "pushPrompt.title": "Enable GoMate notifications?",
+  "pushPrompt.body":
+    "Allow notifications to receive updates about requests, chat messages and trip changes.",
+  "pushPrompt.allow": "Allow",
+  "pushPrompt.later": "Later",
+  "pushPrompt.requesting": "Requesting..."
 } as const;

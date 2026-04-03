@@ -76,4 +76,29 @@ export default {
   "tripDetails.car": "Автомобиль",
   "tripDetails.plateNumber": "Номер авто",
   "tripDetails.notProvided": "Не указано",
+  "tripDetails.cancelError": "Не удалось отменить заявку",
+  "tripDetails.cancelSuccess": "Заявка отменена",
+  "tripDetails.requestStatus.pending":
+    "Вы подали заявку. Ожидайте подтверждения от водителя",
+  "tripDetails.requestStatus.accepted": "Ваша заявка подтверждена",
+  "tripDetails.requestStatus.rejected": "Ваша заявка отклонена",
+  "tripDetails.requestStatus.cancelled": "Вы отменили заявку",
+  "tripDetails.requestSeatsLabel": "Забронировано мест:",
+  "tripDetails.pendingHint":
+    "Пока водитель не подтвердил заявку, места в машине ещё не закреплены окончательно.",
+  "tripDetails.acceptedHint":
+    "Водитель подтвердил вашу заявку. Места в машине уже закреплены за вами.",
+  "tripDetails.rejectedHint":
+    "Водитель отклонил заявку. Вы можете выбрать другую поездку.",
+  "tripDetails.cancelledHint":
+    "Вы отменили бронь. Если места были закреплены, они вернулись обратно в поездку.",
+  "tripDetails.cancelButton": "Отменить заявку",
+  "tripDetails.cancelling": "Отменяем...",
+
+  "pushPrompt.title": "Включить уведомления GoMate?",
+  "pushPrompt.body":
+    "Разреши уведомления, чтобы получать новости о заявках, сообщениях в чате и изменениях по поездкам.",
+  "pushPrompt.allow": "Разрешить",
+  "pushPrompt.later": "Позже",
+  "pushPrompt.requesting": "Запрашиваем..."
 } as const;
