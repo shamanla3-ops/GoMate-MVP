@@ -139,7 +139,7 @@ export function LocationPicker({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || mapEpoch === 0) return;
+    if (!map) return;
 
     if (isCompleteMapPoint(value)) {
       const ll: L.LatLngExpression = [value.lat as number, value.lng as number];

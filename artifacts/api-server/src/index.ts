@@ -21,6 +21,8 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://getgomate.com",
+      "https://gomate.com",
+      "https://www.gomate.com",
     ],
     credentials: true,
   })

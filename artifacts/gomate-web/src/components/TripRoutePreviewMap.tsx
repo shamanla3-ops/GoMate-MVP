@@ -95,7 +95,7 @@ export function TripRoutePreviewMap({
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current || !overlayRef.current || mapEpoch === 0) {
+    if (!mapRef.current || !overlayRef.current) {
       return;
     }
 
@@ -118,7 +118,15 @@ export function TripRoutePreviewMap({
         `${tRef.current("tripDetails.mapDestination")}: ${destinationLabel}`
       );
 
-    map.fitBounds(L.latLngBounds([o, d]).pad(0.15), { animate: false });
+    const bounds = L.latLngBounds([o, d]);
+    const samePoint =
+      Math.abs(originLat - destinationLat) < 1e-9 &&
+      Math.abs(originLng - destinationLng) < 1e-9;
+    if (samePoint) {
+      map.setView(o, 13, { animate: false });
+    } else {
+      map.fitBounds(bounds.pad(0.15), { animate: false });
+    }
     requestAnimationFrame(() => map.invalidateSize());
 
     let cancelled = false;
@@ -160,7 +168,11 @@ export function TripRoutePreviewMap({
       }).addTo(overlay);
 
       const fg = L.featureGroup([m1, m2, line]);
-      map.fitBounds(fg.getBounds().pad(0.12), { animate: false });
+      if (samePoint) {
+        map.setView(o, 13, { animate: false });
+      } else {
+        map.fitBounds(fg.getBounds().pad(0.12), { animate: false });
+      }
       requestAnimationFrame(() => map.invalidateSize());
     })().finally(() => {
       clearTimeout(timeoutId);

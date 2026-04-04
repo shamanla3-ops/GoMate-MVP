@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { I18nProvider } from "./i18n";
 import { NotificationCountsProvider } from "./context/NotificationCountsContext";
+import "leaflet/dist/leaflet.css";
 import "./index.css";
 
 if ("serviceWorker" in navigator) {

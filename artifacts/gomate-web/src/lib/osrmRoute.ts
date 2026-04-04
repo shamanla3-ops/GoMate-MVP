@@ -18,8 +18,12 @@ export async function fetchDrivingRouteLatLngs(
     throw new Error(`OSRM HTTP ${res.status}`);
   }
   const data = (await res.json()) as {
+    code?: string;
     routes?: { geometry?: { coordinates?: [number, number][] } }[];
   };
+  if (data.code !== "Ok") {
+    throw new Error(`OSRM: ${data.code ?? "no route"}`);
+  }
   const coords = data.routes?.[0]?.geometry?.coordinates;
   if (!Array.isArray(coords) || coords.length < 2) {
     throw new Error("OSRM: empty route");
