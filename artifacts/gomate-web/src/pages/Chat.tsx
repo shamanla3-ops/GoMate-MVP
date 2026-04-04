@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
+import { formatDateTimeShort, formatTimeOnly } from "../lib/intlLocale";
 
 type CurrentUserLike = {
   id?: string;
@@ -67,36 +70,8 @@ function getInitials(name: string) {
     .join("");
 }
 
-function formatTime(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatDateTime(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
 export default function Chat() {
+  const { t, locale } = useTranslation();
   const { chatId } = useParams();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
@@ -141,7 +116,7 @@ export default function Chat() {
     }
 
     if (!chatId) {
-      setMessage("Чат не найден");
+      setMessage(t("chatPage.notFound"));
       setLoading(false);
       return;
     }
@@ -156,7 +131,7 @@ export default function Chat() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || "Не удалось загрузить сообщения");
+        setMessage(data.error || t("chatPage.loadError"));
         setLoading(false);
         return;
       }
@@ -167,7 +142,7 @@ export default function Chat() {
       await markChatAsRead();
       void refreshNotificationCounts();
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("chatPage.serverError"));
     } finally {
       setLoading(false);
     }
@@ -202,14 +177,14 @@ export default function Chat() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || "Не удалось отправить сообщение");
+        setMessage(data.error || t("chatPage.sendError"));
         return;
       }
 
       setText("");
       await loadMessages();
     } catch {
-      setMessage("Не удалось отправить сообщение");
+      setMessage(t("chatPage.sendError"));
     } finally {
       setSending(false);
     }
@@ -242,10 +217,10 @@ export default function Chat() {
   }, [chat, currentUserId]);
 
   const otherPersonName = useMemo(() => {
-    if (!chat) return "Чат";
-    if (isDriver) return chat.passenger?.name || "Пассажир";
-    return chat.driver?.name || "Водитель";
-  }, [chat, isDriver]);
+    if (!chat) return t("chatPage.defaultTitle");
+    if (isDriver) return chat.passenger?.name || t("chatPage.passenger");
+    return chat.driver?.name || t("chatPage.driver");
+  }, [chat, isDriver, t]);
 
   const otherPersonAvatar = useMemo(() => {
     if (!chat) return null;
@@ -261,7 +236,7 @@ export default function Chat() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#eef4f8]">
-        <div className="text-lg text-[#35556c]">Загрузка чата...</div>
+        <div className="text-lg text-[#35556c]">{t("chatPage.loading")}</div>
       </div>
     );
   }
@@ -280,42 +255,34 @@ export default function Chat() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden md:flex items-center gap-3">
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("chatPage.navTrips")}
               </a>
               <a
                 href="/requests"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Заявки
+                {t("chatPage.navRequests")}
               </a>
               <a
                 href="/chats"
                 className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
-                Чаты
+                {t("chatPage.navChats")}
               </a>
               <a
                 href="/profile"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Профиль
+                {t("chatPage.navProfile")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="flex min-h-0 flex-1 flex-col rounded-[30px] border border-white/60 bg-white/35 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm">
             <div className="flex flex-col gap-4 border-b border-white/60 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
@@ -337,11 +304,12 @@ export default function Chat() {
                     {otherPersonName}
                   </div>
                   <div className="mt-1 text-sm text-[#4a6678]">
-                    {tripLabel || "Чат по поездке"}
+                    {tripLabel || t("chatPage.tripChat")}
                   </div>
                   {chat?.trip?.departureTime && (
                     <div className="mt-1 text-xs text-[#6b8495]">
-                      Отправление: {formatDateTime(chat.trip.departureTime)}
+                      {t("chatPage.departure")}{" "}
+                      {formatDateTimeShort(chat.trip.departureTime, locale)}
                     </div>
                   )}
                 </div>
@@ -352,7 +320,7 @@ export default function Chat() {
                   href="/chats"
                   className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-5 text-sm font-semibold text-[#29485d] shadow-sm"
                 >
-                  Все чаты
+                  {t("chatPage.allChats")}
                 </a>
 
                 {chat?.trip?.id && (
@@ -360,7 +328,7 @@ export default function Chat() {
                     href={`/trips/${chat.trip.id}`}
                     className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-5 text-sm font-semibold text-[#29485d] shadow-sm"
                   >
-                    Открыть поездку
+                    {t("chatPage.openTrip")}
                   </a>
                 )}
               </div>
@@ -376,7 +344,7 @@ export default function Chat() {
               <div className="flex h-[52vh] flex-col gap-3 overflow-y-auto rounded-[24px] border border-white/70 bg-white/65 p-4 shadow-sm">
                 {messages.length === 0 && (
                   <div className="my-auto text-center text-[#5d7485]">
-                    Сообщений пока нет. Напиши первым.
+                    {t("chatPage.emptyMessages")}
                   </div>
                 )}
 
@@ -400,7 +368,7 @@ export default function Chat() {
                             mine ? "text-white/90" : "text-[#6b8495]"
                           }`}
                         >
-                          {mine ? "Ты" : msg.sender?.name || "Пользователь"}
+                          {mine ? t("chatPage.you") : msg.sender?.name || t("common.user")}
                         </div>
 
                         <div className="mt-1 whitespace-pre-wrap break-words text-sm sm:text-base">
@@ -412,7 +380,7 @@ export default function Chat() {
                             mine ? "text-white/80" : "text-[#8aa0af]"
                           }`}
                         >
-                          {formatTime(msg.createdAt)}
+                          {formatTimeOnly(msg.createdAt, locale)}
                         </div>
                       </div>
                     </div>
@@ -442,7 +410,7 @@ export default function Chat() {
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Напиши сообщение..."
+                  placeholder={t("chatPage.placeholder")}
                   className="h-14 flex-1 rounded-[20px] border border-white/80 bg-white/88 px-4 text-[#173651] shadow-sm outline-none placeholder:text-[#7a94a5]"
                 />
 
@@ -451,7 +419,7 @@ export default function Chat() {
                   disabled={sending || !text.trim()}
                   className="flex h-14 items-center justify-center rounded-[20px] bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {sending ? "Отправка..." : "Отправить"}
+                  {sending ? t("chatPage.sending") : t("chatPage.send")}
                 </button>
               </form>
             </div>

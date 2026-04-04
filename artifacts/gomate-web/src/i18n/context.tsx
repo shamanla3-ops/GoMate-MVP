@@ -19,10 +19,10 @@ const STORAGE_KEY = "gomate-locale";
 function detectBrowserLocale(): Locale {
   const raw =
     typeof navigator !== "undefined"
-      ? navigator.language || navigator.languages?.[0] || "pl"
-      : "pl";
-  const code = raw.split("-")[0]?.toLowerCase() ?? "pl";
-  return isLocale(code) ? code : "pl";
+      ? navigator.language || navigator.languages?.[0] || "en"
+      : "en";
+  const code = raw.split("-")[0]?.toLowerCase() ?? "en";
+  return isLocale(code) ? code : "en";
 }
 
 function getInitialLocale(): Locale {
@@ -66,7 +66,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       const table = translations[locale];
       let text = table[key];
       if (text === undefined) {
-        text = translations.pl[key];
+        text = translations.en[key];
       }
       if (text === undefined) {
         return key;

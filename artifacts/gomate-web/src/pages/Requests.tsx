@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
+import { formatDateTimeShort } from "../lib/intlLocale";
 
 type RequestStatus =
   | "pending"
@@ -82,16 +85,6 @@ type ChatSummary = {
   unreadCount: number;
 };
 
-const WEEKDAY_LABELS: Record<string, string> = {
-  mon: "Пн",
-  tue: "Вт",
-  wed: "Ср",
-  thu: "Чт",
-  fri: "Пт",
-  sat: "Сб",
-  sun: "Вс",
-};
-
 function getInitials(name: string) {
   return name
     .trim()
@@ -116,23 +109,10 @@ function formatPrice(price: number, currency: "EUR" | "USD" | "PLN") {
   }).format(price / 100);
 }
 
-function formatDepartureTime(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatWeekdays(weekdays: string[] | null | undefined): string {
+function formatWeekdays(
+  weekdays: string[] | null | undefined,
+  t: (key: string) => string
+): string {
   if (!weekdays || weekdays.length === 0) return "";
 
   const order = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -140,26 +120,7 @@ function formatWeekdays(weekdays: string[] | null | undefined): string {
     (a, b) => order.indexOf(a) - order.indexOf(b)
   );
 
-  return sorted.map((day) => WEEKDAY_LABELS[day] ?? day).join(", ");
-}
-
-function getStatusLabel(status: RequestStatus) {
-  switch (status) {
-    case "pending":
-      return "Ожидает решения";
-    case "accepted":
-      return "Подтверждена";
-    case "rejected":
-      return "Отклонена";
-    case "cancelled_by_driver":
-      return "Поездка отменена водителем";
-    case "cancelled_by_passenger":
-      return "Отменена пассажиром";
-    case "cancelled":
-      return "Отменена";
-    default:
-      return status;
-  }
+  return sorted.map((day) => t(`weekday.${day}`)).join(", ");
 }
 
 function getStatusClasses(status: RequestStatus) {
@@ -188,7 +149,12 @@ function isHistoryStatus(status: RequestStatus) {
 }
 
 export default function Requests() {
+  const { t, locale } = useTranslation();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
+
+  function statusLabel(status: RequestStatus) {
+    return t(`requests.status.${status}`);
+  }
   const [incomingRequests, setIncomingRequests] = useState<IncomingRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<OutgoingRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,7 +191,7 @@ export default function Requests() {
       const outgoingData = await outgoingResponse.json();
 
       if (!incomingResponse.ok) {
-        setMessage(incomingData.error || "Не удалось загрузить входящие заявки");
+        setMessage(incomingData.error || t("requestsPage.loadIncomingError"));
         setIncomingRequests([]);
       } else {
         setIncomingRequests(
@@ -234,7 +200,7 @@ export default function Requests() {
       }
 
       if (!outgoingResponse.ok) {
-        setMessage((prev) => prev || outgoingData.error || "Не удалось загрузить мои заявки");
+        setMessage((prev) => prev || outgoingData.error || t("requestsPage.loadOutgoingError"));
         setOutgoingRequests([]);
       } else {
         setOutgoingRequests(
@@ -242,7 +208,7 @@ export default function Requests() {
         );
       }
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("requestsPage.serverError"));
       setIncomingRequests([]);
       setOutgoingRequests([]);
     } finally {
@@ -318,7 +284,7 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Не удалось обновить заявку");
+        setMessage(data.error || t("requestsPage.updateError"));
         return;
       }
 
@@ -347,7 +313,7 @@ export default function Requests() {
         })
       );
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("requestsPage.serverError"));
     } finally {
       setBusyId(null);
     }
@@ -364,8 +330,8 @@ export default function Requests() {
     const isAccepted = request.status === "accepted";
     const confirmed = window.confirm(
       isAccepted
-        ? "Отменить участие в этой поездке?"
-        : "Отменить заявку на эту поездку?"
+        ? t("requestsPage.cancelOutgoingAccepted")
+        : t("requestsPage.cancelOutgoingPending")
     );
 
     if (!confirmed) return;
@@ -387,7 +353,7 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Не удалось отменить заявку");
+        setMessage(data.error || t("requestsPage.cancelError"));
         return;
       }
 
@@ -399,7 +365,7 @@ export default function Requests() {
         )
       );
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("requestsPage.serverError"));
     } finally {
       setBusyId(null);
     }
@@ -413,9 +379,7 @@ export default function Requests() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Удалить эту поездку? Она исчезнет из общего списка, а пассажиры увидят, что поездка отменена водителем."
-    );
+    const confirmed = window.confirm(t("requestsPage.deleteTripConfirm"));
 
     if (!confirmed) return;
 
@@ -433,7 +397,7 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Не удалось удалить поездку");
+        setMessage(data.error || t("requestsPage.deleteTripError"));
         return;
       }
 
@@ -455,9 +419,9 @@ export default function Requests() {
         )
       );
 
-      setMessage("Поездка отменена водителем");
+      setMessage(t("requestsPage.tripCancelledByDriver"));
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("requestsPage.serverError"));
     } finally {
       setDeletingTripId(null);
     }
@@ -533,33 +497,25 @@ export default function Requests() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden md:flex items-center gap-3">
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("requestsPage.navTrips")}
               </a>
               <a
                 href="/templates"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Маршруты
+                {t("requestsPage.navTemplates")}
               </a>
               <a
                 href="/requests"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Заявки
+                {t("requestsPage.navRequests")}
                 {incomingPendingCount + outgoingPendingCount > 0
                   ? ` (${incomingPendingCount + outgoingPendingCount})`
                   : ""}
@@ -568,53 +524,58 @@ export default function Requests() {
                 href="/chats"
                 className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
-                Чаты{chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
+                {t("requestsPage.navChats")}
+                {chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
               </a>
               <a
                 href="/profile"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Профиль
+                {t("requestsPage.navProfile")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
-                  Заявки
+                  {t("requestsPage.title")}
                 </h1>
-                <p className="mt-2 text-[#4a6678]">
-                  Одна страница для водителя и пассажира: входящие и отправленные заявки вместе.
-                </p>
+                <p className="mt-2 text-[#4a6678]">{t("requestsPage.subtitle")}</p>
               </div>
 
               <a
                 href="/trips"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)]"
               >
-                Найти поездку
+                {t("requestsPage.findTrip")}
               </a>
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               <div className="rounded-[24px] border border-white/80 bg-white/75 p-5 shadow-sm">
-                <div className="text-sm font-semibold text-[#5d7485]">Мне прислали</div>
+                <div className="text-sm font-semibold text-[#5d7485]">
+                  {t("requestsPage.statSentToMe")}
+                </div>
                 <div className="mt-2 text-3xl font-extrabold text-[#173651]">
                   {incomingRequests.length}
                 </div>
               </div>
 
               <div className="rounded-[24px] border border-white/80 bg-white/75 p-5 shadow-sm">
-                <div className="text-sm font-semibold text-[#5d7485]">Ожидают решения</div>
+                <div className="text-sm font-semibold text-[#5d7485]">
+                  {t("requestsPage.statPending")}
+                </div>
                 <div className="mt-2 text-3xl font-extrabold text-[#173651]">
                   {incomingPendingCount + outgoingPendingCount}
                 </div>
               </div>
 
               <div className="rounded-[24px] border border-white/80 bg-white/75 p-5 shadow-sm">
-                <div className="text-sm font-semibold text-[#5d7485]">Подтверждено для меня</div>
+                <div className="text-sm font-semibold text-[#5d7485]">
+                  {t("requestsPage.statConfirmedForMe")}
+                </div>
                 <div className="mt-2 text-3xl font-extrabold text-[#173651]">
                   {acceptedOutgoingCount}
                 </div>
@@ -631,7 +592,7 @@ export default function Requests() {
                     : "bg-white/85 text-[#29485d]"
                 }`}
               >
-                Мне прислали
+                {t("requestsPage.tabIncoming")}
                 {incomingPendingCount > 0 ? ` (${incomingPendingCount})` : ""}
               </button>
 
@@ -644,7 +605,7 @@ export default function Requests() {
                     : "bg-white/85 text-[#29485d]"
                 }`}
               >
-                Мои отправленные
+                {t("requestsPage.tabOutgoing")}
                 {outgoingPendingCount > 0 ? ` (${outgoingPendingCount})` : ""}
               </button>
             </div>
@@ -659,7 +620,7 @@ export default function Requests() {
                     : "bg-white/85 text-[#29485d]"
                 }`}
               >
-                Активные (
+                {t("requestsPage.viewActive")} (
                 {activeTab === "incoming" ? incomingActiveCount : outgoingActiveCount})
               </button>
 
@@ -672,19 +633,20 @@ export default function Requests() {
                     : "bg-white/85 text-[#29485d]"
                 }`}
               >
-                История (
+                {t("requestsPage.viewHistory")} (
                 {activeTab === "incoming" ? incomingHistoryCount : outgoingHistoryCount})
               </button>
             </div>
 
             <div className="mt-4 rounded-[20px] border border-white/80 bg-white/60 px-4 py-3 text-sm text-[#4a6678] shadow-sm">
-              Сейчас показано: <span className="font-bold text-[#173651]">{currentVisibleCount}</span>
+              {t("requestsPage.showingCount")}{" "}
+              <span className="font-bold text-[#173651]">{currentVisibleCount}</span>
             </div>
 
             <div className="mt-6">
               {loading && (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  Загрузка заявок...
+                  {t("requestsPage.loading")}
                 </div>
               )}
 
@@ -699,8 +661,8 @@ export default function Requests() {
                 visibleIncomingRequests.length === 0 && (
                   <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
                     {viewMode === "active"
-                      ? "У тебя нет активных входящих заявок."
-                      : "История входящих заявок пока пустая."}
+                      ? t("requestsPage.emptyIncomingActive")
+                      : t("requestsPage.emptyIncomingHistory")}
                   </div>
                 )}
 
@@ -709,8 +671,8 @@ export default function Requests() {
                 visibleOutgoingRequests.length === 0 && (
                   <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
                     {viewMode === "active"
-                      ? "У тебя нет активных отправленных заявок."
-                      : "История отправленных заявок пока пустая."}
+                      ? t("requestsPage.emptyOutgoingActive")
+                      : t("requestsPage.emptyOutgoingHistory")}
                   </div>
                 )}
 
@@ -721,8 +683,10 @@ export default function Requests() {
                     {visibleIncomingRequests.map((request) => {
                       const rating = request.passenger.rating ?? 0;
                       const tripTypeLabel =
-                        request.trip.tripType === "regular" ? "Регулярная" : "Разовая";
-                      const weekdaysLabel = formatWeekdays(request.trip.weekdays);
+                        request.trip.tripType === "regular"
+                          ? t("common.tripTypeRegular")
+                          : t("common.tripTypeOneTime");
+                      const weekdaysLabel = formatWeekdays(request.trip.weekdays, t);
 
                       return (
                         <div
@@ -753,36 +717,40 @@ export default function Requests() {
                                       request.status
                                     )}`}
                                   >
-                                    {getStatusLabel(request.status)}
+                                    {statusLabel(request.status)}
                                   </span>
                                 </div>
 
                                 <div className="mt-2 text-sm text-[#4a6678]">
-                                  Пассажир:{" "}
+                                  {t("requestsPage.passenger")}{" "}
                                   <span className="font-semibold text-[#173651]">
                                     {request.passenger.name}
                                   </span>
                                 </div>
                                 <div className="mt-1 text-sm text-[#f4b400]">
                                   {renderStars(rating)}
-                                  <span className="ml-2 text-[#4a6678]">{rating} из 5</span>
+                                  <span className="ml-2 text-[#4a6678]">
+                                    {t("common.starsOutOf5", { rating })}
+                                  </span>
                                 </div>
                                 <div className="mt-1 text-sm text-[#4a6678]">
-                                  Отправление: {formatDepartureTime(request.trip.departureTime)}
+                                  {t("requestsPage.departure")}{" "}
+                                  {formatDateTimeShort(request.trip.departureTime, locale)}
                                 </div>
                                 <div className="mt-1 text-sm text-[#4a6678]">
-                                  Тип поездки: {tripTypeLabel}
+                                  {t("requestsPage.tripType")} {tripTypeLabel}
                                   {weekdaysLabel ? ` • ${weekdaysLabel}` : ""}
                                 </div>
                                 <div className="mt-1 text-sm text-[#4a6678]">
-                                  Запрошено мест: {request.seatsRequested}
+                                  {t("requestsPage.seatsRequested")} {request.seatsRequested}
                                 </div>
                                 <div className="mt-1 text-sm text-[#4a6678]">
-                                  Свободных мест сейчас: {request.trip.availableSeats} из{" "}
-                                  {request.trip.seatsTotal}
+                                  {t("requestsPage.seatsAvailable")}{" "}
+                                  {request.trip.availableSeats} / {request.trip.seatsTotal}
                                 </div>
                                 <div className="mt-1 text-sm text-[#4a6678]">
-                                  Телефон пассажира: {request.passenger.phoneNumber || "Не указан"}
+                                  {t("requestsPage.passengerPhone")}{" "}
+                                  {request.passenger.phoneNumber || t("common.notSpecified")}
                                 </div>
                               </div>
                             </div>
@@ -792,7 +760,7 @@ export default function Requests() {
                                 href={`/trips/${request.trip.id}`}
                                 className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-5 text-sm font-semibold text-[#29485d] shadow-sm backdrop-blur-sm"
                               >
-                                Открыть поездку
+                                {t("requestsPage.openTrip")}
                               </a>
 
                               {request.trip.status !== "cancelled" && (
@@ -802,7 +770,9 @@ export default function Requests() {
                                   disabled={deletingTripId === request.trip.id}
                                   className="flex h-12 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-[#c62828] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                  {deletingTripId === request.trip.id ? "Удаление..." : "Удалить поездку"}
+                                  {deletingTripId === request.trip.id
+                                    ? t("requestsPage.deleting")
+                                    : t("requestsPage.deleteTrip")}
                                 </button>
                               )}
 
@@ -814,7 +784,9 @@ export default function Requests() {
                                     disabled={busyId === request.id}
                                     className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-5 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
                                   >
-                                    {busyId === request.id ? "Обработка..." : "Принять"}
+                                    {busyId === request.id
+                                      ? t("requestsPage.processing")
+                                      : t("requestsPage.accept")}
                                   </button>
 
                                   <button
@@ -823,32 +795,34 @@ export default function Requests() {
                                     disabled={busyId === request.id}
                                     className="flex h-12 items-center justify-center rounded-full bg-[#163c59] px-5 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
                                   >
-                                    {busyId === request.id ? "Обработка..." : "Отклонить"}
+                                    {busyId === request.id
+                                      ? t("requestsPage.processing")
+                                      : t("requestsPage.reject")}
                                   </button>
                                 </>
                               )}
 
                               {request.status === "accepted" && (
                                 <div className="rounded-[20px] border border-[#ccecbf] bg-[#f4fff0] px-4 py-3 text-sm font-semibold text-[#24613a] shadow-sm">
-                                  Заявка подтверждена.
+                                  {t("requestsPage.incomingAcceptedNote")}
                                 </div>
                               )}
 
                               {request.status === "rejected" && (
                                 <div className="rounded-[20px] border border-[#f4d4d4] bg-[#fff4f4] px-4 py-3 text-sm text-[#9f2f2f] shadow-sm">
-                                  Заявка отклонена.
+                                  {t("requestsPage.incomingRejectedNote")}
                                 </div>
                               )}
 
                               {request.status === "cancelled_by_passenger" && (
                                 <div className="rounded-[20px] border border-[#d9e2ea] bg-[#f7fbfd] px-4 py-3 text-sm text-[#5d7485] shadow-sm">
-                                  Пассажир отменил заявку.
+                                  {t("requestsPage.incomingCancelledByPassenger")}
                                 </div>
                               )}
 
                               {request.status === "cancelled_by_driver" && (
                                 <div className="rounded-[20px] border border-[#fbe1bf] bg-[#fff6ea] px-4 py-3 text-sm text-[#9b5b12] shadow-sm">
-                                  Поездка была отменена водителем.
+                                  {t("requestsPage.incomingCancelledByDriver")}
                                 </div>
                               )}
                             </div>
@@ -866,8 +840,10 @@ export default function Requests() {
                     {visibleOutgoingRequests.map((request) => {
                       const rating = request.driver.rating ?? 0;
                       const tripTypeLabel =
-                        request.trip.tripType === "regular" ? "Регулярная" : "Разовая";
-                      const weekdaysLabel = formatWeekdays(request.trip.weekdays);
+                        request.trip.tripType === "regular"
+                          ? t("common.tripTypeRegular")
+                          : t("common.tripTypeOneTime");
+                      const weekdaysLabel = formatWeekdays(request.trip.weekdays, t);
                       const carInfo = [
                         request.driver.carBrand,
                         request.driver.carModel,
@@ -887,22 +863,22 @@ export default function Requests() {
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                   <div>
                                     <div className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d8042]">
-                                      Заявка подтверждена
+                                      {t("requestsPage.outgoingAcceptedBanner")}
                                     </div>
                                     <h3 className="mt-2 text-2xl font-extrabold text-[#1f5d34]">
-                                      Свяжись с водителем
+                                      {t("requestsPage.outgoingContactDriver")}
                                     </h3>
                                     <p className="mt-2 text-sm text-[#467257]">
-                                      Водитель одобрил поездку. Можно уточнить детали напрямую.
+                                      {t("requestsPage.outgoingContactLead")}
                                     </p>
                                   </div>
 
                                   <div className="rounded-[22px] bg-white/90 px-5 py-4 shadow-sm">
                                     <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#658675]">
-                                      Телефон водителя
+                                      {t("requestsPage.driverPhone")}
                                     </div>
                                     <div className="mt-2 text-2xl font-extrabold text-[#173651]">
-                                      {request.driver.phoneNumber || "Не указан"}
+                                      {request.driver.phoneNumber || t("common.notSpecified")}
                                     </div>
                                   </div>
                                 </div>
@@ -910,7 +886,7 @@ export default function Requests() {
                                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                                   <div className="rounded-[20px] bg-white/80 p-4 shadow-sm">
                                     <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6a7f70]">
-                                      Водитель
+                                      {t("requestsPage.driver")}
                                     </div>
                                     <div className="mt-2 text-lg font-bold text-[#173651]">
                                       {request.driver.name}
@@ -919,19 +895,19 @@ export default function Requests() {
 
                                   <div className="rounded-[20px] bg-white/80 p-4 shadow-sm">
                                     <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6a7f70]">
-                                      Автомобиль
+                                      {t("requestsPage.car")}
                                     </div>
                                     <div className="mt-2 text-lg font-bold text-[#173651]">
-                                      {carInfo || "Не указано"}
+                                      {carInfo || t("common.notSpecified")}
                                     </div>
                                   </div>
 
                                   <div className="rounded-[20px] bg-white/80 p-4 shadow-sm">
                                     <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6a7f70]">
-                                      Номер авто
+                                      {t("requestsPage.plate")}
                                     </div>
                                     <div className="mt-2 text-lg font-bold text-[#173651]">
-                                      {request.driver.carPlateNumber || "Не указан"}
+                                      {request.driver.carPlateNumber || t("common.notSpecified")}
                                     </div>
                                   </div>
                                 </div>
@@ -962,43 +938,48 @@ export default function Requests() {
                                         request.status
                                       )}`}
                                     >
-                                      {getStatusLabel(request.status)}
+                                      {statusLabel(request.status)}
                                     </span>
                                   </div>
 
                                   <div className="mt-2 text-sm text-[#4a6678]">
-                                    Водитель:{" "}
+                                    {t("requestsPage.driver")}{" "}
                                     <span className="font-semibold text-[#173651]">
                                       {request.driver.name}
                                     </span>
                                   </div>
                                   <div className="mt-1 text-sm text-[#f4b400]">
                                     {renderStars(rating)}
-                                    <span className="ml-2 text-[#4a6678]">{rating} из 5</span>
+                                    <span className="ml-2 text-[#4a6678]">
+                                      {t("common.starsOutOf5", { rating })}
+                                    </span>
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Отправление: {formatDepartureTime(request.trip.departureTime)}
+                                    {t("requestsPage.departure")}{" "}
+                                    {formatDateTimeShort(request.trip.departureTime, locale)}
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Тип поездки: {tripTypeLabel}
+                                    {t("requestsPage.tripType")} {tripTypeLabel}
                                     {weekdaysLabel ? ` • ${weekdaysLabel}` : ""}
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Мест в заявке: {request.seatsRequested}
+                                    {t("requestsPage.seatsInRequest")} {request.seatsRequested}
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Цена за место: {formatPrice(request.trip.price, request.trip.currency)}
+                                    {t("requestsPage.pricePerSeat")}{" "}
+                                    {formatPrice(request.trip.price, request.trip.currency)}
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Авто: {carInfo || "Не указано"}
+                                    {t("requestsPage.car")}: {carInfo || t("common.notSpecified")}
                                   </div>
                                   <div className="mt-1 text-sm text-[#4a6678]">
-                                    Номер: {request.driver.carPlateNumber || "Не указан"}
+                                    {t("requestsPage.plate")}:{" "}
+                                    {request.driver.carPlateNumber || t("common.notSpecified")}
                                   </div>
 
                                   {request.status === "accepted" && request.driver.phoneNumber && (
                                     <div className="mt-3 inline-flex rounded-full bg-[#e6f7dd] px-4 py-2 text-sm font-bold text-[#24613a]">
-                                      Телефон для связи: {request.driver.phoneNumber}
+                                      {t("requestsPage.phoneContact")} {request.driver.phoneNumber}
                                     </div>
                                   )}
                                 </div>
@@ -1009,7 +990,7 @@ export default function Requests() {
                                   href={`/trips/${request.trip.id}`}
                                   className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-5 text-sm font-semibold text-[#29485d] shadow-sm backdrop-blur-sm"
                                 >
-                                  Открыть поездку
+                                  {t("requestsPage.openTrip")}
                                 </a>
 
                                 {(request.status === "pending" || request.status === "accepted") && (
@@ -1020,34 +1001,34 @@ export default function Requests() {
                                     className="flex h-12 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-[#c62828] shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
                                   >
                                     {busyId === request.id
-                                      ? "Отмена..."
+                                      ? t("requestsPage.cancel")
                                       : request.status === "accepted"
-                                      ? "Отменить участие"
-                                      : "Отменить заявку"}
+                                      ? t("requestsPage.cancelParticipation")
+                                      : t("requestsPage.cancelRequest")}
                                   </button>
                                 )}
 
                                 {request.status === "rejected" && (
                                   <div className="rounded-[20px] border border-[#f4d4d4] bg-[#fff4f4] px-4 py-3 text-sm text-[#9f2f2f] shadow-sm">
-                                    Водитель отклонил заявку.
+                                    {t("requestsPage.driverRejected")}
                                   </div>
                                 )}
 
                                 {request.status === "cancelled_by_passenger" && (
                                   <div className="rounded-[20px] border border-[#d9e2ea] bg-[#f7fbfd] px-4 py-3 text-sm text-[#5d7485] shadow-sm">
-                                    Ты отменил эту заявку.
+                                    {t("requestsPage.youCancelledRequest")}
                                   </div>
                                 )}
 
                                 {request.status === "cancelled_by_driver" && (
                                   <div className="rounded-[20px] border border-[#fbe1bf] bg-[#fff6ea] px-4 py-3 text-sm text-[#9b5b12] shadow-sm">
-                                    Поездка была удалена водителем.
+                                    {t("requestsPage.tripRemovedByDriver")}
                                   </div>
                                 )}
 
                                 {request.status === "accepted" && (
                                   <div className="rounded-[20px] border border-[#ccecbf] bg-[#f4fff0] px-4 py-3 text-sm font-semibold text-[#24613a] shadow-sm">
-                                    Поездка подтверждена. Свяжись с водителем.
+                                    {t("requestsPage.tripConfirmedContact")}
                                   </div>
                                 )}
                               </div>
@@ -1066,12 +1047,12 @@ export default function Requests() {
           <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
             <a href="/" className="flex flex-col items-center gap-1">
               <span className="text-[22px] leading-none">⌂</span>
-              <span>Главная</span>
+              <span>{t("requestsPage.mobileHome")}</span>
             </a>
 
             <a href="/trips" className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">🧳</span>
-              <span>Поездки</span>
+              <span>{t("requestsPage.mobileTrips")}</span>
             </a>
 
             <a
@@ -1085,7 +1066,7 @@ export default function Requests() {
 
             <a href="/requests" className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">📩</span>
-              <span>Заявки</span>
+              <span>{t("requestsPage.mobileRequests")}</span>
             </a>
 
             <a
@@ -1093,7 +1074,7 @@ export default function Requests() {
               className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
             >
               <span className="text-[18px] leading-none">💬</span>
-              <span>Чаты</span>
+              <span>{t("requestsPage.mobileChats")}</span>
             </a>
           </div>
         </div>

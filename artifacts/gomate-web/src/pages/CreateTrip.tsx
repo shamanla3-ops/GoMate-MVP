@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 
@@ -166,15 +167,7 @@ export default function CreateTrip() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden items-center gap-3 md:flex">
               <a
                 href="/"
@@ -195,7 +188,7 @@ export default function CreateTrip() {
                 {t("createTrip.navRequests")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
             <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 
@@ -389,15 +390,7 @@ export default function Templates() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden items-center gap-3 md:flex">
               <a
                 href="/"
@@ -412,7 +405,7 @@ export default function Templates() {
                 {t("templatesPage.navTrips")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
             <section className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">

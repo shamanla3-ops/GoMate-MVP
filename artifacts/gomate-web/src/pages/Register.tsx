@@ -1,43 +1,10 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../lib/api";
-
-function getCurrentLocale(): "pl" | "en" | "de" | "ru" | "uk" {
-  try {
-    const stored = localStorage.getItem("gomate-locale");
-    if (
-      stored === "pl" ||
-      stored === "en" ||
-      stored === "de" ||
-      stored === "ru" ||
-      stored === "uk"
-    ) {
-      return stored;
-    }
-  } catch {
-    // ignore
-  }
-
-  const browserLocale =
-    typeof navigator !== "undefined"
-      ? navigator.language || navigator.languages?.[0] || "pl"
-      : "pl";
-
-  const short = browserLocale.split("-")[0]?.toLowerCase();
-
-  if (
-    short === "pl" ||
-    short === "en" ||
-    short === "de" ||
-    short === "ru" ||
-    short === "uk"
-  ) {
-    return short;
-  }
-
-  return "pl";
-}
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
 
 export default function Register() {
+  const { t, locale } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,28 +26,28 @@ export default function Register() {
           name: name.trim(),
           email: email.trim(),
           password,
-          language: getCurrentLocale(),
+          language: locale,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || data.message || "Registration failed");
+        setMessage(data.error || data.message || t("auth.register.error"));
         return;
       }
 
       const token = data.token;
 
       if (!token) {
-        setMessage("Token was not returned by server");
+        setMessage(t("auth.register.noToken"));
         return;
       }
 
       localStorage.setItem("token", token);
       window.location.href = "/";
     } catch {
-      setMessage("Cannot connect to server");
+      setMessage(t("auth.register.serverError"));
     } finally {
       setLoading(false);
     }
@@ -100,42 +67,33 @@ export default function Register() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-10">
-          <header className="flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <a
               href="/login"
               className="rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-[#28475d] shadow-sm backdrop-blur-sm"
             >
-              Уже есть аккаунт?
+              {t("auth.register.loginCta")}
             </a>
-          </header>
+          </AppPageHeader>
 
           <main className="flex flex-1 items-center justify-center py-8">
             <div className="grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <section className="hidden lg:block">
                 <div className="max-w-xl">
                   <h1 className="text-5xl font-extrabold leading-[0.95] text-[#173651]">
-                    Создай аккаунт
+                    {t("auth.register.heroTitle")}
                     <br />
-                    в GoMate
+                    {t("auth.register.heroTitleLine2")}
                   </h1>
 
                   <p className="mt-6 text-xl leading-relaxed text-[#35556c]">
-                    Начни пользоваться ежедневным карпулингом: публикуй свои
-                    поездки, сохраняй шаблоны и находи удобные маршруты по городу.
+                    {t("auth.register.lead")}
                   </p>
 
                   <div className="mt-8 space-y-3">
-                    <Benefit text="Дешевле, чем такси" />
-                    <Benefit text="Быстрее, чем автобус" />
-                    <Benefit text="Комфортнее, чем переполненный транспорт" />
+                    <Benefit text={t("auth.register.benefit1")} />
+                    <Benefit text={t("auth.register.benefit2")} />
+                    <Benefit text={t("auth.register.benefit3")} />
                   </div>
                 </div>
               </section>
@@ -144,17 +102,17 @@ export default function Register() {
                 <div className="rounded-[32px] border border-white/70 bg-white/78 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
                   <div className="text-center">
                     <h2 className="text-3xl font-extrabold text-[#173651]">
-                      Регистрация
+                      {t("auth.register.formTitle")}
                     </h2>
                     <p className="mt-2 text-sm text-[#4a6678]">
-                      Создай аккаунт и начни пользоваться GoMate
+                      {t("auth.register.subtitle")}
                     </p>
                   </div>
 
                   <form onSubmit={handleRegister} className="mt-6 space-y-4">
                     <div>
                       <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        Имя
+                        {t("auth.register.name")}
                       </label>
                       <input
                         type="text"
@@ -180,12 +138,12 @@ export default function Register() {
 
                     <div>
                       <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        Пароль
+                        {t("auth.login.password")}
                       </label>
                       <input
                         type="password"
                         className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
-                        placeholder="Минимум 6 символов"
+                        placeholder={t("auth.register.passwordHint")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
@@ -196,7 +154,9 @@ export default function Register() {
                       disabled={loading}
                       className="flex h-14 w-full items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                     >
-                      {loading ? "Создаём..." : "Создать аккаунт"}
+                      {loading
+                        ? t("auth.register.submitting")
+                        : t("auth.register.submit")}
                     </button>
                   </form>
 
@@ -207,12 +167,12 @@ export default function Register() {
                   )}
 
                   <div className="mt-6 text-center text-sm text-[#4a6678]">
-                    Уже есть аккаунт?{" "}
+                    {t("auth.register.hasAccount")}{" "}
                     <a
                       href="/login"
                       className="font-bold text-[#138fe3] hover:underline"
                     >
-                      Войти
+                      {t("auth.register.signInLink")}
                     </a>
                   </div>
                 </div>

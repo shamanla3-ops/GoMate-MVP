@@ -5,6 +5,8 @@ import { getCurrentUser } from "../lib/auth";
 import { useTranslation, type Locale } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { TripRoutePreviewMap } from "../components/TripRoutePreviewMap";
+import { AppPageHeader } from "../components/AppPageHeader";
+import { formatDateTimeShort } from "../lib/intlLocale";
 
 type CurrentUserLike = {
   id?: string;
@@ -67,54 +69,6 @@ type OutgoingRequest = {
 
 type ReviewTarget = { userId: string; name: string };
 
-const WEEKDAY_LABELS_BY_LOCALE: Record<Locale, Record<string, string>> = {
-  pl: {
-    mon: "Pon",
-    tue: "Wt",
-    wed: "Śr",
-    thu: "Czw",
-    fri: "Pt",
-    sat: "Sob",
-    sun: "Nd",
-  },
-  en: {
-    mon: "Mon",
-    tue: "Tue",
-    wed: "Wed",
-    thu: "Thu",
-    fri: "Fri",
-    sat: "Sat",
-    sun: "Sun",
-  },
-  de: {
-    mon: "Mo",
-    tue: "Di",
-    wed: "Mi",
-    thu: "Do",
-    fri: "Fr",
-    sat: "Sa",
-    sun: "So",
-  },
-  ru: {
-    mon: "Пн",
-    tue: "Вт",
-    wed: "Ср",
-    thu: "Чт",
-    fri: "Пт",
-    sat: "Сб",
-    sun: "Вс",
-  },
-  uk: {
-    mon: "Пн",
-    tue: "Вт",
-    wed: "Ср",
-    thu: "Чт",
-    fri: "Пт",
-    sat: "Сб",
-    sun: "Нд",
-  },
-};
-
 function formatPrice(price: number, currency: "EUR" | "USD" | "PLN", locale: Locale) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -124,7 +78,7 @@ function formatPrice(price: number, currency: "EUR" | "USD" | "PLN", locale: Loc
 
 function formatWeekdays(
   weekdays: string[] | null | undefined,
-  locale: Locale
+  tr: (key: string) => string
 ): string {
   if (!weekdays || weekdays.length === 0) return "";
 
@@ -133,24 +87,7 @@ function formatWeekdays(
     (a, b) => order.indexOf(a) - order.indexOf(b)
   );
 
-  const labels = WEEKDAY_LABELS_BY_LOCALE[locale] ?? WEEKDAY_LABELS_BY_LOCALE.pl;
-  return sorted.map((day) => labels[day] ?? day).join(", ");
-}
-
-function formatDepartureTime(value: string, locale: Locale) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  return sorted.map((day) => tr(`weekday.${day}`)).join(", ");
 }
 
 function renderStars(rating: number) {
@@ -585,7 +522,7 @@ export default function TripDetails() {
   }
 
   const rating = trip.driver.rating ?? 0;
-  const weekdaysLabel = formatWeekdays(trip.weekdays, locale);
+  const weekdaysLabel = formatWeekdays(trip.weekdays, t);
   const carInfo = [trip.driver.carBrand, trip.driver.carModel, trip.driver.carColor]
     .filter(Boolean)
     .join(", ");
@@ -604,15 +541,7 @@ export default function TripDetails() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden md:flex items-center gap-3">
               <a
                 href="/trips"
@@ -640,7 +569,7 @@ export default function TripDetails() {
                 {t("nav.profile")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6 lg:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -806,7 +735,7 @@ export default function TripDetails() {
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <DetailCard
                     label={t("tripDetails.departure")}
-                    value={formatDepartureTime(trip.departureTime, locale)}
+                    value={formatDateTimeShort(trip.departureTime, locale)}
                   />
                   <DetailCard
                     label={t("tripDetails.pricePerSeat")}
@@ -818,7 +747,7 @@ export default function TripDetails() {
                   />
                   <DetailCard
                     label={t("tripDetails.co2Saving")}
-                    value={`${trip.estimatedCo2SavingKg} kg`}
+                    value={`${trip.estimatedCo2SavingKg} ${t("common.kg")}`}
                   />
                 </div>
 

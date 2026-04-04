@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
+import { formatDateTimeShort } from "../lib/intlLocale";
 
 type IncomingRequest = {
   id: string;
@@ -48,22 +51,8 @@ function renderStars(rating: number) {
   ).join(" ");
 }
 
-function getStatusLabel(status: IncomingRequest["status"]) {
-  switch (status) {
-    case "pending":
-      return "Ожидает решения";
-    case "accepted":
-      return "Подтверждена";
-    case "rejected":
-      return "Отклонена";
-    case "cancelled":
-      return "Отменена";
-    default:
-      return status;
-  }
-}
-
 export default function DriverRequests() {
+  const { t, locale } = useTranslation();
   const [requests, setRequests] = useState<IncomingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -90,14 +79,14 @@ export default function DriverRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Не удалось загрузить заявки");
+        setMessage(data.error || t("driverRequestsPage.loadError"));
         setRequests([]);
         return;
       }
 
       setRequests(data.requests ?? []);
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("driverRequestsPage.serverError"));
       setRequests([]);
     } finally {
       setLoading(false);
@@ -132,13 +121,13 @@ export default function DriverRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Не удалось обновить заявку");
+        alert(data.error || t("driverRequestsPage.updateError"));
         return;
       }
 
       await loadRequests();
     } catch {
-      alert("Не удалось подключиться к серверу");
+      alert(t("driverRequestsPage.serverError"));
     } finally {
       setBusyId(null);
     }
@@ -158,43 +147,33 @@ export default function DriverRequests() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden md:flex items-center gap-3">
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("driverRequestsPage.navTrips")}
               </a>
               <a
                 href="/create-trip"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Создать поездку
+                {t("driverRequestsPage.navCreate")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
             <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
-              Входящие заявки
+              {t("driverRequestsPage.title")}
             </h1>
-            <p className="mt-2 text-[#4a6678]">
-              Здесь водитель подтверждает или отклоняет пассажиров.
-            </p>
+            <p className="mt-2 text-[#4a6678]">{t("driverRequestsPage.subtitle")}</p>
 
             <div className="mt-6">
               {loading && (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  Загрузка заявок...
+                  {t("driverRequestsPage.loading")}
                 </div>
               )}
 
@@ -206,7 +185,7 @@ export default function DriverRequests() {
 
               {!loading && !message && requests.length === 0 && (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  Пока нет заявок
+                  {t("driverRequestsPage.empty")}
                 </div>
               )}
 
@@ -239,31 +218,46 @@ export default function DriverRequests() {
                             </h2>
                             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#466175]">
                               <span className="text-[#f4b400]">{renderStars(rating)}</span>
-                              <span>{rating}/5</span>
-                              <span>Возраст: {request.passenger.age || "не указан"}</span>
-                              <span>Телефон: {request.passenger.phoneNumber || "не указан"}</span>
+                              <span>{t("common.starsOutOf5", { rating })}</span>
+                              <span>
+                                {t("driverRequestsPage.age")}{" "}
+                                {request.passenger.age ?? t("common.notSpecified")}
+                              </span>
+                              <span>
+                                {t("driverRequestsPage.phone")}{" "}
+                                {request.passenger.phoneNumber ?? t("common.notSpecified")}
+                              </span>
                             </div>
 
                             <p className="mt-3 text-sm text-[#35556c]">
-                              Хочет забронировать <strong>{request.seatsRequested}</strong> мест
+                              {t("driverRequestsPage.wantsSeats", {
+                                count: request.seatsRequested,
+                              })}
                             </p>
 
                             <p className="mt-1 text-sm text-[#35556c]">
-                              Маршрут: <strong>{request.trip.origin} → {request.trip.destination}</strong>
+                              {t("driverRequestsPage.route")}{" "}
+                              <strong>
+                                {request.trip.origin} → {request.trip.destination}
+                              </strong>
                             </p>
 
                             <p className="mt-1 text-sm text-[#35556c]">
-                              Отправление:{" "}
-                              <strong>{new Date(request.trip.departureTime).toLocaleString()}</strong>
+                              {t("driverRequestsPage.departure")}{" "}
+                              <strong>
+                                {formatDateTimeShort(request.trip.departureTime, locale)}
+                              </strong>
                             </p>
 
                             <p className="mt-1 text-sm text-[#35556c]">
-                              Сейчас свободно: <strong>{request.trip.availableSeats}</strong> из{" "}
+                              {t("driverRequestsPage.seatsNow")}{" "}
+                              <strong>{request.trip.availableSeats}</strong> {t("common.of")}{" "}
                               <strong>{request.trip.seatsTotal}</strong>
                             </p>
 
                             <p className="mt-1 text-sm text-[#35556c]">
-                              Статус заявки: <strong>{getStatusLabel(request.status)}</strong>
+                              {t("driverRequestsPage.requestStatus")}{" "}
+                              <strong>{t(`requests.status.${request.status}`)}</strong>
                             </p>
                           </div>
                         </div>
@@ -275,7 +269,9 @@ export default function DriverRequests() {
                               disabled={busyId === request.id}
                               className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-sm disabled:opacity-70"
                             >
-                              {busyId === request.id ? "..." : "Подтвердить"}
+                              {busyId === request.id
+                                ? t("driverRequestsPage.busy")
+                                : t("driverRequestsPage.confirm")}
                             </button>
 
                             <button
@@ -283,7 +279,9 @@ export default function DriverRequests() {
                               disabled={busyId === request.id}
                               className="flex h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-bold text-[#c62828] shadow-sm disabled:opacity-70"
                             >
-                              {busyId === request.id ? "..." : "Отклонить"}
+                              {busyId === request.id
+                                ? t("driverRequestsPage.busy")
+                                : t("driverRequestsPage.reject")}
                             </button>
                           </div>
                         )}

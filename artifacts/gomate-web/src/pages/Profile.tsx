@@ -1,6 +1,8 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { type CurrentUser } from "../lib/auth";
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
 
 type ProfileForm = {
   name: string;
@@ -40,41 +42,34 @@ type ReviewItem = {
   createdAt: string;
 };
 
-function Header({
+function ProfileHeader({
   userName,
   onLogout,
 }: {
   userName: string;
   onLogout: () => void;
 }) {
+  const { t } = useTranslation();
   return (
-    <header className="mb-6 flex items-center justify-between">
-      <a href="/" className="flex items-center">
-        <img
-          src="/gomate-logo.png"
-          alt="GoMate"
-          className="h-12 w-auto sm:h-14 lg:h-16"
-        />
-      </a>
-
+    <AppPageHeader>
       <nav className="hidden items-center gap-3 md:flex">
         <a
           href="/"
           className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
         >
-          Главная
+          {t("profilePage.navHome")}
         </a>
         <a
           href="/trips"
           className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
         >
-          Поездки
+          {t("profilePage.navTrips")}
         </a>
         <a
           href="/templates"
           className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
         >
-          Маршруты
+          {t("profilePage.navTemplates")}
         </a>
         <a
           href="/profile"
@@ -83,17 +78,19 @@ function Header({
           {userName}
         </a>
         <button
+          type="button"
           onClick={onLogout}
           className="rounded-full border border-white/90 bg-white/88 px-4 py-2 text-sm font-semibold text-[#29485d] shadow-sm backdrop-blur-sm"
         >
-          Выйти из аккаунта
+          {t("profilePage.logout")}
         </button>
       </nav>
-    </header>
+    </AppPageHeader>
   );
 }
 
 export default function Profile() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [form, setForm] = useState<ProfileForm>({
     name: "",
@@ -133,7 +130,7 @@ export default function Profile() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Не удалось загрузить профиль");
+        setError(data.error || t("profilePage.loadError"));
         return;
       }
 
@@ -167,7 +164,7 @@ export default function Profile() {
         setReviewsLoading(false);
       }
     } catch {
-      setError("Не удалось подключиться к серверу");
+      setError(t("profilePage.serverError"));
     } finally {
       setLoading(false);
     }
@@ -187,12 +184,12 @@ export default function Profile() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Можно загрузить только изображение");
+      setError(t("profilePage.avatarImageOnly"));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Файл слишком большой. Максимум 5 МБ");
+      setError(t("profilePage.avatarTooBig"));
       return;
     }
 
@@ -244,14 +241,14 @@ export default function Profile() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Не удалось сохранить профиль");
+        setError(data.error || t("profilePage.saveError"));
         return;
       }
 
       setUser(data.user);
-      setMessage(data.message || "Профиль сохранён");
+      setMessage(data.message || t("profilePage.saved"));
     } catch {
-      setError("Не удалось подключиться к серверу");
+      setError(t("profilePage.serverError"));
     } finally {
       setSaving(false);
     }
@@ -270,7 +267,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#eef4f8] text-[#193549]">
-        Загрузка профиля...
+        {t("profilePage.loading")}
       </div>
     );
   }
@@ -291,7 +288,7 @@ export default function Profile() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:px-10">
-          <Header userName={displayName} onLogout={handleLogout} />
+          <ProfileHeader userName={displayName} onLogout={handleLogout} />
 
           <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
             <aside className="rounded-[30px] border border-white/60 bg-white/50 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm">
@@ -316,44 +313,45 @@ export default function Profile() {
 
                 <div className="mt-5 w-full rounded-[24px] bg-white/85 p-4 shadow-sm">
                   <div className="text-sm font-semibold text-[#5d7485]">
-                    Рейтинг водителя
+                    {t("profilePage.ratingTitle")}
                   </div>
                   <div className="mt-2 text-3xl text-[#f4b400]">
                     {renderStars(rating)}
                   </div>
                   <div className="mt-2 text-sm text-[#35556c]">
-                    {rating} из 5 звёзд
+                    {t("profilePage.ratingStars", { rating })}
                   </div>
                   <div className="mt-1 text-xs text-[#7a94a5]">
-                    Отзывов: {reviewCount}
+                    {t("profilePage.reviewsCount", { count: reviewCount })}
                   </div>
                 </div>
 
                 <div className="mt-4 w-full rounded-[24px] bg-[linear-gradient(180deg,#dff7d4_0%,#ebf8ff_100%)] p-4 shadow-sm">
                   <div className="text-sm font-semibold text-[#4e6b5f]">
-                    Сэкономлено CO₂
+                    {t("profilePage.co2Title")}
                   </div>
                   <div className="mt-2 text-4xl font-extrabold text-[#173651]">
                     {co2SavedKg}
                     <span className="ml-2 text-lg font-semibold text-[#5d7485]">
-                      кг
+                      {t("common.kg")}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-[#486476]">
-                    Этот показатель позже можно будет автоматически увеличивать
-                    после завершённых совместных поездок.
+                    {t("profilePage.co2Hint")}
                   </p>
                 </div>
 
                 <div className="mt-5 w-full rounded-[24px] bg-white/85 p-4 text-left shadow-sm">
                   <div className="text-sm font-semibold text-[#5d7485]">
-                    Отзывы о вас
+                    {t("profilePage.reviewsAboutYou")}
                   </div>
                   {reviewsLoading ? (
-                    <p className="mt-3 text-sm text-[#5d7485]">Загрузка…</p>
+                    <p className="mt-3 text-sm text-[#5d7485]">
+                      {t("profilePage.reviewsLoading")}
+                    </p>
                   ) : reviews.length === 0 ? (
                     <p className="mt-3 text-sm text-[#5d7485]">
-                      Пока нет отзывов после поездок.
+                      {t("profilePage.reviewsEmpty")}
                     </p>
                   ) : (
                     <ul className="mt-3 max-h-64 space-y-3 overflow-y-auto text-left">
@@ -385,19 +383,16 @@ export default function Profile() {
             <section className="rounded-[30px] border border-white/60 bg-white/50 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
               <div>
                 <h2 className="text-3xl font-extrabold text-[#173651]">
-                  Профиль пользователя
+                  {t("profilePage.formTitle")}
                 </h2>
-                <p className="mt-2 text-[#4a6678]">
-                  Заполни профиль, чтобы пассажиры и водители больше доверяли
-                  друг другу.
-                </p>
+                <p className="mt-2 text-[#4a6678]">{t("profilePage.formSubtitle")}</p>
               </div>
 
               <form onSubmit={handleSave} className="mt-8 space-y-6">
                 <div className="grid gap-6 lg:grid-cols-2">
                   <div className="lg:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                      Аватар
+                      {t("profilePage.avatar")}
                     </label>
                     <div className="rounded-[24px] border border-dashed border-white/90 bg-white/80 p-4 shadow-sm">
                       <input
@@ -407,20 +402,20 @@ export default function Profile() {
                         className="block w-full text-sm text-[#35556c] file:mr-4 file:rounded-full file:border-0 file:bg-[#163c59] file:px-4 file:py-2 file:font-semibold file:text-white"
                       />
                       <p className="mt-3 text-sm text-[#5d7485]">
-                        Загрузи JPG или PNG. Максимальный размер — 5 МБ.
+                        {t("profilePage.avatarHint")}
                       </p>
                     </div>
                   </div>
 
                   <Field
-                    label="Имя"
+                    label={t("profilePage.name")}
                     value={form.name}
                     onChange={(value) => handleChange("name", value)}
                     placeholder="Yurii"
                   />
 
                   <Field
-                    label="Возраст"
+                    label={t("profilePage.age")}
                     type="number"
                     value={form.age}
                     onChange={(value) => handleChange("age", value)}
@@ -428,35 +423,35 @@ export default function Profile() {
                   />
 
                   <Field
-                    label="Номер телефона"
+                    label={t("profilePage.phone")}
                     value={form.phoneNumber}
                     onChange={(value) => handleChange("phoneNumber", value)}
                     placeholder="+48 000 000 000"
                   />
 
                   <Field
-                    label="Марка автомобиля"
+                    label={t("profilePage.carBrand")}
                     value={form.carBrand}
                     onChange={(value) => handleChange("carBrand", value)}
                     placeholder="Skoda"
                   />
 
                   <Field
-                    label="Модель автомобиля"
+                    label={t("profilePage.carModel")}
                     value={form.carModel}
                     onChange={(value) => handleChange("carModel", value)}
                     placeholder="Superb"
                   />
 
                   <Field
-                    label="Цвет автомобиля"
+                    label={t("profilePage.carColor")}
                     value={form.carColor}
                     onChange={(value) => handleChange("carColor", value)}
-                    placeholder="Серый"
+                    placeholder="Gray"
                   />
 
                   <Field
-                    label="Номер автомобиля"
+                    label={t("profilePage.plate")}
                     value={form.carPlateNumber}
                     onChange={(value) => handleChange("carPlateNumber", value)}
                     placeholder="ZS 12345"
@@ -465,19 +460,23 @@ export default function Profile() {
 
                 <div className="rounded-[24px] bg-white/80 p-5 shadow-sm">
                   <h3 className="text-xl font-extrabold text-[#173651]">
-                    Как профиль выглядит для других
+                    {t("profilePage.previewTitle")}
                   </h3>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
                     <PreviewCard
-                      label="Телефон"
-                      value={form.phoneNumber || "Не указан"}
+                      label={t("profilePage.previewPhone")}
+                      value={form.phoneNumber || t("common.notSpecified")}
                     />
                     <PreviewCard
-                      label="Возраст"
-                      value={form.age ? `${form.age} лет` : "Не указан"}
+                      label={t("profilePage.previewAge")}
+                      value={
+                        form.age
+                          ? t("profilePage.previewAgeYears", { age: form.age })
+                          : t("common.notSpecified")
+                      }
                     />
                     <PreviewCard
-                      label="Автомобиль"
+                      label={t("profilePage.previewCar")}
                       value={
                         [
                           form.carBrand,
@@ -486,10 +485,13 @@ export default function Profile() {
                           form.carPlateNumber,
                         ]
                           .filter(Boolean)
-                          .join(", ") || "Не указан"
+                          .join(", ") || t("common.notSpecified")
                       }
                     />
-                    <PreviewCard label="Рейтинг" value={`${rating}/5`} />
+                    <PreviewCard
+                      label={t("profilePage.previewRating")}
+                      value={`${rating}/5`}
+                    />
                   </div>
                 </div>
 
@@ -511,7 +513,7 @@ export default function Profile() {
                     disabled={saving}
                     className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                   >
-                    {saving ? "Сохраняем..." : "Сохранить профиль"}
+                    {saving ? t("profilePage.saving") : t("profilePage.save")}
                   </button>
 
                   <button
@@ -519,7 +521,7 @@ export default function Profile() {
                     onClick={handleLogout}
                     className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
                   >
-                    Выйти из аккаунта
+                    {t("profilePage.logout")}
                   </button>
                 </div>
               </form>
@@ -534,12 +536,12 @@ export default function Profile() {
               className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
             >
               <span className="text-[22px] leading-none">⌂</span>
-              <span>Главная</span>
+              <span>{t("profilePage.mobileHome")}</span>
             </a>
 
             <a href="/trips" className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">🧳</span>
-              <span>Поездки</span>
+              <span>{t("profilePage.mobileTrips")}</span>
             </a>
 
             <a href="/create-trip" className="-mt-6 flex flex-col items-center gap-1">
@@ -550,12 +552,12 @@ export default function Profile() {
 
             <a href="/templates" className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">🛣️</span>
-              <span>Маршруты</span>
+              <span>{t("profilePage.mobileTemplates")}</span>
             </a>
 
-            <button onClick={handleLogout} className="flex flex-col items-center gap-1">
+            <button type="button" onClick={handleLogout} className="flex flex-col items-center gap-1">
               <span className="text-[18px] leading-none">👤</span>
-              <span>Выход</span>
+              <span>{t("profilePage.mobileLogout")}</span>
             </button>
           </div>
         </div>

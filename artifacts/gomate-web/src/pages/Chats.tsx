@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { useTranslation } from "../i18n";
+import { AppPageHeader } from "../components/AppPageHeader";
+import { formatDateTimeChatList } from "../lib/intlLocale";
 
 type CurrentUserLike = {
   id?: string;
@@ -59,22 +62,8 @@ function getInitials(name: string) {
     .join("");
 }
 
-function formatDateTime(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
 export default function Chats() {
+  const { t, locale } = useTranslation();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
   const [chats, setChats] = useState<ChatItem[]>([]);
@@ -105,7 +94,7 @@ export default function Chats() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || "Не удалось загрузить чаты");
+        setMessage(data.error || t("chatsPage.loadError"));
         setChats([]);
         setTotalUnread(0);
         return;
@@ -115,7 +104,7 @@ export default function Chats() {
       setTotalUnread(typeof data.totalUnread === "number" ? data.totalUnread : 0);
       setMessage("");
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("chatsPage.serverError"));
       setChats([]);
       setTotalUnread(0);
     } finally {
@@ -165,57 +154,48 @@ export default function Chats() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10">
-          <div className="mb-6 flex items-center justify-between">
-            <a href="/" className="flex items-center">
-              <img
-                src="/gomate-logo.png"
-                alt="GoMate"
-                className="h-12 w-auto sm:h-14"
-              />
-            </a>
-
+          <AppPageHeader>
             <div className="hidden md:flex items-center gap-3">
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("chatsPage.navTrips")}
               </a>
               <a
                 href="/requests"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Заявки
+                {t("chatsPage.navRequests")}
               </a>
               <a
                 href="/chats"
                 className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
-                Чаты{totalUnread > 0 ? ` (${totalUnread})` : ""}
+                {t("chatsPage.navChats")}
+                {totalUnread > 0 ? ` (${totalUnread})` : ""}
               </a>
               <a
                 href="/profile"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Профиль
+                {t("chatsPage.navProfile")}
               </a>
             </div>
-          </div>
+          </AppPageHeader>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
-                  Чаты
+                  {t("chatsPage.title")}
                 </h1>
-                <p className="mt-2 text-[#4a6678]">
-                  Все диалоги по поездкам. У водителя каждый пассажир идёт отдельным чатом.
-                </p>
+                <p className="mt-2 text-[#4a6678]">{t("chatsPage.subtitle")}</p>
               </div>
 
               <div className="rounded-[22px] border border-white/80 bg-white/75 px-5 py-4 shadow-sm">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[#6f8798]">
-                  Непрочитанные
+                  {t("chatsPage.unread")}
                 </div>
                 <div className="mt-1 text-2xl font-extrabold text-[#173651]">
                   {totalUnread}
@@ -226,7 +206,7 @@ export default function Chats() {
             <div className="mt-6">
               {loading && (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  Загрузка чатов...
+                  {t("chatsPage.loading")}
                 </div>
               )}
 
@@ -238,7 +218,7 @@ export default function Chats() {
 
               {!loading && !message && sortedChats.length === 0 && (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  У тебя пока нет чатов.
+                  {t("chatsPage.empty")}
                 </div>
               )}
 
@@ -249,10 +229,10 @@ export default function Chats() {
                     const otherPerson = isDriver ? chat.passenger : chat.driver;
                     const title = chat.trip
                       ? `${chat.trip.origin} → ${chat.trip.destination}`
-                      : "Поездка";
+                      : t("chatsPage.trip");
                     const subtitle = isDriver
-                      ? `Пассажир: ${otherPerson?.name || "Пользователь"}`
-                      : `Водитель: ${otherPerson?.name || "Пользователь"}`;
+                      ? `${t("chatsPage.passenger")} ${otherPerson?.name || t("chatsPage.user")}`
+                      : `${t("chatsPage.driver")} ${otherPerson?.name || t("chatsPage.user")}`;
 
                     return (
                       <a
@@ -282,7 +262,7 @@ export default function Chats() {
 
                                 {chat.unreadCount > 0 && (
                                   <span className="rounded-full bg-[#163c59] px-3 py-1 text-xs font-bold text-white shadow-sm">
-                                    Новые: {chat.unreadCount}
+                                    {t("chatsPage.newMessages")} {chat.unreadCount}
                                   </span>
                                 )}
                               </div>
@@ -293,21 +273,24 @@ export default function Chats() {
 
                               <div className="mt-2 text-sm text-[#5d7485]">
                                 {chat.lastMessage
-                                  ? `Последнее сообщение: ${chat.lastMessage.text}`
-                                  : "Сообщений пока нет"}
+                                  ? `${t("chatsPage.lastMessage")} ${chat.lastMessage.text}`
+                                  : t("chatsPage.noMessagesYet")}
                               </div>
 
                               <div className="mt-1 text-xs text-[#7a94a5]">
                                 {chat.lastMessage?.createdAt
-                                  ? formatDateTime(chat.lastMessage.createdAt)
-                                  : formatDateTime(chat.createdAt)}
+                                  ? formatDateTimeChatList(
+                                      chat.lastMessage.createdAt,
+                                      locale
+                                    )
+                                  : formatDateTimeChatList(chat.createdAt, locale)}
                               </div>
                             </div>
                           </div>
 
                           <div className="flex shrink-0 items-center">
                             <span className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#29485d] shadow-sm">
-                              Открыть чат
+                              {t("chatsPage.openChat")}
                             </span>
                           </div>
                         </div>
