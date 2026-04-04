@@ -57,6 +57,13 @@
       "when": 1773800000000,
       "tag": "0008_trip_requests_and_seats",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773900000000,
+      "tag": "0009_add_trip_coordinates",
+      "breakpoints": true
     }
   ]
 }

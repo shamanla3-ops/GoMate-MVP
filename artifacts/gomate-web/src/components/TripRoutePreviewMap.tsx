@@ -49,9 +49,22 @@ export function TripRoutePreviewMap({
 
     const resize = () => map.invalidateSize();
     window.addEventListener("resize", resize);
+
+    const el = ref.current;
+    let ro: ResizeObserver | undefined;
+    if (el && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        requestAnimationFrame(() => map.invalidateSize());
+      });
+      ro.observe(el);
+    }
+
+    setTimeout(resize, 0);
     setTimeout(resize, 200);
+    setTimeout(resize, 600);
 
     return () => {
+      ro?.disconnect();
       window.removeEventListener("resize", resize);
       map.remove();
       mapRef.current = null;

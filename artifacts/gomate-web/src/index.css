@@ -4,6 +4,14 @@
 
 @import "leaflet/dist/leaflet.css";
 
+/* Tailwind Preflight sets img { max-width: 100% }, which breaks Leaflet tile layout */
+.leaflet-container img,
+.leaflet-container .leaflet-tile {
+  max-width: none !important;
+}
+
 .leaflet-container {
   font-family: inherit;
+  height: 100%;
+  width: 100%;
 }

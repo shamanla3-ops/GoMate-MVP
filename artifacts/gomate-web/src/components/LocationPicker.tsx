@@ -107,9 +107,24 @@ export function LocationPicker({
       map.invalidateSize();
     };
     window.addEventListener("resize", onResize);
+
+    const container = containerRef.current;
+    let ro: ResizeObserver | undefined;
+    if (container && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        requestAnimationFrame(() => {
+          map.invalidateSize();
+        });
+      });
+      ro.observe(container);
+    }
+
+    setTimeout(onResize, 0);
     setTimeout(onResize, 200);
+    setTimeout(onResize, 600);
 
     return () => {
+      ro?.disconnect();
       window.removeEventListener("resize", onResize);
       markerRef.current?.remove();
       markerRef.current = null;

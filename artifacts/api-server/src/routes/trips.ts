@@ -262,7 +262,20 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     res.status(201).json({ trip: mapTripWithDriver(trip, driver) });
   } catch (err) {
     console.error("Create trip error:", err);
-    res.status(500).json({ error: "Failed to create trip" });
+    const pg =
+      typeof err === "object" && err !== null
+        ? (err as { code?: string; message?: string })
+        : {};
+    const missingColumn =
+      pg.code === "42703" ||
+      (typeof pg.message === "string" &&
+        (pg.message.includes("does not exist") ||
+          pg.message.includes("column")));
+    res.status(500).json({
+      error: missingColumn
+        ? "Database schema is out of date (missing columns). Run migrations / SQL for trips (coordinates, weekdays)."
+        : "Failed to create trip",
+    });
   }
 });
 
