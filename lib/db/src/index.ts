@@ -6,38 +6,6 @@ import * as schema from "./schema/index.js";
 export * from "./schema/index.js";
 export { and, asc, count, desc, eq, or, sql };
 
-/**
- * Neon / hosted Postgres URLs often use sslmode=require|prefer, which newer `pg`
- * maps with a deprecation warning. Explicit verify-full matches current behavior
- * and silences the warning (see pg-connection-string / pg SSL docs).
- */
-function normalizeDatabaseUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    const host = u.hostname;
-    const isHosted =
-      host.includes("neon.tech") ||
-      host.includes("amazonaws.com") ||
-      host.includes("supabase.co") ||
-      host.endsWith(".pooler.supabase.com");
-    if (!isHosted) {
-      return url;
-    }
-    const mode = u.searchParams.get("sslmode");
-    if (
-      mode === null ||
-      mode === "require" ||
-      mode === "prefer" ||
-      mode === "verify-ca"
-    ) {
-      u.searchParams.set("sslmode", "verify-full");
-    }
-    return u.toString();
-  } catch {
-    return url;
-  }
-}
-
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 function createDb() {
@@ -48,7 +16,7 @@ function createDb() {
   }
 
   const pool = new Pool({
-    connectionString: normalizeDatabaseUrl(connectionString),
+    connectionString,
   });
 
   return drizzle(pool, { schema });
