@@ -1,7 +1,20 @@
 /** Photon (Komoot) — free OSM-based geocoder, browser-friendly (no API key). */
 
-const PHOTON_SEARCH = "https://photon.komoot.io/api/";
+const PHOTON_SEARCH = "https://photon.komoot.io/api";
 const PHOTON_REVERSE = "https://photon.komoot.io/reverse";
+
+/**
+ * Komoot's public Photon rejects unknown `lang` values with HTTP 400 (e.g. pl, ru, uk).
+ * Only pass `lang` for codes their instance accepts; otherwise omit and rely on
+ * Accept-Language (see Photon API docs).
+ */
+const PHOTON_LANG_SUPPORTED = new Set(["en", "de", "fr"]);
+
+function photonLangParam(locale: string): string | undefined {
+  const code = locale.split("-")[0]?.toLowerCase().trim();
+  if (!code) return undefined;
+  return PHOTON_LANG_SUPPORTED.has(code) ? code : undefined;
+}
 
 export type PhotonFeature = {
   properties: Record<string, unknown>;
@@ -38,9 +51,13 @@ export async function photonSearch(
     return [];
   }
 
-  const url = `${PHOTON_SEARCH}?q=${encodeURIComponent(q)}&limit=8&lang=${encodeURIComponent(
-    lang
-  )}`;
+  const params = new URLSearchParams({ q, limit: "8" });
+  const photonLang = photonLangParam(lang);
+  if (photonLang) {
+    params.set("lang", photonLang);
+  }
+
+  const url = `${PHOTON_SEARCH}?${params.toString()}`;
 
   const res = await fetch(url);
   if (!res.ok) {
@@ -68,9 +85,16 @@ export async function photonReverse(
   lng: number,
   lang: string
 ): Promise<string> {
-  const url = `${PHOTON_REVERSE}?lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(
-    String(lng)
-  )}&lang=${encodeURIComponent(lang)}`;
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lon: String(lng),
+  });
+  const photonLang = photonLangParam(lang);
+  if (photonLang) {
+    params.set("lang", photonLang);
+  }
+
+  const url = `${PHOTON_REVERSE}?${params.toString()}`;
 
   const res = await fetch(url);
   if (!res.ok) {
