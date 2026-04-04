@@ -117,9 +117,11 @@ export default {
 
   "location.fieldOrigin": "Von",
   "location.fieldDestination": "Nach",
-  "location.inputHint": "Adresse oder Ort tippen und ein Ergebnis aus der Liste wählen.",
+  "location.inputHint":
+    "Adresse suchen und Vorschlag wählen oder auf die Karte tippen, um Start/Ziel genau zu setzen.",
   "location.searchPlaceholder": "Ort suchen…",
-  "location.mapHint": "Oder auf die Karte klicken, um einen Punkt zu setzen.",
+  "location.mapHint":
+    "Karte zoomen und tippen, um die Stecknadel zu setzen. Suche und Karte ergänzen sich — Koordinaten sind Pflicht.",
   "location.selected": "Ausgewählt",
   "location.searching": "Suche…",
   "location.pickFromList": "Vorschlag wählen oder Karte klicken — Koordinaten sind erforderlich.",
@@ -204,5 +206,21 @@ export default {
 
   "tripDetails.mapTitle": "Route auf der Karte",
   "tripDetails.mapOrigin": "Start",
-  "tripDetails.mapDestination": "Ziel"
+  "tripDetails.mapDestination": "Ziel",
+  "tripDetails.routeLoading": "Route wird geladen…",
+  "tripDetails.routeFallback":
+    "Gerade Linie — Routingdienst nicht erreichbar.",
+
+  "tripDetails.review.sectionTitle": "Bewertungen nach der Fahrt",
+  "tripDetails.review.loading": "Laden…",
+  "tripDetails.review.none":
+    "Nach der Abfahrtszeit können bestätigte Teilnehmende einander bewerten.",
+  "tripDetails.review.rateLabel": "Bewertung (1–5)",
+  "tripDetails.review.commentLabel": "Kommentar (optional)",
+  "tripDetails.review.placeholder": "Wie war die Fahrt?",
+  "tripDetails.review.submit": "Bewertung senden",
+  "tripDetails.review.submitting": "Senden…",
+  "tripDetails.review.success": "Danke! Bewertung gespeichert.",
+  "tripDetails.review.error": "Bewertung konnte nicht gesendet werden",
+  "tripDetails.review.hint": "Nach Abfahrt für bestätigte Mitfahrer:innen und Fahrer:innen."
 } as const;

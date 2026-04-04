@@ -120,9 +120,11 @@ export default {
 
   "location.fieldOrigin": "Skąd",
   "location.fieldDestination": "Dokąd",
-  "location.inputHint": "Zacznij pisać adres lub nazwę miejsca i wybierz wynik z listy.",
+  "location.inputHint":
+    "Wyszukaj adres i wybierz podpowiedź albo dotknij mapy, aby ustawić dokładny punkt startu / mety.",
   "location.searchPlaceholder": "Szukaj miejsca…",
-  "location.mapHint": "Albo kliknij mapę, aby ustawić punkt (adres spróbujemy odczytać automatycznie).",
+  "location.mapHint":
+    "Przybliż mapę i kliknij, aby postawić pinezkę. Wyszukiwarka i mapa działają razem — współrzędne są wymagane.",
   "location.selected": "Wybrano",
   "location.searching": "Szukanie…",
   "location.pickFromList": "Wybierz sugestię z listy lub kliknij mapę — współrzędne są wymagane.",
@@ -207,5 +209,21 @@ export default {
 
   "tripDetails.mapTitle": "Trasa na mapie",
   "tripDetails.mapOrigin": "Start",
-  "tripDetails.mapDestination": "Cel"
+  "tripDetails.mapDestination": "Cel",
+  "tripDetails.routeLoading": "Ładowanie trasy…",
+  "tripDetails.routeFallback":
+    "Pokazujemy prostą linię — usługa tras jest niedostępna.",
+
+  "tripDetails.review.sectionTitle": "Opinie po przejeździe",
+  "tripDetails.review.loading": "Ładowanie…",
+  "tripDetails.review.none":
+    "Po odjeździe zaakceptowani uczestnicy mogą ocenić siebie nawzajem.",
+  "tripDetails.review.rateLabel": "Ocena (1–5)",
+  "tripDetails.review.commentLabel": "Komentarz (opcjonalnie)",
+  "tripDetails.review.placeholder": "Jak minęła podróż?",
+  "tripDetails.review.submit": "Wyślij opinię",
+  "tripDetails.review.submitting": "Wysyłanie…",
+  "tripDetails.review.success": "Dziękujemy! Opinia została zapisana.",
+  "tripDetails.review.error": "Nie udało się wysłać opinii",
+  "tripDetails.review.hint": "Dostępne po odjeździe dla zaakceptowanych osób."
 } as const;

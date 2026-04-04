@@ -117,9 +117,11 @@ export default {
 
   "location.fieldOrigin": "Звідки",
   "location.fieldDestination": "Куди",
-  "location.inputHint": "Введіть адресу або назву й оберіть варіант зі списку.",
+  "location.inputHint":
+    "Знайдіть адресу й оберіть підказку або натисніть карту, щоб задати точку виїзду / прибуття.",
   "location.searchPlaceholder": "Пошук місця…",
-  "location.mapHint": "Або клацніть карту, щоб поставити точку.",
+  "location.mapHint":
+    "Наблизьте карту й клацніть, щоб поставити позначку. Пошук і карта працюють разом — потрібні координати.",
   "location.selected": "Обрано",
   "location.searching": "Пошук…",
   "location.pickFromList": "Оберіть підказку або клацніть карту — потрібні координати.",
@@ -204,5 +206,21 @@ export default {
 
   "tripDetails.mapTitle": "Маршрут на карті",
   "tripDetails.mapOrigin": "Старт",
-  "tripDetails.mapDestination": "Фініш"
+  "tripDetails.mapDestination": "Фініш",
+  "tripDetails.routeLoading": "Завантаження маршруту…",
+  "tripDetails.routeFallback":
+    "Показано пряму лінію — сервіс маршрутів недоступний.",
+
+  "tripDetails.review.sectionTitle": "Відгуки після поїздки",
+  "tripDetails.review.loading": "Завантаження…",
+  "tripDetails.review.none":
+    "Після часу відправлення прийняті учасники можуть оцінити одне одного.",
+  "tripDetails.review.rateLabel": "Оцінка (1–5)",
+  "tripDetails.review.commentLabel": "Коментар (необов’язково)",
+  "tripDetails.review.placeholder": "Як минула поїздка?",
+  "tripDetails.review.submit": "Надіслати відгук",
+  "tripDetails.review.submitting": "Надсилання…",
+  "tripDetails.review.success": "Дякуємо! Відгук збережено.",
+  "tripDetails.review.error": "Не вдалося надіслати відгук",
+  "tripDetails.review.hint": "Доступно після відправлення для прийнятих пасажирів і водія."
 } as const;

@@ -30,6 +30,16 @@ function renderStars(rating: number) {
   ).join(" ");
 }
 
+type ReviewItem = {
+  id: string;
+  tripId: string;
+  tripLabel: string;
+  authorName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+};
+
 function Header({
   userName,
   onLogout,
@@ -99,6 +109,8 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   async function loadProfile() {
     const token = localStorage.getItem("token");
@@ -137,6 +149,23 @@ export default function Profile() {
         age: profileUser.age ? String(profileUser.age) : "",
         avatarUrl: profileUser.avatarUrl ?? "",
       });
+
+      setReviewsLoading(true);
+      try {
+        const rv = await fetch(
+          `${API_BASE_URL}/api/reviews?subjectId=${encodeURIComponent(profileUser.id)}`
+        );
+        const rvData = (await rv.json()) as { reviews?: ReviewItem[] };
+        if (rv.ok && Array.isArray(rvData.reviews)) {
+          setReviews(rvData.reviews);
+        } else {
+          setReviews([]);
+        }
+      } catch {
+        setReviews([]);
+      } finally {
+        setReviewsLoading(false);
+      }
     } catch {
       setError("Не удалось подключиться к серверу");
     } finally {
@@ -236,6 +265,7 @@ export default function Profile() {
   const displayAvatar = form.avatarUrl || user?.avatarUrl || "";
   const rating = user?.rating ?? 0;
   const co2SavedKg = user?.co2SavedKg ?? 0;
+  const reviewCount = user?.reviewCount ?? reviews.length;
 
   if (loading) {
     return (
@@ -294,6 +324,9 @@ export default function Profile() {
                   <div className="mt-2 text-sm text-[#35556c]">
                     {rating} из 5 звёзд
                   </div>
+                  <div className="mt-1 text-xs text-[#7a94a5]">
+                    Отзывов: {reviewCount}
+                  </div>
                 </div>
 
                 <div className="mt-4 w-full rounded-[24px] bg-[linear-gradient(180deg,#dff7d4_0%,#ebf8ff_100%)] p-4 shadow-sm">
@@ -310,6 +343,41 @@ export default function Profile() {
                     Этот показатель позже можно будет автоматически увеличивать
                     после завершённых совместных поездок.
                   </p>
+                </div>
+
+                <div className="mt-5 w-full rounded-[24px] bg-white/85 p-4 text-left shadow-sm">
+                  <div className="text-sm font-semibold text-[#5d7485]">
+                    Отзывы о вас
+                  </div>
+                  {reviewsLoading ? (
+                    <p className="mt-3 text-sm text-[#5d7485]">Загрузка…</p>
+                  ) : reviews.length === 0 ? (
+                    <p className="mt-3 text-sm text-[#5d7485]">
+                      Пока нет отзывов после поездок.
+                    </p>
+                  ) : (
+                    <ul className="mt-3 max-h-64 space-y-3 overflow-y-auto text-left">
+                      {reviews.map((r) => (
+                        <li
+                          key={r.id}
+                          className="rounded-2xl border border-[#e8f0f4] bg-[#f8fcff] p-3"
+                        >
+                          <div className="text-xs font-semibold text-[#5d7485]">
+                            {r.tripLabel}
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-[#173651]">
+                            {r.authorName}
+                          </div>
+                          <div className="text-lg text-[#f4b400]">
+                            {renderStars(r.rating)}
+                          </div>
+                          {r.comment ? (
+                            <p className="mt-1 text-sm text-[#35556c]">{r.comment}</p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </aside>

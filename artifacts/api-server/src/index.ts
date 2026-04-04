@@ -9,6 +9,8 @@ import tripRequestsRoutes from "./routes/tripRequests.js";
 import tripChatsRoutes from "./routes/tripChats.js";
 import pushRoutes from "./routes/push.js";
 import notificationSummaryRoutes from "./routes/notificationSummary.js";
+import profileRoutes from "./routes/profile.js";
+import reviewsRoutes from "./routes/reviews.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -33,6 +35,8 @@ app.use("/api/trip-requests", tripRequestsRoutes);
 app.use("/api/trip-chats", tripChatsRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/notifications", notificationSummaryRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/reviews", reviewsRoutes);
 
 app.get("/", (_req, res) => {
   res.send("GoMate API is running");

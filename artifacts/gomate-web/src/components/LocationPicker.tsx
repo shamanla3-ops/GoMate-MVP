@@ -269,7 +269,7 @@ export function LocationPicker({
 
       <div
         ref={containerRef}
-        className="z-10 h-48 w-full overflow-hidden rounded-2xl border border-white/80 shadow-sm sm:h-56"
+        className="gomate-leaflet-map z-10 min-h-[280px] h-[min(45vh,380px)] w-full overflow-hidden rounded-2xl border border-white/80 shadow-sm sm:min-h-[300px]"
         aria-hidden
       />
 

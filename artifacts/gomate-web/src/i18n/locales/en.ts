@@ -116,9 +116,11 @@ export default {
 
   "location.fieldOrigin": "From",
   "location.fieldDestination": "To",
-  "location.inputHint": "Type an address or place name and pick a result from the list.",
+  "location.inputHint":
+    "Search for an address and pick a suggestion, or tap the map to set the exact pickup / drop-off point.",
   "location.searchPlaceholder": "Search for a place…",
-  "location.mapHint": "Or click the map to set a point (we will try to resolve the address).",
+  "location.mapHint":
+    "Zoom and tap the map to place the pin. Search and map work together — coordinates are required to publish.",
   "location.selected": "Selected",
   "location.searching": "Searching…",
   "location.pickFromList": "Pick a suggestion or click the map — coordinates are required.",
@@ -203,5 +205,21 @@ export default {
 
   "tripDetails.mapTitle": "Route on the map",
   "tripDetails.mapOrigin": "Start",
-  "tripDetails.mapDestination": "End"
+  "tripDetails.mapDestination": "End",
+  "tripDetails.routeLoading": "Loading driving route…",
+  "tripDetails.routeFallback":
+    "Showing a straight line — routing service unavailable.",
+
+  "tripDetails.review.sectionTitle": "Reviews after the trip",
+  "tripDetails.review.loading": "Loading…",
+  "tripDetails.review.none":
+    "After departure, accepted participants can leave a rating and a short comment.",
+  "tripDetails.review.rateLabel": "Rating (1–5)",
+  "tripDetails.review.commentLabel": "Comment (optional)",
+  "tripDetails.review.placeholder": "How was the ride?",
+  "tripDetails.review.submit": "Submit review",
+  "tripDetails.review.submitting": "Sending…",
+  "tripDetails.review.success": "Thank you! Your review was saved.",
+  "tripDetails.review.error": "Could not submit the review",
+  "tripDetails.review.hint": "Available after departure for accepted passengers and drivers."
 } as const;

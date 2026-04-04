@@ -24,7 +24,7 @@ function normalizeLanguage(value?: string): UserLanguage {
   return "pl";
 }
 
-function mapUser(user: typeof users.$inferSelect) {
+function mapUser(user: typeof users.$inferSelect, reviewCount?: number) {
   return {
     id: user.id,
     email: user.email,
@@ -41,6 +41,7 @@ function mapUser(user: typeof users.$inferSelect) {
     rating: user.rating,
     co2SavedKg: user.co2SavedKg,
     createdAt: user.createdAt,
+    reviewCount: reviewCount ?? 0,
   };
 }
 
@@ -86,7 +87,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     res.status(201).json({
       token,
-      user: mapUser(user),
+      user: mapUser(user, 0),
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -144,7 +145,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     res.json({
       token,
-      user: mapUser(finalUser),
+      user: mapUser(finalUser, 0),
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -165,7 +166,7 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    res.json({ user: mapUser(user) });
+    res.json({ user: mapUser(user, 0) });
   } catch (err) {
     console.error("Me error:", err);
     res.status(500).json({ error: "Failed to load profile" });

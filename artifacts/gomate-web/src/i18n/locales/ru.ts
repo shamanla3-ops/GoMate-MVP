@@ -116,9 +116,11 @@ export default {
 
   "location.fieldOrigin": "Откуда",
   "location.fieldDestination": "Куда",
-  "location.inputHint": "Введите адрес или название и выберите вариант из списка.",
+  "location.inputHint":
+    "Найдите адрес и выберите подсказку или нажмите на карту, чтобы задать точку отправления / прибытия.",
   "location.searchPlaceholder": "Поиск места…",
-  "location.mapHint": "Или кликните по карте, чтобы поставить точку.",
+  "location.mapHint":
+    "Масштабируйте карту и кликните, чтобы поставить метку. Поиск и карта работают вместе — нужны координаты.",
   "location.selected": "Выбрано",
   "location.searching": "Поиск…",
   "location.pickFromList": "Выберите подсказку или кликните карту — нужны координаты.",
@@ -203,5 +205,21 @@ export default {
 
   "tripDetails.mapTitle": "Маршрут на карте",
   "tripDetails.mapOrigin": "Старт",
-  "tripDetails.mapDestination": "Финиш"
+  "tripDetails.mapDestination": "Финиш",
+  "tripDetails.routeLoading": "Загрузка маршрута…",
+  "tripDetails.routeFallback":
+    "Показана прямая линия — сервис маршрутов недоступен.",
+
+  "tripDetails.review.sectionTitle": "Отзывы после поездки",
+  "tripDetails.review.loading": "Загрузка…",
+  "tripDetails.review.none":
+    "После времени отправления принятые участники могут оценить друг друга.",
+  "tripDetails.review.rateLabel": "Оценка (1–5)",
+  "tripDetails.review.commentLabel": "Комментарий (необязательно)",
+  "tripDetails.review.placeholder": "Как проехали?",
+  "tripDetails.review.submit": "Отправить отзыв",
+  "tripDetails.review.submitting": "Отправка…",
+  "tripDetails.review.success": "Спасибо! Отзыв сохранён.",
+  "tripDetails.review.error": "Не удалось отправить отзыв",
+  "tripDetails.review.hint": "Доступно после отправления для принятых пассажиров и водителя."
 } as const;

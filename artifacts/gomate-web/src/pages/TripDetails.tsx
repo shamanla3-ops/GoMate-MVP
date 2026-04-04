@@ -65,6 +65,8 @@ type OutgoingRequest = {
   createdAt: string;
 };
 
+type ReviewTarget = { userId: string; name: string };
+
 const WEEKDAY_LABELS_BY_LOCALE: Record<Locale, Record<string, string>> = {
   pl: {
     mon: "Pon",
@@ -197,6 +199,12 @@ export default function TripDetails() {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [seatsRequested, setSeatsRequested] = useState(1);
   const [myRequest, setMyRequest] = useState<OutgoingRequest | null>(null);
+  const [reviewTargets, setReviewTargets] = useState<ReviewTarget[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewRating, setReviewRating] = useState<Record<string, number>>({});
+  const [reviewComment, setReviewComment] = useState<Record<string, string>>({});
+  const [reviewSubmitting, setReviewSubmitting] = useState<string | null>(null);
+  const [reviewMessage, setReviewMessage] = useState("");
 
   async function loadTrip() {
     try {
@@ -287,6 +295,85 @@ export default function TripDetails() {
       setMyRequest(requestForThisTrip);
     } catch {
       setMyRequest(null);
+    }
+  }
+
+  async function loadReviewTargets() {
+    const token = localStorage.getItem("token");
+    if (!token || !id) {
+      setReviewTargets([]);
+      return;
+    }
+
+    setReviewLoading(true);
+    setReviewMessage("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reviews/eligible/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = (await res.json()) as { targets?: ReviewTarget[] };
+      if (!res.ok) {
+        setReviewTargets([]);
+        return;
+      }
+      const targets = Array.isArray(data.targets) ? data.targets : [];
+      setReviewTargets(targets);
+      setReviewRating((prev) => {
+        const next = { ...prev };
+        for (const t of targets) {
+          if (next[t.userId] === undefined) {
+            next[t.userId] = 5;
+          }
+        }
+        return next;
+      });
+    } catch {
+      setReviewTargets([]);
+    } finally {
+      setReviewLoading(false);
+    }
+  }
+
+  async function submitReview(targetUserId: string) {
+    const token = localStorage.getItem("token");
+    if (!token || !id) {
+      return;
+    }
+
+    const rating = reviewRating[targetUserId] ?? 5;
+    const comment = reviewComment[targetUserId] ?? "";
+
+    setReviewSubmitting(targetUserId);
+    setReviewMessage("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          tripId: id,
+          revieweeId: targetUserId,
+          rating,
+          comment: comment.trim() || undefined,
+        }),
+      });
+      const data = (await res.json()) as { error?: string };
+
+      if (!res.ok) {
+        setReviewMessage(data.error || t("tripDetails.review.error"));
+        return;
+      }
+
+      setReviewMessage(t("tripDetails.review.success"));
+      await Promise.all([loadReviewTargets(), loadTrip()]);
+    } catch {
+      setReviewMessage(t("tripDetails.review.error"));
+    } finally {
+      setReviewSubmitting(null);
     }
   }
 
@@ -449,6 +536,15 @@ export default function TripDetails() {
   }, [id, locale]);
 
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? "";
+
+  useEffect(() => {
+    if (!id || !trip) {
+      return;
+    }
+    void loadReviewTargets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when trip or participation changes
+  }, [id, trip?.departureTime, trip?.status, myRequest?.status, currentUserId]);
+
   const isOwnTrip = useMemo(() => {
     if (!trip || !currentUserId) return false;
     return trip.driverId === currentUserId;
@@ -819,6 +915,95 @@ export default function TripDetails() {
                   </div>
                 </div>
               )}
+
+            {currentUserId && (
+              <div className="mt-8 rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
+                <h2 className="text-xl font-extrabold text-[#173651]">
+                  {t("tripDetails.review.sectionTitle")}
+                </h2>
+                <p className="mt-2 text-sm text-[#4a6678]">
+                  {t("tripDetails.review.hint")}
+                </p>
+
+                {reviewLoading ? (
+                  <p className="mt-4 text-sm text-[#35556c]">
+                    {t("tripDetails.review.loading")}
+                  </p>
+                ) : reviewTargets.length === 0 ? (
+                  <p className="mt-4 text-sm text-[#35556c]">
+                    {t("tripDetails.review.none")}
+                  </p>
+                ) : (
+                  <div className="mt-4 space-y-5">
+                    {reviewTargets.map((target) => (
+                      <div
+                        key={target.userId}
+                        className="rounded-[22px] border border-[#e3eef3] bg-[#f7fbfd] p-4"
+                      >
+                        <div className="text-sm font-semibold text-[#173651]">
+                          {target.name}
+                        </div>
+                        <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-[#6f8798]">
+                          {t("tripDetails.review.rateLabel")}
+                        </label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() =>
+                                setReviewRating((prev) => ({
+                                  ...prev,
+                                  [target.userId]: n,
+                                }))
+                              }
+                              className={`h-10 min-w-[2.5rem] rounded-full px-3 text-sm font-bold shadow-sm ${
+                                (reviewRating[target.userId] ?? 5) === n
+                                  ? "bg-[#163c59] text-white"
+                                  : "bg-white text-[#29485d] ring-1 ring-[#d7e4eb]"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-[#6f8798]">
+                          {t("tripDetails.review.commentLabel")}
+                        </label>
+                        <textarea
+                          value={reviewComment[target.userId] ?? ""}
+                          onChange={(e) =>
+                            setReviewComment((prev) => ({
+                              ...prev,
+                              [target.userId]: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder={t("tripDetails.review.placeholder")}
+                          className="mt-2 w-full rounded-2xl border border-[#d7e4eb] bg-white px-4 py-3 text-sm text-[#193549] outline-none placeholder:text-[#7a94a5]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void submitReview(target.userId)}
+                          disabled={reviewSubmitting === target.userId}
+                          className="mt-4 flex h-11 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-sm disabled:opacity-60"
+                        >
+                          {reviewSubmitting === target.userId
+                            ? t("tripDetails.review.submitting")
+                            : t("tripDetails.review.submit")}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {reviewMessage ? (
+                  <div className="mt-4 rounded-[18px] border border-white/80 bg-white/75 px-4 py-3 text-sm text-[#28475d] shadow-sm">
+                    {reviewMessage}
+                  </div>
+                ) : null}
+              </div>
+            )}
 
             {message && (
               <div className="mt-6 rounded-[20px] border border-white/80 bg-white/75 px-4 py-3 text-sm text-[#28475d] shadow-sm">

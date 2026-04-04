@@ -16,6 +16,8 @@ export type CurrentUser = {
   rating?: number | null;
   co2SavedKg?: number | null;
   createdAt: string;
+  /** How many reviews this user has received */
+  reviewCount?: number | null;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {

@@ -64,6 +64,13 @@
       "when": 1773900000000,
       "tag": "0009_add_trip_coordinates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0010_user_reviews",
+      "breakpoints": true
     }
   ]
 }
