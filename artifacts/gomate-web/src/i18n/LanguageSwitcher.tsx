@@ -1,12 +1,5 @@
 import { useTranslation, LOCALES, type Locale } from "./context";
-
-const FLAGS: Record<Locale, string> = {
-  pl: "🇵🇱",
-  en: "🇬🇧",
-  de: "🇩🇪",
-  ru: "🇷🇺",
-  uk: "🇺🇦",
-};
+import { FlagIcon } from "./FlagIcon";
 
 const LABELS: Record<Locale, string> = {
   pl: "PL",
@@ -27,14 +20,14 @@ export function LanguageSwitcher() {
           type="button"
           onClick={() => setLocale(code)}
           title={code.toUpperCase()}
-          className={`rounded-full px-2 py-1 text-xs font-semibold transition sm:px-2.5 ${
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold transition sm:gap-1.5 sm:px-2.5 ${
             locale === code
-              ? "bg-[#163c59] text-white shadow-sm"
+              ? "bg-[#163c59] text-white shadow-sm [&_svg]:ring-white/30"
               : "text-[#28475d] hover:bg-white/90"
           }`}
         >
-          <span className="mr-0.5 sm:mr-1" aria-hidden>
-            {FLAGS[code]}
+          <span className="flex shrink-0 items-center justify-center" aria-hidden>
+            <FlagIcon locale={code} />
           </span>
           {LABELS[code]}
         </button>

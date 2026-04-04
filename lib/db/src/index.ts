@@ -34,6 +34,10 @@ type DbInstance = ReturnType<typeof createDb>;
 
 export const db = new Proxy({} as DbInstance, {
   get(_target, prop) {
-    return Reflect.get(getDb(), prop);
+    const value = Reflect.get(getDb(), prop) as unknown;
+    if (typeof value === "function") {
+      return (value as (...args: unknown[]) => unknown).bind(getDb());
+    }
+    return value;
   },
 });

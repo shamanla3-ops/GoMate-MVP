@@ -64,31 +64,29 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       return res.status(400).json({ error: "Invalid subscription" });
     }
 
-    await db
-      .insert(pushSubscriptions)
-      .values({
-        userId,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
-      })
-      .onConflictDoUpdate({
-        target: pushSubscriptions.endpoint,
-        set: {
-          userId,
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-        },
-      });
+    const endpoint = subscription.endpoint;
+    const p256dh = subscription.keys.p256dh;
+    const auth = subscription.keys.auth;
 
-    console.log("[push] Subscription upserted", {
+    // Do not use ON CONFLICT: Neon may not have UNIQUE(endpoint). Replace row for this endpoint.
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+
+    await db.insert(pushSubscriptions).values({
       userId,
-      endpointPrefix: subscription.endpoint.slice(0, 48),
+      endpoint,
+      p256dh,
+      auth,
+    });
+
+    console.log("[push] Subscription saved", {
+      userId,
+      endpointPrefix: endpoint.slice(0, 48),
     });
 
     return res.json({ success: true });
   } catch (error) {
-    console.error("[push] Subscribe error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[push] Subscribe error:", message, error);
     return res.status(500).json({ error: "Failed to subscribe" });
   }
 });
