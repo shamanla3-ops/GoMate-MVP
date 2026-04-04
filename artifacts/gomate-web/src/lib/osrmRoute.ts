@@ -9,10 +9,11 @@ export async function fetchDrivingRouteLatLngs(
   originLat: number,
   originLng: number,
   destLat: number,
-  destLng: number
+  destLng: number,
+  signal?: AbortSignal
 ): Promise<[number, number][]> {
   const url = `${OSRM_ROUTE}/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal });
   if (!res.ok) {
     throw new Error(`OSRM HTTP ${res.status}`);
   }

@@ -530,7 +530,7 @@ export default function TripDetails() {
     const interval = setInterval(() => {
       loadChatUnreadCount();
       loadMyRequest();
-    }, 5000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [id, locale]);

@@ -60,6 +60,7 @@ export function LocationPicker({
   const [searching, setSearching] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [mapEpoch, setMapEpoch] = useState(0);
 
   useEffect(() => {
     setQuery(value.label);
@@ -111,10 +112,10 @@ export function LocationPicker({
     const container = containerRef.current;
     let ro: ResizeObserver | undefined;
     if (container && typeof ResizeObserver !== "undefined") {
+      let raf = 0;
       ro = new ResizeObserver(() => {
-        requestAnimationFrame(() => {
-          map.invalidateSize();
-        });
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => map.invalidateSize());
       });
       ro.observe(container);
     }
@@ -122,6 +123,8 @@ export function LocationPicker({
     setTimeout(onResize, 0);
     setTimeout(onResize, 200);
     setTimeout(onResize, 600);
+
+    setMapEpoch((n) => n + 1);
 
     return () => {
       ro?.disconnect();
@@ -136,7 +139,7 @@ export function LocationPicker({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || mapEpoch === 0) return;
 
     if (isCompleteMapPoint(value)) {
       const ll: L.LatLngExpression = [value.lat as number, value.lng as number];
@@ -152,7 +155,7 @@ export function LocationPicker({
       markerRef.current?.remove();
       markerRef.current = null;
     }
-  }, [value.lat, value.lng, value.label]);
+  }, [mapEpoch, value.lat, value.lng, value.label]);
 
   useEffect(() => {
     if (skipNextSearchRef.current) {

@@ -36,12 +36,20 @@ export function TripRoutePreviewMap({
   const ref = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
-  const [routeStatus, setRouteStatus] = useState<"idle" | "loading" | "ok" | "fallback">(
-    "idle"
-  );
+  const tRef = useRef(t);
+  tRef.current = t;
+
+  /** Bumps when Leaflet map is created (fixes React Strict Mode: draw effect must re-run). */
+  const [mapEpoch, setMapEpoch] = useState(0);
+
+  const [routeStatus, setRouteStatus] = useState<
+    "idle" | "loading" | "ok" | "fallback"
+  >("idle");
 
   useEffect(() => {
-    if (!ref.current || mapRef.current) return;
+    if (!ref.current || mapRef.current) {
+      return;
+    }
 
     const map = L.map(ref.current, {
       zoomControl: true,
@@ -57,24 +65,25 @@ export function TripRoutePreviewMap({
 
     const overlay = L.layerGroup().addTo(map);
     overlayRef.current = overlay;
-
     mapRef.current = map;
 
     const resize = () => map.invalidateSize();
     window.addEventListener("resize", resize);
 
-    const el = ref.current;
     let ro: ResizeObserver | undefined;
-    if (el && typeof ResizeObserver !== "undefined") {
+    if (ref.current && typeof ResizeObserver !== "undefined") {
+      let raf = 0;
       ro = new ResizeObserver(() => {
-        requestAnimationFrame(() => map.invalidateSize());
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => map.invalidateSize());
       });
-      ro.observe(el);
+      ro.observe(ref.current);
     }
 
-    setTimeout(resize, 0);
-    setTimeout(resize, 200);
-    setTimeout(resize, 600);
+    setTimeout(() => map.invalidateSize(), 0);
+    setTimeout(() => map.invalidateSize(), 250);
+
+    setMapEpoch((n) => n + 1);
 
     return () => {
       ro?.disconnect();
@@ -86,9 +95,12 @@ export function TripRoutePreviewMap({
   }, []);
 
   useEffect(() => {
+    if (!mapRef.current || !overlayRef.current || mapEpoch === 0) {
+      return;
+    }
+
     const map = mapRef.current;
     const overlay = overlayRef.current;
-    if (!map || !overlay) return;
 
     overlay.clearLayers();
 
@@ -97,35 +109,44 @@ export function TripRoutePreviewMap({
 
     const m1 = L.marker(o, { icon: makeDivIcon("#1296e8") })
       .addTo(overlay)
-      .bindPopup(`${t("tripDetails.mapOrigin")}: ${originLabel}`);
+      .bindPopup(
+        `${tRef.current("tripDetails.mapOrigin")}: ${originLabel}`
+      );
     const m2 = L.marker(d, { icon: makeDivIcon("#8ada33") })
       .addTo(overlay)
-      .bindPopup(`${t("tripDetails.mapDestination")}: ${destinationLabel}`);
+      .bindPopup(
+        `${tRef.current("tripDetails.mapDestination")}: ${destinationLabel}`
+      );
 
     map.fitBounds(L.latLngBounds([o, d]).pad(0.15), { animate: false });
+    requestAnimationFrame(() => map.invalidateSize());
 
     let cancelled = false;
     setRouteStatus("loading");
 
-    (async () => {
+    const ac = new AbortController();
+    const timeoutId = window.setTimeout(() => ac.abort(), 12000);
+
+    void (async () => {
       let path: [number, number][];
       try {
         path = await fetchDrivingRouteLatLngs(
           originLat,
           originLng,
           destinationLat,
-          destinationLng
+          destinationLng,
+          ac.signal
         );
         if (cancelled) return;
         setRouteStatus("ok");
       } catch {
+        if (cancelled) return;
         path = straightLineFallback(
           originLat,
           originLng,
           destinationLat,
           destinationLng
         );
-        if (cancelled) return;
         setRouteStatus("fallback");
       }
 
@@ -140,22 +161,24 @@ export function TripRoutePreviewMap({
 
       const fg = L.featureGroup([m1, m2, line]);
       map.fitBounds(fg.getBounds().pad(0.12), { animate: false });
-      requestAnimationFrame(() => {
-        map.invalidateSize();
-      });
-    })();
+      requestAnimationFrame(() => map.invalidateSize());
+    })().finally(() => {
+      clearTimeout(timeoutId);
+    });
 
     return () => {
       cancelled = true;
+      ac.abort();
+      clearTimeout(timeoutId);
     };
   }, [
+    mapEpoch,
     originLat,
     originLng,
     destinationLat,
     destinationLng,
     originLabel,
     destinationLabel,
-    t,
   ]);
 
   return (
