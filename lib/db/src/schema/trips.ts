@@ -6,6 +6,7 @@ import {
   integer,
   pgEnum,
   text,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 
@@ -35,6 +36,11 @@ export const trips = pgTable("trips", {
 
   origin: varchar("origin", { length: 255 }).notNull(),
   destination: varchar("destination", { length: 255 }).notNull(),
+
+  originLat: doublePrecision("origin_lat"),
+  originLng: doublePrecision("origin_lng"),
+  destinationLat: doublePrecision("destination_lat"),
+  destinationLng: doublePrecision("destination_lng"),
 
   departureTime: timestamp("departure_time", { withTimezone: true }).notNull(),
 

@@ -1,21 +1,47 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
+import { useTranslation } from "../i18n";
+import { LocationPicker } from "../components/LocationPicker";
+import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 
-const WEEKDAYS = [
-  { value: "mon", label: "Пн" },
-  { value: "tue", label: "Вт" },
-  { value: "wed", label: "Ср" },
-  { value: "thu", label: "Чт" },
-  { value: "fri", label: "Пт" },
-  { value: "sat", label: "Сб" },
-  { value: "sun", label: "Вс" },
+const WEEKDAY_VALUES = [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun",
 ] as const;
+
+function weekdayLabel(value: (typeof WEEKDAY_VALUES)[number]) {
+  const keys: Record<(typeof WEEKDAY_VALUES)[number], string> = {
+    mon: "weekday.mon",
+    tue: "weekday.tue",
+    wed: "weekday.wed",
+    thu: "weekday.thu",
+    fri: "weekday.fri",
+    sat: "weekday.sat",
+    sun: "weekday.sun",
+  };
+  return keys[value];
+}
 
 export default function CreateTrip() {
   const navigate = useNavigate();
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
+  const { t, locale } = useTranslation();
+
+  const [origin, setOrigin] = useState<MapPointValue>({
+    label: "",
+    lat: null,
+    lng: null,
+  });
+  const [destination, setDestination] = useState<MapPointValue>({
+    label: "",
+    lat: null,
+    lng: null,
+  });
   const [departureTime, setDepartureTime] = useState("");
   const [seatsTotal, setSeatsTotal] = useState(1);
   const [price, setPrice] = useState("");
@@ -39,39 +65,34 @@ export default function CreateTrip() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      setMessage("Нужно войти в аккаунт");
+      setMessage(t("createTrip.validation.login"));
       return;
     }
 
     const parsedPrice = parseFloat(price);
 
     if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      setMessage("Цена должна быть корректным числом");
+      setMessage(t("createTrip.validation.price"));
       return;
     }
 
-    if (!origin.trim()) {
-      setMessage("Укажи точку отправления");
-      return;
-    }
-
-    if (!destination.trim()) {
-      setMessage("Укажи точку назначения");
+    if (!isCompleteMapPoint(origin) || !isCompleteMapPoint(destination)) {
+      setMessage(t("createTrip.validation.coordinates"));
       return;
     }
 
     if (!departureTime) {
-      setMessage("Укажи время отправления");
+      setMessage(t("createTrip.validation.departure"));
       return;
     }
 
     if (seatsTotal < 1) {
-      setMessage("Количество мест должно быть минимум 1");
+      setMessage(t("createTrip.validation.seats"));
       return;
     }
 
     if (tripType === "regular" && weekdays.length === 0) {
-      setMessage("Выбери хотя бы один день недели");
+      setMessage(t("createTrip.validation.weekdays"));
       return;
     }
 
@@ -87,8 +108,12 @@ export default function CreateTrip() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          origin: origin.trim(),
-          destination: destination.trim(),
+          origin: origin.label.trim(),
+          destination: destination.label.trim(),
+          originLat: origin.lat,
+          originLng: origin.lng,
+          destinationLat: destination.lat,
+          destinationLng: destination.lng,
           departureTime,
           seatsTotal,
           price: priceCents,
@@ -101,15 +126,15 @@ export default function CreateTrip() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Не удалось создать поездку");
+        setMessage(data.error || t("createTrip.fail"));
         return;
       }
 
       setIsSuccess(true);
-      setMessage("Поездка успешно создана");
+      setMessage(t("createTrip.success"));
 
-      setOrigin("");
-      setDestination("");
+      setOrigin({ label: "", lat: null, lng: null });
+      setDestination({ label: "", lat: null, lng: null });
       setDepartureTime("");
       setSeatsTotal(1);
       setPrice("");
@@ -121,7 +146,7 @@ export default function CreateTrip() {
         navigate("/trips");
       }, 1200);
     } catch {
-      setMessage("Не удалось подключиться к серверу");
+      setMessage(t("createTrip.connectError"));
     } finally {
       setLoading(false);
     }
@@ -150,54 +175,60 @@ export default function CreateTrip() {
               />
             </a>
 
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden items-center gap-3 md:flex">
               <a
                 href="/"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Главная
+                {t("createTrip.navHome")}
               </a>
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("createTrip.navTrips")}
               </a>
               <a
                 href="/driver-requests"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Заявки
+                {t("createTrip.navRequests")}
               </a>
             </div>
           </div>
 
           <div className="rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
             <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
-              Создать поездку
+              {t("createTrip.title")}
             </h1>
-            <p className="mt-2 text-[#4a6678]">
-              Укажи маршрут, время и количество мест в автомобиле.
-            </p>
+            <p className="mt-2 text-[#4a6678]">{t("createTrip.subtitle")}</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
-                <Field
-                  label="Откуда"
-                  value={origin}
-                  onChange={setOrigin}
-                  placeholder="Например: Szczecin Centrum"
-                />
+                <div className="md:col-span-2">
+                  <LocationPicker
+                    id="create-origin"
+                    heading={t("location.fieldOrigin")}
+                    value={origin}
+                    onChange={setOrigin}
+                    locale={locale}
+                    t={t}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <LocationPicker
+                    id="create-destination"
+                    heading={t("location.fieldDestination")}
+                    value={destination}
+                    onChange={setDestination}
+                    locale={locale}
+                    t={t}
+                  />
+                </div>
 
                 <Field
-                  label="Куда"
-                  value={destination}
-                  onChange={setDestination}
-                  placeholder="Например: Berlin Mitte"
-                />
-
-                <Field
-                  label="Время отправления"
+                  label={t("createTrip.departure")}
                   type="datetime-local"
                   value={departureTime}
                   onChange={setDepartureTime}
@@ -205,7 +236,7 @@ export default function CreateTrip() {
                 />
 
                 <Field
-                  label="Всего мест"
+                  label={t("createTrip.seats")}
                   type="number"
                   value={String(seatsTotal)}
                   onChange={(value) => setSeatsTotal(Number(value) || 1)}
@@ -213,7 +244,7 @@ export default function CreateTrip() {
                 />
 
                 <Field
-                  label="Цена"
+                  label={t("createTrip.price")}
                   type="number"
                   value={price}
                   onChange={setPrice}
@@ -222,7 +253,7 @@ export default function CreateTrip() {
 
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                    Валюта
+                    {t("createTrip.currency")}
                   </label>
                   <select
                     value={currency}
@@ -239,7 +270,7 @@ export default function CreateTrip() {
 
                 <div className="md:col-span-2">
                   <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                    Тип поездки
+                    {t("createTrip.tripType")}
                   </label>
                   <div className="flex flex-wrap gap-3">
                     <button
@@ -251,7 +282,7 @@ export default function CreateTrip() {
                           : "bg-white/85 text-[#28475d]"
                       }`}
                     >
-                      Один раз
+                      {t("createTrip.tripTypeOneTime")}
                     </button>
                     <button
                       type="button"
@@ -262,7 +293,7 @@ export default function CreateTrip() {
                           : "bg-white/85 text-[#28475d]"
                       }`}
                     >
-                      Регулярная
+                      {t("createTrip.tripTypeRegular")}
                     </button>
                   </div>
                 </div>
@@ -270,24 +301,24 @@ export default function CreateTrip() {
                 {tripType === "regular" && (
                   <div className="md:col-span-2">
                     <label className="mb-3 block text-sm font-semibold text-[#28475d]">
-                      Дни недели
+                      {t("createTrip.weekdays")}
                     </label>
                     <div className="flex flex-wrap gap-3">
-                      {WEEKDAYS.map((day) => {
-                        const active = weekdays.includes(day.value);
+                      {WEEKDAY_VALUES.map((day) => {
+                        const active = weekdays.includes(day);
 
                         return (
                           <button
-                            key={day.value}
+                            key={day}
                             type="button"
-                            onClick={() => toggleWeekday(day.value)}
+                            onClick={() => toggleWeekday(day)}
                             className={`rounded-full px-5 py-3 text-sm font-semibold shadow-sm ${
                               active
                                 ? "bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] text-white"
                                 : "bg-white/85 text-[#28475d]"
                             }`}
                           >
-                            {day.label}
+                            {t(weekdayLabel(day))}
                           </button>
                         );
                       })}
@@ -314,14 +345,14 @@ export default function CreateTrip() {
                   disabled={loading}
                   className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                 >
-                  {loading ? "Создаём..." : "Создать поездку"}
+                  {loading ? t("createTrip.submitting") : t("createTrip.submit")}
                 </button>
 
                 <a
                   href="/trips"
                   className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
                 >
-                  К списку поездок
+                  {t("createTrip.backToTrips")}
                 </a>
               </div>
             </form>

@@ -4,6 +4,7 @@ import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation, type Locale } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { TripRoutePreviewMap } from "../components/TripRoutePreviewMap";
 
 type CurrentUserLike = {
   id?: string;
@@ -31,6 +32,12 @@ type TripDetailsData = {
   driverId: string;
   origin: string;
   destination: string;
+  originLabel?: string;
+  destinationLabel?: string;
+  originLat?: number | null;
+  originLng?: number | null;
+  destinationLat?: number | null;
+  destinationLng?: number | null;
   departureTime: string;
   seatsTotal: number;
   availableSeats: number;
@@ -786,6 +793,32 @@ export default function TripDetails() {
                 </div>
               </div>
             </div>
+
+            {trip.originLat != null &&
+              trip.originLng != null &&
+              trip.destinationLat != null &&
+              trip.destinationLng != null &&
+              Number.isFinite(trip.originLat) &&
+              Number.isFinite(trip.originLng) &&
+              Number.isFinite(trip.destinationLat) &&
+              Number.isFinite(trip.destinationLng) && (
+                <div className="mt-8 rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
+                  <h2 className="text-xl font-extrabold text-[#173651]">
+                    {t("tripDetails.mapTitle")}
+                  </h2>
+                  <div className="mt-4">
+                    <TripRoutePreviewMap
+                      originLat={trip.originLat}
+                      originLng={trip.originLng}
+                      destinationLat={trip.destinationLat}
+                      destinationLng={trip.destinationLng}
+                      originLabel={trip.originLabel ?? trip.origin}
+                      destinationLabel={trip.destinationLabel ?? trip.destination}
+                      t={t}
+                    />
+                  </div>
+                </div>
+              )}
 
             {message && (
               <div className="mt-6 rounded-[20px] border border-white/80 bg-white/75 px-4 py-3 text-sm text-[#28475d] shadow-sm">

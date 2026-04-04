@@ -1,15 +1,31 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { useTranslation } from "../i18n";
+import { LocationPicker } from "../components/LocationPicker";
+import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 
-const WEEKDAYS = [
-  { value: "mon", label: "Пн" },
-  { value: "tue", label: "Вт" },
-  { value: "wed", label: "Ср" },
-  { value: "thu", label: "Чт" },
-  { value: "fri", label: "Пт" },
-  { value: "sat", label: "Сб" },
-  { value: "sun", label: "Вс" },
+const WEEKDAY_VALUES = [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun",
 ] as const;
+
+function weekdayKey(day: string) {
+  const map: Record<string, string> = {
+    mon: "weekday.mon",
+    tue: "weekday.tue",
+    wed: "weekday.wed",
+    thu: "weekday.thu",
+    fri: "weekday.fri",
+    sat: "weekday.sat",
+    sun: "weekday.sun",
+  };
+  return map[day] ?? day;
+}
 
 type Template = {
   id: string;
@@ -17,6 +33,10 @@ type Template = {
   name: string;
   origin: string;
   destination: string;
+  originLat?: number | null;
+  originLng?: number | null;
+  destinationLat?: number | null;
+  destinationLng?: number | null;
   defaultDepartureTime: string | null;
   availableSeats: number;
   price: number;
@@ -27,9 +47,19 @@ type Template = {
 };
 
 export default function Templates() {
+  const { t, locale } = useTranslation();
+
   const [name, setName] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
+  const [origin, setOrigin] = useState<MapPointValue>({
+    label: "",
+    lat: null,
+    lng: null,
+  });
+  const [destination, setDestination] = useState<MapPointValue>({
+    label: "",
+    lat: null,
+    lng: null,
+  });
   const [defaultDepartureTime, setDefaultDepartureTime] = useState("");
   const [availableSeats, setAvailableSeats] = useState(1);
   const [price, setPrice] = useState("");
@@ -52,11 +82,9 @@ export default function Templates() {
   }
 
   function formatWeekdays(days: string[] | null) {
-    if (!days || days.length === 0) return "Не выбрано";
+    if (!days || days.length === 0) return t("templatesPage.notSet");
 
-    return days
-      .map((day) => WEEKDAYS.find((item) => item.value === day)?.label || day)
-      .join(", ");
+    return days.map((day) => t(weekdayKey(day))).join(", ");
   }
 
   function formatPrice(value: number, curr: string) {
@@ -124,14 +152,14 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || "Не удалось загрузить шаблоны");
+        alert(data.error || data.message || t("templatesPage.loadError"));
         setTemplates([]);
         return;
       }
 
       setTemplates(Array.isArray(data.templates) ? data.templates : []);
     } catch {
-      alert("Ошибка соединения с сервером при загрузке шаблонов");
+      alert(t("templatesPage.connectError"));
       setTemplates([]);
     } finally {
       setLoading(false);
@@ -140,6 +168,7 @@ export default function Templates() {
 
   useEffect(() => {
     loadTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -147,34 +176,34 @@ export default function Templates() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Нужно войти в аккаунт");
+      alert(t("templatesPage.validation.login"));
       return;
     }
 
     const parsedPrice = parseFloat(price);
 
     if (!name.trim()) {
-      alert("Введите название шаблона");
+      alert(t("templatesPage.validation.name"));
       return;
     }
 
-    if (!origin.trim() || !destination.trim()) {
-      alert("Введите точку отправления и назначения");
+    if (!isCompleteMapPoint(origin) || !isCompleteMapPoint(destination)) {
+      alert(t("templatesPage.validation.coordinates"));
       return;
     }
 
     if (availableSeats < 1) {
-      alert("Количество мест должно быть минимум 1");
+      alert(t("templatesPage.validation.seats"));
       return;
     }
 
     if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      alert("Введите корректную цену");
+      alert(t("templatesPage.validation.price"));
       return;
     }
 
     if (tripType === "regular" && weekdays.length === 0) {
-      alert("Для регулярного маршрута выбери хотя бы один день");
+      alert(t("templatesPage.validation.weekdays"));
       return;
     }
 
@@ -189,8 +218,12 @@ export default function Templates() {
         },
         body: JSON.stringify({
           name: name.trim(),
-          origin: origin.trim(),
-          destination: destination.trim(),
+          origin: origin.label.trim(),
+          destination: destination.label.trim(),
+          originLat: origin.lat,
+          originLng: origin.lng,
+          destinationLat: destination.lat,
+          destinationLng: destination.lng,
           defaultDepartureTime: defaultDepartureTime.trim() || null,
           availableSeats,
           price: Math.round(parsedPrice * 100),
@@ -203,13 +236,13 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || "Не удалось создать шаблон");
+        alert(data.error || data.message || t("templatesPage.loadError"));
         return;
       }
 
       setName("");
-      setOrigin("");
-      setDestination("");
+      setOrigin({ label: "", lat: null, lng: null });
+      setDestination({ label: "", lat: null, lng: null });
       setDefaultDepartureTime("");
       setAvailableSeats(1);
       setPrice("");
@@ -218,9 +251,9 @@ export default function Templates() {
       setWeekdays([]);
 
       await loadTemplates();
-      alert("Шаблон создан");
+      alert(t("templatesPage.created"));
     } catch {
-      alert("Ошибка соединения с сервером");
+      alert(t("templatesPage.connectError"));
     } finally {
       setCreating(false);
     }
@@ -230,16 +263,33 @@ export default function Templates() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Нужно войти в аккаунт");
+      alert(t("templatesPage.validation.login"));
+      return;
+    }
+
+    const olat = template.originLat;
+    const olng = template.originLng;
+    const dlat = template.destinationLat;
+    const dlng = template.destinationLng;
+
+    if (
+      olat == null ||
+      olng == null ||
+      dlat == null ||
+      dlng == null ||
+      !Number.isFinite(olat) ||
+      !Number.isFinite(olng) ||
+      !Number.isFinite(dlat) ||
+      !Number.isFinite(dlng)
+    ) {
+      alert(t("templatesPage.templateNoCoords"));
       return;
     }
 
     const departureTime = buildDepartureDateTime(template.defaultDepartureTime);
 
     if (!departureTime) {
-      alert(
-        "У шаблона некорректное время отправления. Укажи время в формате 08:30."
-      );
+      alert(t("templatesPage.badDepartureTime"));
       return;
     }
 
@@ -255,6 +305,10 @@ export default function Templates() {
         body: JSON.stringify({
           origin: template.origin,
           destination: template.destination,
+          originLat: olat,
+          originLng: olng,
+          destinationLat: dlat,
+          destinationLng: dlng,
           departureTime,
           availableSeats: template.availableSeats,
           price: template.price,
@@ -268,14 +322,14 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || "Ошибка создания поездки");
+        alert(data.error || data.message || t("templatesPage.tripError"));
         return;
       }
 
-      alert("Поездка создана");
+      alert(t("templatesPage.tripCreated"));
       window.location.href = "/trips";
     } catch {
-      alert("Ошибка соединения с сервером");
+      alert(t("templatesPage.connectError"));
     } finally {
       setCreatingTripId(null);
     }
@@ -285,11 +339,11 @@ export default function Templates() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Нужно войти в аккаунт");
+      alert(t("templatesPage.validation.login"));
       return;
     }
 
-    const confirmed = window.confirm("Удалить этот шаблон?");
+    const confirmed = window.confirm(t("templatesPage.deleteConfirm"));
     if (!confirmed) return;
 
     try {
@@ -308,14 +362,14 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || "Не удалось удалить шаблон");
+        alert(data.error || data.message || t("templatesPage.deleteError"));
         return;
       }
 
       setTemplates((prev) => prev.filter((item) => item.id !== templateId));
-      alert("Шаблон удалён");
+      alert(t("templatesPage.deleted"));
     } catch {
-      alert("Ошибка соединения с сервером");
+      alert(t("templatesPage.connectError"));
     } finally {
       setDeletingTemplateId(null);
     }
@@ -344,18 +398,18 @@ export default function Templates() {
               />
             </a>
 
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden items-center gap-3 md:flex">
               <a
                 href="/"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Главная
+                {t("templatesPage.navHome")}
               </a>
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
               >
-                Поездки
+                {t("templatesPage.navTrips")}
               </a>
             </div>
           </div>
@@ -363,63 +417,54 @@ export default function Templates() {
           <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
             <section className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
               <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
-                Шаблоны маршрутов
+                {t("templatesPage.title")}
               </h1>
 
               <p className="mt-3 text-[15px] leading-relaxed text-[#35556c]">
-                Создай шаблон для регулярных поездок дом ↔ работа, чтобы потом
-                быстрее публиковать маршруты.
+                {t("templatesPage.subtitle")}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    Название шаблона
+                    {t("templatesPage.name")}
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Дом → Работа"
+                    placeholder={t("templatesPage.namePlaceholder")}
                     className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
                   />
                 </div>
 
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    Откуда
-                  </label>
-                  <input
-                    type="text"
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
-                    placeholder="Дом"
-                    className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
-                  />
-                </div>
+                <LocationPicker
+                  id="tpl-origin"
+                  heading={t("location.fieldOrigin")}
+                  value={origin}
+                  onChange={setOrigin}
+                  locale={locale}
+                  t={t}
+                />
+
+                <LocationPicker
+                  id="tpl-destination"
+                  heading={t("location.fieldDestination")}
+                  value={destination}
+                  onChange={setDestination}
+                  locale={locale}
+                  t={t}
+                />
 
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    Куда
-                  </label>
-                  <input
-                    type="text"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    placeholder="Работа"
-                    className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    Время отправления
+                    {t("templatesPage.departureTime")}
                   </label>
                   <input
                     type="text"
                     value={defaultDepartureTime}
                     onChange={(e) => setDefaultDepartureTime(e.target.value)}
-                    placeholder="08:30"
+                    placeholder={t("templatesPage.departurePlaceholder")}
                     className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
                   />
                 </div>
@@ -427,7 +472,7 @@ export default function Templates() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      Места
+                      {t("templatesPage.seats")}
                     </label>
                     <input
                       type="number"
@@ -442,7 +487,7 @@ export default function Templates() {
 
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      Цена
+                      {t("templatesPage.price")}
                     </label>
                     <input
                       type="number"
@@ -459,7 +504,7 @@ export default function Templates() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      Валюта
+                      {t("templatesPage.currency")}
                     </label>
                     <select
                       value={currency}
@@ -476,7 +521,7 @@ export default function Templates() {
 
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      Тип
+                      {t("templatesPage.tripType")}
                     </label>
                     <select
                       value={tripType}
@@ -485,8 +530,12 @@ export default function Templates() {
                       }
                       className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none"
                     >
-                      <option value="one-time">Один раз</option>
-                      <option value="regular">Регулярный</option>
+                      <option value="one-time">
+                        {t("templatesPage.tripTypeOneTime")}
+                      </option>
+                      <option value="regular">
+                        {t("templatesPage.tripTypeRegular")}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -494,24 +543,24 @@ export default function Templates() {
                 {tripType === "regular" && (
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                      Дни недели
+                      {t("templatesPage.weekdays")}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {WEEKDAYS.map((day) => {
-                        const active = weekdays.includes(day.value);
+                      {WEEKDAY_VALUES.map((day) => {
+                        const active = weekdays.includes(day);
 
                         return (
                           <button
-                            key={day.value}
+                            key={day}
                             type="button"
-                            onClick={() => toggleWeekday(day.value)}
+                            onClick={() => toggleWeekday(day)}
                             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                               active
                                 ? "bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] text-white shadow-md"
                                 : "bg-white/85 text-[#28475d] shadow-sm"
                             }`}
                           >
-                            {day.label}
+                            {t(weekdayKey(day))}
                           </button>
                         );
                       })}
@@ -524,7 +573,7 @@ export default function Templates() {
                   disabled={creating}
                   className="flex h-14 w-full items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                 >
-                  {creating ? "Сохранение..." : "Создать шаблон"}
+                  {creating ? t("templatesPage.submitting") : t("templatesPage.submit")}
                 </button>
               </form>
             </section>
@@ -533,10 +582,10 @@ export default function Templates() {
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-extrabold text-[#173651]">
-                    Мои шаблоны
+                    {t("templatesPage.listTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-[#4a6678]">
-                    Готовые маршруты для быстрых публикаций
+                    {t("templatesPage.listSubtitle")}
                   </p>
                 </div>
 
@@ -547,11 +596,11 @@ export default function Templates() {
 
               {loading ? (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  Загрузка шаблонов...
+                  {t("templatesPage.loading")}
                 </div>
               ) : templates.length === 0 ? (
                 <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  У тебя пока нет шаблонов. Создай первый маршрут слева.
+                  {t("templatesPage.empty")}
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -572,53 +621,58 @@ export default function Templates() {
 
                         <span className="w-fit rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-4 py-2 text-sm font-bold text-white shadow-sm">
                           {template.tripType === "regular"
-                            ? "Регулярный"
-                            : "Один раз"}
+                            ? t("templatesPage.regularBadge")
+                            : t("templatesPage.oneTimeBadge")}
                         </span>
                       </div>
 
                       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         <InfoCard
-                          label="Время"
-                          value={template.defaultDepartureTime || "Не указано"}
+                          label={t("templatesPage.timeLabel")}
+                          value={
+                            template.defaultDepartureTime ||
+                            t("templatesPage.notSet")
+                          }
                         />
                         <InfoCard
-                          label="Места"
+                          label={t("templatesPage.seatsLabel")}
                           value={String(template.availableSeats)}
                         />
                         <InfoCard
-                          label="Цена"
+                          label={t("templatesPage.priceLabel")}
                           value={formatPrice(template.price, template.currency)}
                         />
                         <InfoCard
-                          label="Дни"
+                          label={t("templatesPage.daysLabel")}
                           value={
                             template.tripType === "regular"
                               ? formatWeekdays(template.weekdays)
-                              : "По необходимости"
+                              : t("templatesPage.daysAsNeeded")
                           }
                         />
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-3">
                         <button
+                          type="button"
                           onClick={() => createTripFromTemplate(template)}
                           disabled={creatingTripId === template.id}
                           className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_10px_24px_rgba(39,149,119,0.28)] transition hover:scale-[1.01] disabled:opacity-70"
                         >
                           {creatingTripId === template.id
-                            ? "Создание..."
-                            : "Создать поездку"}
+                            ? t("templatesPage.creatingTrip")
+                            : t("templatesPage.createTrip")}
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => deleteTemplate(template.id)}
                           disabled={deletingTemplateId === template.id}
                           className="flex h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-bold text-[#c62828] shadow-sm transition hover:scale-[1.01] disabled:opacity-70"
                         >
                           {deletingTemplateId === template.id
-                            ? "Удаление..."
-                            : "Удалить шаблон"}
+                            ? t("templatesPage.deleting")
+                            : t("templatesPage.delete")}
                         </button>
                       </div>
                     </div>

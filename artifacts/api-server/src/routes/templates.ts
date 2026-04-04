@@ -6,6 +6,25 @@ const router: Router = Router();
 
 const VALID_WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
+function parseCoordinate(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function isValidLat(lat: number): boolean {
+  return lat >= -90 && lat <= 90;
+}
+
+function isValidLng(lng: number): boolean {
+  return lng >= -180 && lng <= 180;
+}
+
 router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user;
@@ -25,6 +44,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       currency,
       tripType,
       weekdays,
+      originLat,
+      originLng,
+      destinationLat,
+      destinationLng,
     } = req.body as {
       name?: string;
       origin?: string;
@@ -35,6 +58,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       currency?: "EUR" | "USD" | "PLN";
       tripType?: "one-time" | "regular";
       weekdays?: string[];
+      originLat?: unknown;
+      originLng?: unknown;
+      destinationLat?: unknown;
+      destinationLng?: unknown;
     };
 
     if (
@@ -49,6 +76,28 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       res.status(400).json({
         error:
           "Missing required fields: name, origin, destination, availableSeats, price, currency, tripType",
+      });
+      return;
+    }
+
+    const oLat = parseCoordinate(originLat);
+    const oLng = parseCoordinate(originLng);
+    const dLat = parseCoordinate(destinationLat);
+    const dLng = parseCoordinate(destinationLng);
+
+    if (
+      oLat === null ||
+      oLng === null ||
+      dLat === null ||
+      dLng === null ||
+      !isValidLat(oLat) ||
+      !isValidLng(oLng) ||
+      !isValidLat(dLat) ||
+      !isValidLng(dLng)
+    ) {
+      res.status(400).json({
+        error:
+          "Valid coordinates are required for origin and destination (originLat, originLng, destinationLat, destinationLng)",
       });
       return;
     }
@@ -110,6 +159,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       name: name.trim(),
       origin: origin.trim(),
       destination: destination.trim(),
+      originLat: oLat,
+      originLng: oLng,
+      destinationLat: dLat,
+      destinationLng: dLng,
       defaultDepartureTime:
         defaultDepartureTime && defaultDepartureTime.trim()
           ? defaultDepartureTime.trim()

@@ -21,6 +21,25 @@ function estimateCo2SavingKg(seatsTotal: number): number {
   return 6 + (safeSeats - 1) * 2;
 }
 
+function parseCoordinate(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function isValidLat(lat: number): boolean {
+  return lat >= -90 && lat <= 90;
+}
+
+function isValidLng(lng: number): boolean {
+  return lng >= -180 && lng <= 180;
+}
+
 function mapTripWithDriver(
   trip: typeof trips.$inferSelect,
   driver: typeof users.$inferSelect
@@ -30,6 +49,12 @@ function mapTripWithDriver(
     driverId: trip.driverId,
     origin: trip.origin,
     destination: trip.destination,
+    originLabel: trip.origin,
+    destinationLabel: trip.destination,
+    originLat: trip.originLat ?? null,
+    originLng: trip.originLng ?? null,
+    destinationLat: trip.destinationLat ?? null,
+    destinationLng: trip.destinationLng ?? null,
     departureTime: trip.departureTime,
     seatsTotal: trip.seatsTotal,
     availableSeats: trip.availableSeats,
@@ -89,6 +114,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       currency,
       tripType,
       weekdays,
+      originLat,
+      originLng,
+      destinationLat,
+      destinationLng,
     } = req.body as {
       origin?: string;
       destination?: string;
@@ -99,6 +128,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       currency?: "EUR" | "USD" | "PLN";
       tripType?: "one-time" | "regular";
       weekdays?: string[];
+      originLat?: unknown;
+      originLng?: unknown;
+      destinationLat?: unknown;
+      destinationLng?: unknown;
     };
 
     if (
@@ -112,6 +145,28 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       res.status(400).json({
         error:
           "Missing required fields: origin, destination, departureTime, seatsTotal, price, currency, tripType",
+      });
+      return;
+    }
+
+    const oLat = parseCoordinate(originLat);
+    const oLng = parseCoordinate(originLng);
+    const dLat = parseCoordinate(destinationLat);
+    const dLng = parseCoordinate(destinationLng);
+
+    if (
+      oLat === null ||
+      oLng === null ||
+      dLat === null ||
+      dLng === null ||
+      !isValidLat(oLat) ||
+      !isValidLng(oLng) ||
+      !isValidLat(dLat) ||
+      !isValidLng(dLng)
+    ) {
+      res.status(400).json({
+        error:
+          "Valid coordinates are required for origin and destination (originLat, originLng, destinationLat, destinationLng)",
       });
       return;
     }
@@ -179,10 +234,14 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       driverId: user.userId,
       origin: origin.trim(),
       destination: destination.trim(),
+      originLat: oLat,
+      originLng: oLng,
+      destinationLat: dLat,
+      destinationLng: dLng,
       departureTime: departureDate,
       seatsTotal: seatsNumber,
       availableSeats: seatsNumber,
-      price: Math.round(priceNumber * 100),
+      price: Math.round(priceNumber),
       currency,
       tripType,
       weekdays: weekdaysValue,

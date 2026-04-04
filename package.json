@@ -6,7 +6,7 @@
   "scripts": {
     "dev:api": "pnpm --filter api-server dev",
     "dev:web": "pnpm --filter gomate-web dev",
-    "build": "pnpm -r run build",
+    "build": "pnpm --filter @gomate/db build && pnpm --filter api-server build && pnpm --filter gomate-web build",
     "db:generate": "pnpm --filter @gomate/db generate",
     "db:migrate": "pnpm --filter @gomate/db migrate"
   },
