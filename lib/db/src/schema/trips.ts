@@ -56,6 +56,17 @@ export const trips = pgTable("trips", {
 
   status: tripStatusEnum("status").notNull().default("scheduled"),
 
+  /** Driving duration from routing (OSRM), minutes */
+  estimatedDurationMinutes: integer("estimated_duration_minutes"),
+
+  /** departure_time + estimated route duration */
+  expectedEndTime: timestamp("expected_end_time", { withTimezone: true }),
+
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+
+  /** "automatic" | "manual" — set when trip is completed */
+  completionMode: text("completion_mode"),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

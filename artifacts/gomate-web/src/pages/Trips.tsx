@@ -3,6 +3,7 @@ import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { formatDateTimeShort } from "../lib/intlLocale";
 
 type CurrentUserLike = {
@@ -119,6 +120,7 @@ function getActiveOutgoingRequest(
 
 export default function Trips() {
   const { t, locale } = useTranslation();
+  const { reviewTasksPending } = useNotificationCounts();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -440,6 +442,14 @@ export default function Trips() {
                 {t("tripsPage.chats")}
                 {chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
               </a>
+              {reviewTasksPending > 0 ? (
+                <span
+                  className="rounded-full bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm"
+                  title={t("nav.badge.reviewsPending", { count: reviewTasksPending })}
+                >
+                  {t("nav.badge.reviewsPending", { count: reviewTasksPending })}
+                </span>
+              ) : null}
             </div>
           </AppPageHeader>
 

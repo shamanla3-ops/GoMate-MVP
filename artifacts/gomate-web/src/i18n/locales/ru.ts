@@ -524,5 +524,37 @@ export default {
   "chatPage.navTrips": "Поездки",
   "chatPage.navRequests": "Заявки",
   "chatPage.navChats": "Чаты",
-  "chatPage.navProfile": "Профиль"
+  "chatPage.navProfile": "Профиль",
+
+  "nav.badge.reviewsPending": "{{count}} отзывов ждут",
+
+  "reviewModal.title": "Оставь отзыв",
+  "reviewModal.tripLabel": "Поездка: {{label}}",
+  "reviewModal.targetLabel": "О ком: {{name}}",
+  "reviewModal.loading": "Загрузка…",
+  "reviewModal.tripQuestion": "Поездка состоялась?",
+  "reviewModal.yes": "Да",
+  "reviewModal.no": "Нет",
+  "reviewModal.ratingLabel": "Оценка (1–5)",
+  "reviewModal.commentLabel": "Комментарий",
+  "reviewModal.commentPlaceholder": "Коротко о поездке…",
+  "reviewModal.commentOptional": "Подробности (необязательно)",
+  "reviewModal.submit": "Отправить",
+  "reviewModal.submitting": "Отправка…",
+  "reviewModal.close": "Позже",
+  "reviewModal.loadError": "Не удалось загрузить задания на отзыв",
+  "reviewModal.submitError": "Не удалось отправить отзыв",
+  "reviewModal.pickHappened": "Выбери, состоялась ли поездка.",
+  "reviewModal.commentRequiredLowRating": "При оценке 3 и ниже нужен комментарий.",
+  "reviewModal.reasonLabel": "Что случилось?",
+  "reviewModal.noShowDriver": "Водитель не приехал",
+  "reviewModal.noShowPassenger": "Пассажир не приехал",
+  "reviewModal.noShowCancelled": "Поездка отменена",
+  "reviewModal.noShowOther": "Другое",
+
+  "profilePage.reviewDidNotHappen": "Поездка не состоялась",
+  "profilePage.reviewReason.driver_no_show": "Водитель не приехал",
+  "profilePage.reviewReason.passenger_no_show": "Пассажир не приехал",
+  "profilePage.reviewReason.trip_cancelled": "Поездка отменена",
+  "profilePage.reviewReason.other": "Другое"
 } as const;

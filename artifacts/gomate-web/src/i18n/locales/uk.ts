@@ -525,5 +525,37 @@ export default {
   "chatPage.navTrips": "Поїздки",
   "chatPage.navRequests": "Заявки",
   "chatPage.navChats": "Чати",
-  "chatPage.navProfile": "Профіль"
+  "chatPage.navProfile": "Профіль",
+
+  "nav.badge.reviewsPending": "{{count}} відгуків очікують",
+
+  "reviewModal.title": "Залиш відгук",
+  "reviewModal.tripLabel": "Поїздка: {{label}}",
+  "reviewModal.targetLabel": "Про: {{name}}",
+  "reviewModal.loading": "Завантаження…",
+  "reviewModal.tripQuestion": "Поїздка відбулася?",
+  "reviewModal.yes": "Так",
+  "reviewModal.no": "Ні",
+  "reviewModal.ratingLabel": "Оцінка (1–5)",
+  "reviewModal.commentLabel": "Коментар",
+  "reviewModal.commentPlaceholder": "Коротко про поїздку…",
+  "reviewModal.commentOptional": "Деталі (необов’язково)",
+  "reviewModal.submit": "Надіслати",
+  "reviewModal.submitting": "Надсилання…",
+  "reviewModal.close": "Пізніше",
+  "reviewModal.loadError": "Не вдалося завантажити завдання",
+  "reviewModal.submitError": "Не вдалося надіслати відгук",
+  "reviewModal.pickHappened": "Обери, чи відбулася поїздка.",
+  "reviewModal.commentRequiredLowRating": "Для оцінки 3 і нижче потрібен коментар.",
+  "reviewModal.reasonLabel": "Що сталося?",
+  "reviewModal.noShowDriver": "Водій не приїхав",
+  "reviewModal.noShowPassenger": "Пасажир не приїхав",
+  "reviewModal.noShowCancelled": "Поїздку скасовано",
+  "reviewModal.noShowOther": "Інше",
+
+  "profilePage.reviewDidNotHappen": "Поїздка не відбулася",
+  "profilePage.reviewReason.driver_no_show": "Водій не приїхав",
+  "profilePage.reviewReason.passenger_no_show": "Пасажир не приїхав",
+  "profilePage.reviewReason.trip_cancelled": "Поїздку скасовано",
+  "profilePage.reviewReason.other": "Інше"
 } as const;

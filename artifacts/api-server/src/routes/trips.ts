@@ -11,6 +11,7 @@ import {
   desc,
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { resolveDrivingDurationMinutes } from "../lib/osrmDuration.js";
 
 const router: Router = Router();
 
@@ -64,6 +65,10 @@ function mapTripWithDriver(
     weekdays: trip.weekdays,
     status: trip.status,
     createdAt: trip.createdAt,
+    estimatedDurationMinutes: trip.estimatedDurationMinutes ?? null,
+    expectedEndTime: trip.expectedEndTime ?? null,
+    completedAt: trip.completedAt ?? null,
+    completionMode: trip.completionMode ?? null,
     estimatedCo2SavingKg: estimateCo2SavingKg(trip.seatsTotal),
     driver: {
       id: driver.id,
@@ -230,6 +235,16 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       weekdaysValue = filtered;
     }
 
+    const durationMinutes = await resolveDrivingDurationMinutes(
+      oLat,
+      oLng,
+      dLat,
+      dLng
+    );
+    const expectedEndTime = new Date(
+      departureDate.getTime() + durationMinutes * 60 * 1000
+    );
+
     const insertValues: NewTrip = {
       driverId: user.userId,
       origin: origin.trim(),
@@ -246,6 +261,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       tripType,
       weekdays: weekdaysValue,
       status: "scheduled",
+      estimatedDurationMinutes: durationMinutes,
+      expectedEndTime,
     };
 
     const [trip] = await db.insert(trips).values(insertValues).returning();

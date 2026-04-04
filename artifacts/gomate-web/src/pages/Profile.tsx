@@ -3,6 +3,7 @@ import { API_BASE_URL } from "../lib/api";
 import { type CurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { useNotificationCounts } from "../context/NotificationCountsContext";
 
 type ProfileForm = {
   name: string;
@@ -32,22 +33,41 @@ function renderStars(rating: number) {
   ).join(" ");
 }
 
+function formatNoShowReasonLabel(
+  tr: (key: string) => string,
+  reason: string | null | undefined
+): string {
+  if (!reason) return "";
+  const map: Record<string, string> = {
+    driver_no_show: "profilePage.reviewReason.driver_no_show",
+    passenger_no_show: "profilePage.reviewReason.passenger_no_show",
+    trip_cancelled: "profilePage.reviewReason.trip_cancelled",
+    other: "profilePage.reviewReason.other",
+  };
+  const key = map[reason];
+  return key ? tr(key) : reason;
+}
+
 type ReviewItem = {
   id: string;
   tripId: string;
   tripLabel: string;
   authorName: string;
-  rating: number;
+  rating: number | null;
   comment: string | null;
+  tripHappened?: boolean;
+  noShowReason?: string | null;
   createdAt: string;
 };
 
 function ProfileHeader({
   userName,
   onLogout,
+  reviewTasksPending,
 }: {
   userName: string;
   onLogout: () => void;
+  reviewTasksPending: number;
 }) {
   const { t } = useTranslation();
   return (
@@ -77,6 +97,14 @@ function ProfileHeader({
         >
           {userName}
         </a>
+        {reviewTasksPending > 0 ? (
+          <span
+            className="rounded-full bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm"
+            title={t("nav.badge.reviewsPending", { count: reviewTasksPending })}
+          >
+            {t("nav.badge.reviewsPending", { count: reviewTasksPending })}
+          </span>
+        ) : null}
         <button
           type="button"
           onClick={onLogout}
@@ -91,6 +119,7 @@ function ProfileHeader({
 
 export default function Profile() {
   const { t } = useTranslation();
+  const { reviewTasksPending } = useNotificationCounts();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [form, setForm] = useState<ProfileForm>({
     name: "",
@@ -288,7 +317,11 @@ export default function Profile() {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:px-10">
-          <ProfileHeader userName={displayName} onLogout={handleLogout} />
+          <ProfileHeader
+            userName={displayName}
+            onLogout={handleLogout}
+            reviewTasksPending={reviewTasksPending}
+          />
 
           <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
             <aside className="rounded-[30px] border border-white/60 bg-white/50 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm">
@@ -366,9 +399,18 @@ export default function Profile() {
                           <div className="mt-1 text-sm font-semibold text-[#173651]">
                             {r.authorName}
                           </div>
-                          <div className="text-lg text-[#f4b400]">
-                            {renderStars(r.rating)}
-                          </div>
+                          {r.tripHappened === false ? (
+                            <p className="mt-1 text-sm font-semibold text-[#9b5b12]">
+                              {t("profilePage.reviewDidNotHappen")}
+                              {r.noShowReason
+                                ? ` — ${formatNoShowReasonLabel(t, r.noShowReason)}`
+                                : ""}
+                            </p>
+                          ) : (
+                            <div className="text-lg text-[#f4b400]">
+                              {renderStars(r.rating ?? 0)}
+                            </div>
+                          )}
                           {r.comment ? (
                             <p className="mt-1 text-sm text-[#35556c]">{r.comment}</p>
                           ) : null}

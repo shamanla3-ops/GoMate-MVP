@@ -4,6 +4,7 @@ import {
   tripMessages,
   tripRequests,
   trips,
+  reviewTasks,
   eq,
   and,
   desc,
@@ -31,6 +32,7 @@ export async function getNotificationCounts(userId: string): Promise<{
   incomingPending: number;
   outgoingPending: number;
   requestsPending: number;
+  reviewTasksPending: number;
 }> {
   const allChats = await db.query.tripChats.findMany({
     orderBy: [desc(tripChats.createdAt)],
@@ -81,10 +83,23 @@ export async function getNotificationCounts(userId: string): Promise<{
   const incomingPending = Number(incomingRow?.n ?? 0);
   const outgoingPending = Number(outgoingRow?.n ?? 0);
 
+  const [reviewRow] = await db
+    .select({ n: count() })
+    .from(reviewTasks)
+    .where(
+      and(
+        eq(reviewTasks.reviewerUserId, userId),
+        eq(reviewTasks.status, "pending")
+      )
+    );
+
+  const reviewTasksPending = Number(reviewRow?.n ?? 0);
+
   return {
     chatsUnread,
     incomingPending,
     outgoingPending,
     requestsPending: incomingPending + outgoingPending,
+    reviewTasksPending,
   };
 }

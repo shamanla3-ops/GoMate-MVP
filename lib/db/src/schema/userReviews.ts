@@ -5,6 +5,8 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  boolean,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { trips } from "./trips.js";
 import { users } from "./users.js";
@@ -26,8 +28,15 @@ export const userReviews = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
 
-    rating: integer("rating").notNull(),
+    /** When trip did not happen, null; otherwise 1–5 */
+    rating: integer("rating"),
+
     comment: text("comment"),
+
+    tripHappened: boolean("trip_happened").notNull().default(true),
+
+    /** When trip_happened is false: driver_no_show | passenger_no_show | trip_cancelled | other */
+    noShowReason: varchar("no_show_reason", { length: 64 }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

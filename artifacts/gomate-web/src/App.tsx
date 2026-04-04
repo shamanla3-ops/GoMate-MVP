@@ -13,6 +13,7 @@ import Requests from "./pages/Requests";
 import Chat from "./pages/Chat";
 import Chats from "./pages/Chats";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
+import { ReviewPendingModal } from "./components/ReviewPendingModal";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/chats" element={<Chats />} />
       </Routes>
 
+      <ReviewPendingModal />
       <PushPermissionPrompt />
     </BrowserRouter>
   );

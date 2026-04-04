@@ -528,5 +528,37 @@ export default {
   "chatPage.navTrips": "Przejazdy",
   "chatPage.navRequests": "Zgłoszenia",
   "chatPage.navChats": "Czaty",
-  "chatPage.navProfile": "Profil"
+  "chatPage.navProfile": "Profil",
+
+  "nav.badge.reviewsPending": "{{count}} oczekujących opinii",
+
+  "reviewModal.title": "Zostaw opinię",
+  "reviewModal.tripLabel": "Przejazd: {{label}}",
+  "reviewModal.targetLabel": "O: {{name}}",
+  "reviewModal.loading": "Ładowanie…",
+  "reviewModal.tripQuestion": "Czy przejazd się odbył?",
+  "reviewModal.yes": "Tak",
+  "reviewModal.no": "Nie",
+  "reviewModal.ratingLabel": "Ocena (1–5)",
+  "reviewModal.commentLabel": "Komentarz",
+  "reviewModal.commentPlaceholder": "Krótko o przejeździe…",
+  "reviewModal.commentOptional": "Szczegóły (opcjonalnie)",
+  "reviewModal.submit": "Wyślij",
+  "reviewModal.submitting": "Wysyłanie…",
+  "reviewModal.close": "Później",
+  "reviewModal.loadError": "Nie udało się wczytać zadań",
+  "reviewModal.submitError": "Nie udało się wysłać opinii",
+  "reviewModal.pickHappened": "Wybierz, czy przejazd się odbył.",
+  "reviewModal.commentRequiredLowRating": "Przy ocenie 3 lub niżej wymagany jest komentarz.",
+  "reviewModal.reasonLabel": "Co się stało?",
+  "reviewModal.noShowDriver": "Kierowca nie przyjechał",
+  "reviewModal.noShowPassenger": "Pasażer nie przyjechał",
+  "reviewModal.noShowCancelled": "Przejazd odwołany",
+  "reviewModal.noShowOther": "Inne",
+
+  "profilePage.reviewDidNotHappen": "Przejazd się nie odbył",
+  "profilePage.reviewReason.driver_no_show": "Kierowca nie przyjechał",
+  "profilePage.reviewReason.passenger_no_show": "Pasażer nie przyjechał",
+  "profilePage.reviewReason.trip_cancelled": "Przejazd odwołany",
+  "profilePage.reviewReason.other": "Inne"
 } as const;

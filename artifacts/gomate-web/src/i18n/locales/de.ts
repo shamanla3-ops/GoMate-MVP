@@ -525,5 +525,37 @@ export default {
   "chatPage.navTrips": "Fahrten",
   "chatPage.navRequests": "Anfragen",
   "chatPage.navChats": "Chats",
-  "chatPage.navProfile": "Profil"
+  "chatPage.navProfile": "Profil",
+
+  "nav.badge.reviewsPending": "{{count}} ausstehende Bewertungen",
+
+  "reviewModal.title": "Bewertung abgeben",
+  "reviewModal.tripLabel": "Fahrt: {{label}}",
+  "reviewModal.targetLabel": "Über: {{name}}",
+  "reviewModal.loading": "Laden…",
+  "reviewModal.tripQuestion": "Hat die Fahrt stattgefunden?",
+  "reviewModal.yes": "Ja",
+  "reviewModal.no": "Nein",
+  "reviewModal.ratingLabel": "Bewertung (1–5)",
+  "reviewModal.commentLabel": "Kommentar",
+  "reviewModal.commentPlaceholder": "Kurz zur Fahrt…",
+  "reviewModal.commentOptional": "Details (optional)",
+  "reviewModal.submit": "Senden",
+  "reviewModal.submitting": "Senden…",
+  "reviewModal.close": "Später",
+  "reviewModal.loadError": "Aufgaben konnten nicht geladen werden",
+  "reviewModal.submitError": "Bewertung konnte nicht gesendet werden",
+  "reviewModal.pickHappened": "Bitte auswählen, ob die Fahrt stattgefunden hat.",
+  "reviewModal.commentRequiredLowRating": "Bei 3 Sternen oder weniger ist ein Kommentar erforderlich.",
+  "reviewModal.reasonLabel": "Was ist passiert?",
+  "reviewModal.noShowDriver": "Fahrer:in ist nicht erschienen",
+  "reviewModal.noShowPassenger": "Mitfahrer:in ist nicht erschienen",
+  "reviewModal.noShowCancelled": "Fahrt abgesagt",
+  "reviewModal.noShowOther": "Sonstiges",
+
+  "profilePage.reviewDidNotHappen": "Fahrt fand nicht statt",
+  "profilePage.reviewReason.driver_no_show": "Fahrer:in nicht erschienen",
+  "profilePage.reviewReason.passenger_no_show": "Mitfahrer:in nicht erschienen",
+  "profilePage.reviewReason.trip_cancelled": "Fahrt abgesagt",
+  "profilePage.reviewReason.other": "Sonstiges"
 } as const;

@@ -12,6 +12,7 @@ import { API_BASE_URL } from "../lib/api";
 type NotificationCounts = {
   chatsUnread: number;
   requestsPending: number;
+  reviewTasksPending: number;
 };
 
 type NotificationCountsContextValue = NotificationCounts & {
@@ -26,6 +27,7 @@ const POLL_MS = 25_000;
 export function NotificationCountsProvider({ children }: { children: ReactNode }) {
   const [chatsUnread, setChatsUnread] = useState(0);
   const [requestsPending, setRequestsPending] = useState(0);
+  const [reviewTasksPending, setReviewTasksPending] = useState(0);
 
   const load = useCallback(async () => {
     const token =
@@ -34,6 +36,7 @@ export function NotificationCountsProvider({ children }: { children: ReactNode }
     if (!token) {
       setChatsUnread(0);
       setRequestsPending(0);
+      setReviewTasksPending(0);
       return;
     }
 
@@ -47,6 +50,7 @@ export function NotificationCountsProvider({ children }: { children: ReactNode }
       const data = (await res.json().catch(() => null)) as {
         chatsUnread?: unknown;
         requestsPending?: unknown;
+        reviewTasksPending?: unknown;
         error?: string;
       } | null;
 
@@ -60,6 +64,10 @@ export function NotificationCountsProvider({ children }: { children: ReactNode }
 
       if (typeof data.requestsPending === "number") {
         setRequestsPending(data.requestsPending);
+      }
+
+      if (typeof data.reviewTasksPending === "number") {
+        setReviewTasksPending(data.reviewTasksPending);
       }
     } catch {
       /* ignore transient network errors; next poll will retry */
@@ -91,9 +99,10 @@ export function NotificationCountsProvider({ children }: { children: ReactNode }
     () => ({
       chatsUnread,
       requestsPending,
+      reviewTasksPending,
       refresh: load,
     }),
-    [chatsUnread, requestsPending, load]
+    [chatsUnread, requestsPending, reviewTasksPending, load]
   );
 
   return (

@@ -5,38 +5,19 @@ import {
   trips,
   tripRequests,
   userReviews,
+  reviewTasks,
   eq,
   and,
   desc,
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { refreshRevieweeRating } from "../lib/reviewRating.js";
 
 const router: Router = Router();
 
-async function refreshRevieweeRating(revieweeId: string) {
-  const rows = await db
-    .select({ rating: userReviews.rating })
-    .from(userReviews)
-    .where(eq(userReviews.revieweeId, revieweeId));
-
-  const rating =
-    rows.length === 0
-      ? 0
-      : Math.max(
-          0,
-          Math.min(
-            5,
-            Math.round(
-              rows.reduce((sum, r) => sum + r.rating, 0) / rows.length
-            )
-          )
-        );
-
-  await db.update(users).set({ rating }).where(eq(users.id, revieweeId));
-}
-
 function tripAllowsReviews(trip: typeof trips.$inferSelect): boolean {
   if (trip.status === "cancelled") return false;
+  if (trip.status === "completed") return true;
   const dep = new Date(trip.departureTime);
   return dep.getTime() <= Date.now();
 }
@@ -56,6 +37,8 @@ router.get("/", async (req: Request, res: Response) => {
         tripId: userReviews.tripId,
         rating: userReviews.rating,
         comment: userReviews.comment,
+        tripHappened: userReviews.tripHappened,
+        noShowReason: userReviews.noShowReason,
         createdAt: userReviews.createdAt,
         authorName: users.name,
         origin: trips.origin,
@@ -75,6 +58,8 @@ router.get("/", async (req: Request, res: Response) => {
         authorName: r.authorName,
         rating: r.rating,
         comment: r.comment,
+        tripHappened: r.tripHappened,
+        noShowReason: r.noShowReason,
         createdAt: r.createdAt,
       })),
     });
@@ -220,7 +205,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
     if (!tripAllowsReviews(trip)) {
       res.status(400).json({
-        error: "Reviews are available after the departure time for accepted participants",
+        error:
+          "Reviews are available after the trip is completed or departure time for accepted participants",
       });
       return;
     }
@@ -257,13 +243,34 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const commentText =
       typeof comment === "string" ? comment.trim().slice(0, 2000) : null;
 
+    if (rNum <= 3 && (!commentText || commentText.length === 0)) {
+      res.status(400).json({
+        error: "Comment is required when rating is 3 or lower",
+      });
+      return;
+    }
+
     await db.insert(userReviews).values({
       tripId: tId,
       authorId: userId,
       revieweeId: rId,
       rating: rNum,
       comment: commentText && commentText.length > 0 ? commentText : null,
+      tripHappened: true,
+      noShowReason: null,
     });
+
+    await db
+      .update(reviewTasks)
+      .set({ status: "done" })
+      .where(
+        and(
+          eq(reviewTasks.tripId, tId),
+          eq(reviewTasks.reviewerUserId, userId),
+          eq(reviewTasks.targetUserId, rId),
+          eq(reviewTasks.status, "pending")
+        )
+      );
 
     await refreshRevieweeRating(rId);
 

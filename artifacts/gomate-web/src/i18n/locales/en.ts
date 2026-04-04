@@ -524,5 +524,37 @@ export default {
   "chatPage.navTrips": "Trips",
   "chatPage.navRequests": "Requests",
   "chatPage.navChats": "Chats",
-  "chatPage.navProfile": "Profile"
+  "chatPage.navProfile": "Profile",
+
+  "nav.badge.reviewsPending": "{{count}} pending reviews",
+
+  "reviewModal.title": "Leave a review",
+  "reviewModal.tripLabel": "Trip: {{label}}",
+  "reviewModal.targetLabel": "About: {{name}}",
+  "reviewModal.loading": "Loading…",
+  "reviewModal.tripQuestion": "Did the trip happen?",
+  "reviewModal.yes": "Yes",
+  "reviewModal.no": "No",
+  "reviewModal.ratingLabel": "Your rating (1–5)",
+  "reviewModal.commentLabel": "Comment",
+  "reviewModal.commentPlaceholder": "Share a few words about the ride…",
+  "reviewModal.commentOptional": "Details (optional)",
+  "reviewModal.submit": "Submit",
+  "reviewModal.submitting": "Submitting…",
+  "reviewModal.close": "Later",
+  "reviewModal.loadError": "Could not load review tasks",
+  "reviewModal.submitError": "Failed to submit review",
+  "reviewModal.pickHappened": "Please choose whether the trip happened.",
+  "reviewModal.commentRequiredLowRating": "Comment is required for ratings of 3 or lower.",
+  "reviewModal.reasonLabel": "What happened?",
+  "reviewModal.noShowDriver": "Driver didn't show",
+  "reviewModal.noShowPassenger": "Passenger didn't show",
+  "reviewModal.noShowCancelled": "Trip cancelled",
+  "reviewModal.noShowOther": "Other",
+
+  "profilePage.reviewDidNotHappen": "Trip did not happen",
+  "profilePage.reviewReason.driver_no_show": "Driver didn't show",
+  "profilePage.reviewReason.passenger_no_show": "Passenger didn't show",
+  "profilePage.reviewReason.trip_cancelled": "Trip cancelled",
+  "profilePage.reviewReason.other": "Other"
 } as const;

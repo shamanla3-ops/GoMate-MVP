@@ -11,6 +11,8 @@ import pushRoutes from "./routes/push.js";
 import notificationSummaryRoutes from "./routes/notificationSummary.js";
 import profileRoutes from "./routes/profile.js";
 import reviewsRoutes from "./routes/reviews.js";
+import reviewTasksRoutes from "./routes/reviewTasks.js";
+import { startTripMaintenanceJobs } from "./jobs/autoCompleteTrips.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -39,6 +41,7 @@ app.use("/api/push", pushRoutes);
 app.use("/api/notifications", notificationSummaryRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/reviews", reviewsRoutes);
+app.use("/api/review-tasks", reviewTasksRoutes);
 
 app.get("/", (_req, res) => {
   res.send("GoMate API is running");
@@ -48,4 +51,5 @@ const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startTripMaintenanceJobs();
 });
