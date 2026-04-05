@@ -13,28 +13,42 @@ import MyRequests from "./pages/MyRequests";
 import Requests from "./pages/Requests";
 import Chat from "./pages/Chat";
 import Chats from "./pages/Chats";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
+import Terms from "./pages/Terms";
+import LegalInfo from "./pages/LegalInfo";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
 import { ReviewPendingModal } from "./components/ReviewPendingModal";
+import { Footer } from "./components/Footer";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify" element={<VerifyEmail />} />
-        <Route path="/trips" element={<Trips />} />
-        <Route path="/trips/:id" element={<TripDetails />} />
-        <Route path="/create-trip" element={<CreateTrip />} />
-        <Route path="/templates" element={<Templates />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/driver-requests" element={<DriverRequests />} />
-        <Route path="/my-requests" element={<MyRequests />} />
-        <Route path="/requests" element={<Requests />} />
-        <Route path="/chat/:chatId" element={<Chat />} />
-        <Route path="/chats" element={<Chats />} />
-      </Routes>
+      <div className="flex min-h-screen min-h-[100dvh] flex-col">
+        <main className="min-w-0 flex-1">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/verify" element={<VerifyEmail />} />
+            <Route path="/trips" element={<Trips />} />
+            <Route path="/trips/:id" element={<TripDetails />} />
+            <Route path="/create-trip" element={<CreateTrip />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/driver-requests" element={<DriverRequests />} />
+            <Route path="/my-requests" element={<MyRequests />} />
+            <Route path="/requests" element={<Requests />} />
+            <Route path="/chat/:chatId" element={<Chat />} />
+            <Route path="/chats" element={<Chats />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/cookies" element={<Cookies />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/legal" element={<LegalInfo />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
 
       <ReviewPendingModal />
       <PushPermissionPrompt />
