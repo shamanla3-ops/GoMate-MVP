@@ -92,6 +92,13 @@
       "when": 1774300000000,
       "tag": "0013_user_email_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1774400000000,
+      "tag": "0014_user_language_es",
+      "breakpoints": true
     }
   ]
 }

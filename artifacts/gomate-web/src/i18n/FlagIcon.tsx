@@ -63,6 +63,14 @@ export function FlagIcon({ locale, className = "" }: Props) {
           <rect y="1" width="3" height="1" fill="#ffd500" />
         </svg>
       );
+    case "es":
+      return (
+        <svg className={size} viewBox="0 0 3 2" aria-hidden>
+          <rect width="3" height="0.5" fill="#aa151b" />
+          <rect y="0.5" width="3" height="1" fill="#f1bf00" />
+          <rect y="1.5" width="3" height="0.5" fill="#aa151b" />
+        </svg>
+      );
     default:
       return null;
   }

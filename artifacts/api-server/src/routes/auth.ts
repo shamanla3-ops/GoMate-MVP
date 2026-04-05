@@ -11,7 +11,7 @@ import { sendVerificationEmail } from "../lib/email.js";
 const router: Router = Router();
 const SALT_ROUNDS = 10;
 
-type UserLanguage = "pl" | "en" | "de" | "ru" | "uk";
+type UserLanguage = (typeof users.$inferSelect)["language"];
 
 function signToken(userId: string, email: string): string {
   const secret = process.env.JWT_SECRET;
@@ -21,7 +21,14 @@ function signToken(userId: string, email: string): string {
 }
 
 function normalizeLanguage(value?: string): UserLanguage {
-  if (value === "pl" || value === "en" || value === "de" || value === "ru" || value === "uk") {
+  if (
+    value === "pl" ||
+    value === "en" ||
+    value === "de" ||
+    value === "ru" ||
+    value === "uk" ||
+    value === "es"
+  ) {
     return value;
   }
 

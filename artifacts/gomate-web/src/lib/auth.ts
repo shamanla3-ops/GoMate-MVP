@@ -5,7 +5,7 @@ export type CurrentUser = {
   email: string;
   name: string;
   role: "driver" | "passenger" | "both";
-  language: "pl" | "en" | "de" | "ru" | "uk";
+  language: "pl" | "en" | "de" | "ru" | "uk" | "es";
   avatarUrl?: string | null;
   phoneNumber?: string | null;
   carBrand?: string | null;

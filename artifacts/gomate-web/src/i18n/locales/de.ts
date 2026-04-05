@@ -328,7 +328,16 @@ export default {
   "auth.verify.title": "E-Mail bestätigen",
   "auth.verify.subtitle": "Bestätige deine E-Mail-Adresse, um GoMate zu nutzen.",
   "auth.verify.loading": "E-Mail wird überprüft…",
+  "auth.verify.loadingHeadline": "E-Mail wird überprüft…",
+  "auth.verify.loadingHint": "Das dauert in der Regel nur einen Moment.",
   "auth.verify.success": "Deine E-Mail wurde bestätigt.",
+  "auth.verify.successTitle": "Deine E-Mail wurde bestätigt",
+  "auth.verify.successBody":
+    "Dein GoMate-Konto ist jetzt aktiv. Du kannst dich jetzt anmelden.",
+  "auth.verify.continueToLogin": "Weiter zur Anmeldung",
+  "auth.verify.errorTitle": "Bestätigung fehlgeschlagen",
+  "auth.verify.invalidOrExpired":
+    "Der Bestätigungslink ist ungültig oder abgelaufen.",
   "auth.verify.tokenMissing": "Bestätigungstoken fehlt",
   "auth.verify.failed": "Bestätigung fehlgeschlagen",
   "auth.verify.goToLogin": "Zur Anmeldung",

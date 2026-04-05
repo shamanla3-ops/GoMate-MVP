@@ -331,7 +331,16 @@ export default {
   "auth.verify.title": "Potwierdzenie e-maila",
   "auth.verify.subtitle": "Potwierdź adres e-mail, aby korzystać z GoMate.",
   "auth.verify.loading": "Weryfikujemy Twój e-mail…",
+  "auth.verify.loadingHeadline": "Weryfikujemy Twój e-mail…",
+  "auth.verify.loadingHint": "To zwykle trwa tylko chwilę.",
   "auth.verify.success": "Twój e-mail został potwierdzony.",
+  "auth.verify.successTitle": "Twój e-mail został potwierdzony",
+  "auth.verify.successBody":
+    "Twoje konto GoMate jest aktywne. Możesz się teraz zalogować.",
+  "auth.verify.continueToLogin": "Przejdź do logowania",
+  "auth.verify.errorTitle": "Weryfikacja nie powiodła się",
+  "auth.verify.invalidOrExpired":
+    "Link weryfikacyjny jest nieprawidłowy lub wygasł.",
   "auth.verify.tokenMissing": "Brak tokenu weryfikacji",
   "auth.verify.failed": "Weryfikacja nie powiodła się",
   "auth.verify.goToLogin": "Przejdź do logowania",

@@ -328,7 +328,16 @@ export default {
   "auth.verify.title": "Підтвердження email",
   "auth.verify.subtitle": "Підтвердьте email, щоб користуватися GoMate.",
   "auth.verify.loading": "Перевіряємо ваш email…",
+  "auth.verify.loadingHeadline": "Перевіряємо ваш email…",
+  "auth.verify.loadingHint": "Зазвичай це займає лише мить.",
   "auth.verify.success": "Email підтверджено.",
+  "auth.verify.successTitle": "Ваш email підтверджено",
+  "auth.verify.successBody":
+    "Обліковий запис GoMate активний. Тепер ви можете увійти.",
+  "auth.verify.continueToLogin": "Перейти до входу",
+  "auth.verify.errorTitle": "Не вдалося підтвердити email",
+  "auth.verify.invalidOrExpired":
+    "Посилання для підтвердження недійсне або застаріле.",
   "auth.verify.tokenMissing": "Відсутній токен підтвердження",
   "auth.verify.failed": "Не вдалося підтвердити email",
   "auth.verify.goToLogin": "Перейти до входу",

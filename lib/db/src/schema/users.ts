@@ -21,6 +21,7 @@ export const userLanguageEnum = pgEnum("user_language", [
   "de",
   "ru",
   "uk",
+  "es",
 ]);
 
 export const users = pgTable("users", {
