@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import {
@@ -7,6 +8,7 @@ import {
 } from "../lib/errorMessages";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { staggerItemVariants } from "../lib/motionVariants";
 
 const REDIRECT_MS = 3500;
 const TERMS_MARKER = "[[terms]]";
@@ -129,10 +131,7 @@ export default function Register() {
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-10">
           <AppPageHeader>
-            <a
-              href="/login"
-              className="rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-[#28475d] shadow-sm backdrop-blur-sm"
-            >
+            <a href="/login" className="gomate-nav-pill">
               {t("auth.register.loginCta")}
             </a>
           </AppPageHeader>
@@ -160,7 +159,12 @@ export default function Register() {
               </section>
 
               <section className="mx-auto w-full max-w-md">
-                <div className="rounded-[32px] border border-white/70 bg-white/78 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
+                <motion.div
+                  variants={staggerItemVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="rounded-[32px] border border-white/70 bg-white/78 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8"
+                >
                   <div className="text-center">
                     <h2 className="text-3xl font-extrabold text-[#173651]">
                       {t("auth.register.formTitle")}
@@ -246,7 +250,7 @@ export default function Register() {
                     <button
                       type="submit"
                       disabled={loading || formDisabled}
-                      className="flex h-14 w-full items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
+                      className="gomate-btn-gradient flex h-14 w-full items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70"
                     >
                       {loading
                         ? t("auth.register.submitting")
@@ -292,7 +296,7 @@ export default function Register() {
                       {t("auth.register.signInLink")}
                     </a>
                   </div>
-                </div>
+                </motion.div>
               </section>
             </div>
           </main>

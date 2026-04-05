@@ -1,5 +1,7 @@
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
+import { staggerItemVariants } from "../lib/motionVariants";
 
 const PAGE_GRADIENT =
   "absolute inset-0 bg-[linear-gradient(180deg,#a9df74_0%,#59c7df_18%,#eef8ff_42%,#f9fcff_58%,#e9f7e1_76%,#b8e07d_100%)]";
@@ -53,7 +55,12 @@ export function LegalPageShell({
             ← Home
           </Link>
 
-          <article className="mt-6 rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-10">
+          <motion.article
+            variants={staggerItemVariants}
+            initial="hidden"
+            animate="show"
+            className="mt-6 rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-10"
+          >
             <h1 className="text-3xl font-extrabold tracking-tight text-[#173651] sm:text-4xl">
               {title}
             </h1>
@@ -68,7 +75,7 @@ export function LegalPageShell({
                 </p>
               </div>
             )}
-          </article>
+          </motion.article>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import App from "./App";
 import { I18nProvider } from "./i18n";
 import { NotificationCountsProvider } from "./context/NotificationCountsContext";
@@ -16,10 +18,14 @@ if ("serviceWorker" in navigator) {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <I18nProvider>
-      <NotificationCountsProvider>
-        <App />
-      </NotificationCountsProvider>
-    </I18nProvider>
+    <MotionConfig reducedMotion="user">
+      <BrowserRouter>
+        <I18nProvider>
+          <NotificationCountsProvider>
+            <App />
+          </NotificationCountsProvider>
+        </I18nProvider>
+      </BrowserRouter>
+    </MotionConfig>
   </React.StrictMode>
 );

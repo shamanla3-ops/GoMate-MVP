@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
@@ -7,6 +8,10 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
+import {
+  staggerContainerVariants,
+  staggerItemVariants,
+} from "../lib/motionVariants";
 
 type CurrentUserLike = {
   id?: string;
@@ -419,30 +424,18 @@ export default function Trips() {
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
           <AppPageHeader>
-            <div className="hidden md:flex items-center gap-3">
-              <a
-                href="/"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+            <div className="hidden items-center gap-3 md:flex">
+              <a href="/" className="gomate-nav-pill font-medium">
                 {t("tripsPage.home")}
               </a>
-              <a
-                href="/create-trip"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+              <a href="/create-trip" className="gomate-nav-pill font-medium">
                 {t("tripsPage.createTrip")}
               </a>
-              <a
-                href="/requests"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+              <a href="/requests" className="gomate-nav-pill font-medium">
                 {t("tripsPage.requests")}
                 {pendingIncomingCount > 0 ? ` (${pendingIncomingCount})` : ""}
               </a>
-              <a
-                href="/chats"
-                className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-              >
+              <a href="/chats" className="gomate-nav-pill-dark">
                 {t("tripsPage.chats")}
                 {chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
               </a>
@@ -468,7 +461,7 @@ export default function Trips() {
 
               <a
                 href="/create-trip"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)]"
+                className="gomate-btn-gradient inline-flex h-12 items-center justify-center rounded-full px-6 text-sm font-bold text-white"
               >
                 {t("tripsPage.publishTrip")}
               </a>
@@ -512,8 +505,9 @@ export default function Trips() {
 
             <div className="mt-6">
               {loading && (
-                <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  {t("tripsPage.loading")}
+                <div className="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
+                  <span className="gomate-spinner" aria-hidden />
+                  <span>{t("tripsPage.loading")}</span>
                 </div>
               )}
 
@@ -529,7 +523,12 @@ export default function Trips() {
                 </div>
               )}
 
-              <div className="grid gap-4">
+              <motion.div
+                className="grid gap-4"
+                variants={staggerContainerVariants}
+                initial="hidden"
+                animate="show"
+              >
                 {visibleTrips.map((trip) => {
                   const isOwnTrip = currentUserId !== "" && currentUserId === trip.driverId;
                   const rating = trip.driver.rating ?? 0;
@@ -539,9 +538,10 @@ export default function Trips() {
                   );
 
                   return (
-                    <div
+                    <motion.div
                       key={trip.id}
-                      className="rounded-[26px] border border-white/80 bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
+                      variants={staggerItemVariants}
+                      className="gomate-lift-card rounded-[26px] border border-white/80 bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
                     >
                       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                         <div className="flex min-w-0 flex-1 gap-4">
@@ -669,10 +669,10 @@ export default function Trips() {
                           </span>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
@@ -6,6 +7,10 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeChatList } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
+import {
+  staggerContainerVariants,
+  staggerItemVariants,
+} from "../lib/motionVariants";
 
 type CurrentUserLike = {
   id?: string;
@@ -224,7 +229,12 @@ export default function Chats() {
               )}
 
               {!loading && sortedChats.length > 0 && (
-                <div className="grid gap-4">
+                <motion.div
+                  className="grid gap-4"
+                  variants={staggerContainerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
                   {sortedChats.map((chat) => {
                     const isDriver = chat.driverId === currentUserId;
                     const otherPerson = isDriver ? chat.passenger : chat.driver;
@@ -236,10 +246,11 @@ export default function Chats() {
                       : `${t("chatsPage.driver")} ${otherPerson?.name || t("chatsPage.user")}`;
 
                     return (
-                      <a
+                      <motion.a
                         key={chat.id}
                         href={`/chat/${chat.id}`}
-                        className="rounded-[26px] border border-white/80 bg-white/80 p-5 shadow-sm transition hover:scale-[1.01]"
+                        variants={staggerItemVariants}
+                        className="gomate-lift-card block rounded-[26px] border border-white/80 bg-white/80 p-5 shadow-sm"
                       >
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex gap-4">
@@ -295,10 +306,10 @@ export default function Chats() {
                             </span>
                           </div>
                         </div>
-                      </a>
+                      </motion.a>
                     );
                   })}
-                </div>
+                </motion.div>
               )}
             </div>
           </div>

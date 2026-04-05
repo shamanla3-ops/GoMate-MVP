@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { getCurrentUser, type CurrentUser } from "../lib/auth";
 import { useTranslation, LanguageSwitcher } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import {
+  headerRevealTransition,
+  headerRevealVariants,
+  staggerItemVariants,
+} from "../lib/motionVariants";
 
 function getUserShortName(name: string, profileFallback: string) {
   const clean = name.trim();
@@ -83,10 +89,18 @@ export default function Landing() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-28 pt-6 sm:px-6 lg:px-10">
-          <header className="flex items-center justify-between gap-3 py-2">
-            <a
+          <motion.header
+            initial="hidden"
+            animate="show"
+            variants={headerRevealVariants}
+            transition={headerRevealTransition}
+            className="sticky top-0 z-30 -mx-4 mb-2 flex items-center justify-between gap-3 border-b border-white/50 bg-white/45 py-3 px-4 shadow-[0_8px_32px_rgba(23,54,81,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/35 sm:-mx-6 sm:mb-3 sm:px-6"
+          >
+            <motion.a
               href="/"
-              className="relative flex min-w-0 shrink items-center"
+              className="gomate-icon-pop relative flex min-w-0 shrink items-center"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               title={
                 user && totalNotifications > 0
                   ? t("nav.badge.totalHint", { count: totalNotifications })
@@ -104,32 +118,23 @@ export default function Landing() {
                   aria-hidden
                 />
               ) : null}
-            </a>
+            </motion.a>
 
             <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
               <LanguageSwitcher />
               <nav className="hidden items-center gap-3 md:flex">
-                <a
-                  href="/"
-                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-                >
+                <a href="/" className="gomate-nav-pill font-medium">
                   {t("nav.home")}
                 </a>
-                <a
-                  href={findTripHref}
-                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-                >
+                <a href={findTripHref} className="gomate-nav-pill font-medium">
                   {t("nav.trips")}
                 </a>
-                <a
-                  href={templatesHref}
-                  className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-                >
+                <a href={templatesHref} className="gomate-nav-pill font-medium">
                   {t("nav.templates")}
                 </a>
                 <a
                   href={requestsHref}
-                  className="relative rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  className="gomate-nav-pill relative font-medium"
                   aria-label={
                     user && requestsPending > 0
                       ? t("nav.badge.requestsAria", { count: requestsPending })
@@ -141,7 +146,7 @@ export default function Landing() {
                 </a>
                 <a
                   href={chatsHref}
-                  className="relative rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+                  className="gomate-nav-pill relative font-medium"
                   aria-label={
                     user && chatsUnread > 0
                       ? t("nav.badge.chatsAria", { count: chatsUnread })
@@ -153,25 +158,24 @@ export default function Landing() {
                 </a>
 
                 {user ? (
-                  <a
-                    href="/profile"
-                    className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-                  >
+                  <a href="/profile" className="gomate-nav-pill-dark">
                     {getUserShortName(user.name, t("profile.shortName"))}
                   </a>
                 ) : (
-                  <a
-                    href="/login"
-                    className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-                  >
+                  <a href="/login" className="gomate-nav-pill-dark">
                     {t("nav.login")}
                   </a>
                 )}
               </nav>
             </div>
-          </header>
+          </motion.header>
 
-          <main className="flex flex-1 items-center">
+          <motion.main
+            className="flex flex-1 items-center"
+            variants={staggerItemVariants}
+            initial="hidden"
+            animate="show"
+          >
             <div className="grid w-full items-center gap-8 py-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
               <section className="mx-auto w-full max-w-2xl lg:mx-0">
                 <div className="rounded-[34px] border border-white/60 bg-white/30 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
@@ -280,7 +284,7 @@ export default function Landing() {
                 </div>
               </section>
             </div>
-          </main>
+          </motion.main>
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
@@ -360,9 +364,9 @@ function FeatureCard({
   text: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-white/80 bg-white/72 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+    <div className="gomate-lift-card rounded-[28px] border border-white/80 bg-white/72 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm">
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#85d95a_0%,#1093e6_100%)] text-[20px] shadow-md">
+        <div className="gomate-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#85d95a_0%,#1093e6_100%)] text-[20px] shadow-md">
           <span>{icon}</span>
         </div>
 

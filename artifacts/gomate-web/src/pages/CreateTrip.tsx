@@ -361,7 +361,7 @@ export default function CreateTrip() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
+                  className="gomate-btn-gradient flex h-14 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70"
                 >
                   {loading ? t("createTrip.submitting") : t("createTrip.submit")}
                 </button>

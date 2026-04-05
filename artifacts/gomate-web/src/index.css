@@ -22,3 +22,191 @@
 .gomate-leaflet-map.leaflet-container {
   min-height: 260px;
 }
+
+/* --- GoMate global UI polish (premium feel, respects reduced motion) --- */
+
+@layer base {
+  body {
+    @apply antialiased text-[#193549];
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="range"]
+    ):not([type="hidden"]):not([type="button"]):not([type="submit"]):not(
+      [type="reset"]
+    ),
+  textarea,
+  select {
+    @apply transition-all duration-200;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="range"]
+    ):not([type="hidden"]):not([type="button"]):not([type="submit"]):not(
+      [type="reset"]
+    ):focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply border-[#1296e8]/50 ring-2 ring-[#1296e8]/20 ring-offset-0 outline-none;
+  }
+}
+
+@layer components {
+  /* Default button feedback; Leaflet overrides below */
+  button:not(:disabled):not([aria-disabled="true"]),
+  [type="submit"]:not(:disabled):not([aria-disabled="true"]),
+  [type="button"]:not(:disabled):not([aria-disabled="true"]),
+  [type="reset"]:not(:disabled):not([aria-disabled="true"]) {
+    @apply transition-all duration-200;
+  }
+
+  button:not(:disabled):not([aria-disabled="true"]):hover,
+  [type="submit"]:not(:disabled):not([aria-disabled="true"]):hover,
+  [type="button"]:not(:disabled):not([aria-disabled="true"]):hover,
+  [type="reset"]:not(:disabled):not([aria-disabled="true"]):hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 28px rgba(23, 54, 81, 0.1);
+  }
+
+  button:not(:disabled):not([aria-disabled="true"]):active,
+  [type="submit"]:not(:disabled):not([aria-disabled="true"]):active,
+  [type="button"]:not(:disabled):not([aria-disabled="true"]):active,
+  [type="reset"]:not(:disabled):not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+  }
+
+  /* Leaflet controls: no transform / shadow micro-interactions */
+  .leaflet-container button,
+  .leaflet-container a.leaflet-bar-part {
+    transition-property: color, background-color, border-color, opacity !important;
+    transform: none !important;
+  }
+  .leaflet-container button:hover,
+  .leaflet-container a.leaflet-bar-part:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .leaflet-container button:active,
+  .leaflet-container a.leaflet-bar-part:active {
+    transform: none !important;
+  }
+
+  /* Primary-style CTAs: smoother gradient response */
+  .gomate-btn-gradient {
+    @apply bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition-all duration-200;
+  }
+  .gomate-btn-gradient:hover:not(:disabled):not([aria-disabled="true"]) {
+    @apply brightness-[1.04] shadow-[0_14px_34px_rgba(39,149,119,0.42)];
+  }
+  .gomate-btn-gradient:active:not(:disabled):not([aria-disabled="true"]) {
+    @apply brightness-[0.98] scale-[0.98];
+  }
+
+  /* List / trip cards */
+  .gomate-lift-card {
+    @apply rounded-2xl transition-all duration-300 ease-out will-change-transform;
+  }
+  .gomate-lift-card:hover {
+    @apply -translate-y-[3px] shadow-[0_18px_44px_rgba(23,54,81,0.12)];
+  }
+
+  .gomate-spinner {
+    @apply inline-block h-5 w-5 shrink-0 rounded-full border-2 border-[#1296e8]/25 border-t-[#1296e8] motion-safe:animate-spin;
+  }
+
+  /* Header pill links (nav) */
+  .gomate-nav-pill {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-[#28475d] shadow-sm backdrop-blur-sm transition-all duration-200;
+    @apply bg-white/80 hover:bg-white/95 hover:shadow-md hover:scale-[1.03] active:scale-[0.97];
+  }
+
+  .gomate-nav-pill-dark {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200;
+    @apply bg-[#163c59] hover:bg-[#1a4a6b] hover:shadow-md hover:scale-[1.03] active:scale-[0.97];
+  }
+
+  /* Icon / small control pop */
+  .gomate-icon-pop {
+    @apply transition-transform duration-200 motion-safe:hover:scale-110 motion-safe:active:scale-95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gomate-lift-card {
+    transition-duration: 0.01ms;
+  }
+  .gomate-lift-card:hover {
+    transform: none;
+  }
+  .gomate-btn-gradient:hover:not(:disabled):not([aria-disabled="true"]),
+  .gomate-btn-gradient:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: none;
+    filter: none;
+  }
+  .gomate-nav-pill,
+  .gomate-nav-pill-dark {
+    transform: none !important;
+  }
+  .gomate-spinner {
+    animation: none !important;
+    border-color: rgba(18, 150, 232, 0.45);
+  }
+
+  button:not(:disabled):hover,
+  [type="submit"]:not(:disabled):hover,
+  [type="button"]:not(:disabled):hover,
+  [type="reset"]:not(:disabled):hover {
+    transform: none;
+    box-shadow: none;
+  }
+  button:not(:disabled):active,
+  [type="submit"]:not(:disabled):active,
+  [type="button"]:not(:disabled):active,
+  [type="reset"]:not(:disabled):active {
+    transform: none;
+  }
+}
+
+/* Subtle ambient wash behind app content (very low contrast) */
+@keyframes gomate-ambient-drift {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: translate3d(0.8%, -0.6%, 0) scale(1.02);
+  }
+}
+
+.gomate-app-ambient {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(
+      ellipse 120% 80% at 10% 0%,
+      rgba(169, 223, 116, 0.14),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 100% 70% at 90% 10%,
+      rgba(89, 199, 223, 0.12),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 90% 60% at 50% 100%,
+      rgba(184, 224, 125, 0.1),
+      transparent 55%
+    );
+  animation: gomate-ambient-drift 32s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gomate-app-ambient {
+    animation: none;
+    opacity: 0.65;
+  }
+}

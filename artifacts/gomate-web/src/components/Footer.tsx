@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const linkClass =
-  "text-[#6b8294] transition-colors hover:text-[#1296e8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef4f8] rounded-sm";
+  "text-[#6b8294] rounded-sm transition-all duration-200 hover:text-[#1296e8] motion-safe:hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef4f8]";
 
 export function Footer() {
   return (
