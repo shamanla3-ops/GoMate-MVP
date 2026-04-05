@@ -25,6 +25,7 @@ function mapUser(user: typeof users.$inferSelect, reviewCount: number) {
     rating: user.rating,
     co2SavedKg: user.co2SavedKg,
     createdAt: user.createdAt,
+    emailVerified: user.emailVerified,
     reviewCount,
   };
 }

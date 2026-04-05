@@ -6,6 +6,7 @@ import {
   pgEnum,
   integer,
   text,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", [
@@ -39,6 +40,9 @@ export const users = pgTable("users", {
   age: integer("age"),
   rating: integer("rating").notNull().default(0),
   co2SavedKg: integer("co2_saved_kg").notNull().default(0),
+
+  emailVerified: boolean("email_verified").notNull().default(true),
+  emailVerificationToken: text("email_verification_token"),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

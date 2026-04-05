@@ -12,7 +12,12 @@ const LEGACY_MESSAGES: Record<string, string> = {
 
   AUTH_LOGIN_FIELDS_MISSING: "Missing email or password",
   AUTH_INVALID_CREDENTIALS: "Invalid email or password",
+  AUTH_EMAIL_NOT_VERIFIED: "Please verify your email",
   AUTH_LOGIN_FAILED: "Login failed",
+
+  AUTH_VERIFY_TOKEN_MISSING: "Verification token is required",
+  AUTH_VERIFY_TOKEN_INVALID: "Invalid or expired verification token",
+  AUTH_VERIFY_FAILED: "Email verification failed",
 
   UNAUTHORIZED: "Unauthorized",
 

@@ -1,9 +1,12 @@
 import { Router, Request, Response } from "express";
+import { randomUUID } from "node:crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { db, users, eq } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
+import { sendVerificationEmail } from "../lib/email.js";
 
 const router: Router = Router();
 const SALT_ROUNDS = 10;
@@ -42,6 +45,7 @@ function mapUser(user: typeof users.$inferSelect, reviewCount?: number) {
     rating: user.rating,
     co2SavedKg: user.co2SavedKg,
     createdAt: user.createdAt,
+    emailVerified: user.emailVerified,
     reviewCount: reviewCount ?? 0,
   };
 }
@@ -71,6 +75,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const normalizedLanguage = normalizeLanguage(language);
+    const emailVerificationToken = randomUUID();
 
     const [user] = await db
       .insert(users)
@@ -79,8 +84,16 @@ router.post("/register", async (req: Request, res: Response) => {
         passwordHash,
         name: name.trim(),
         language: normalizedLanguage,
+        emailVerified: false,
+        emailVerificationToken,
       })
       .returning();
+
+    try {
+      await sendVerificationEmail(user.email, emailVerificationToken);
+    } catch (mailErr) {
+      console.error("sendVerificationEmail (register):", mailErr);
+    }
 
     const token = signToken(user.id, user.email);
 
@@ -90,6 +103,14 @@ router.post("/register", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("Register error:", err);
+    const pg =
+      typeof err === "object" && err !== null
+        ? (err as { code?: string })
+        : {};
+    if (pg.code === "42703" || pg.code === "42P01") {
+      jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED");
+      return;
+    }
     jsonApiError(res, 500, "AUTH_REGISTRATION_FAILED");
   }
 });
@@ -124,6 +145,11 @@ router.post("/login", async (req: Request, res: Response) => {
       return;
     }
 
+    if (!user.emailVerified) {
+      jsonApiError(res, 403, "AUTH_EMAIL_NOT_VERIFIED");
+      return;
+    }
+
     const normalizedLanguage = normalizeLanguage(language);
 
     let finalUser = user;
@@ -149,6 +175,40 @@ router.post("/login", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Login error:", err);
     jsonApiError(res, 500, "AUTH_LOGIN_FAILED");
+  }
+});
+
+router.post("/verify-email", async (req: Request, res: Response) => {
+  try {
+    const raw = (req.body as { token?: unknown }).token;
+    if (typeof raw !== "string" || raw.trim() === "") {
+      jsonApiError(res, 400, "AUTH_VERIFY_TOKEN_MISSING");
+      return;
+    }
+
+    const token = raw.trim();
+
+    const row = await db.query.users.findFirst({
+      where: eq(users.emailVerificationToken, token),
+    });
+
+    if (!row) {
+      jsonApiError(res, 400, "AUTH_VERIFY_TOKEN_INVALID");
+      return;
+    }
+
+    await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        emailVerificationToken: null,
+      })
+      .where(eq(users.id, row.id));
+
+    res.json(withApiSuccess({ success: true }, "EMAIL_VERIFIED"));
+  } catch (err) {
+    console.error("verify-email error:", err);
+    jsonApiError(res, 500, "AUTH_VERIFY_FAILED");
   }
 });
 
