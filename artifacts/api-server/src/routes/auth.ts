@@ -35,6 +35,9 @@ function normalizeLanguage(value?: string): UserLanguage {
   return "pl";
 }
 
+const RESEND_VERIFICATION_GENERIC_MESSAGE =
+  "If this email exists and is not verified, a new verification email has been sent.";
+
 function mapUser(user: typeof users.$inferSelect, reviewCount?: number) {
   return {
     id: user.id,
@@ -180,6 +183,59 @@ router.post("/login", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Login error:", err);
     jsonApiError(res, 500, "AUTH_LOGIN_FAILED");
+  }
+});
+
+router.post("/resend-verification", async (req: Request, res: Response) => {
+  try {
+    const raw = (req.body as { email?: unknown }).email;
+    if (typeof raw !== "string" || raw.trim() === "") {
+      jsonApiError(res, 400, "AUTH_RESEND_VERIFICATION_EMAIL_MISSING");
+      return;
+    }
+
+    const normalizedEmail = raw.trim().toLowerCase();
+
+    const row = await db.query.users.findFirst({
+      where: eq(users.email, normalizedEmail),
+    });
+
+    if (!row || row.emailVerified) {
+      res.json({
+        success: true,
+        message: RESEND_VERIFICATION_GENERIC_MESSAGE,
+      });
+      return;
+    }
+
+    const newToken = randomUUID();
+
+    await db
+      .update(users)
+      .set({ emailVerificationToken: newToken })
+      .where(eq(users.id, row.id));
+
+    try {
+      await sendVerificationEmail(row.email, newToken);
+    } catch (mailErr) {
+      console.error("sendVerificationEmail (resend-verification):", mailErr);
+    }
+
+    res.json({
+      success: true,
+      message: RESEND_VERIFICATION_GENERIC_MESSAGE,
+    });
+  } catch (err) {
+    console.error("resend-verification error:", err);
+    const pg =
+      typeof err === "object" && err !== null
+        ? (err as { code?: string })
+        : {};
+    if (pg.code === "42703" || pg.code === "42P01") {
+      jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED");
+      return;
+    }
+    jsonApiError(res, 500, "AUTH_RESEND_VERIFICATION_FAILED");
   }
 });
 

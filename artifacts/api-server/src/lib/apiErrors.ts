@@ -19,6 +19,9 @@ const LEGACY_MESSAGES: Record<string, string> = {
   AUTH_VERIFY_TOKEN_INVALID: "Invalid or expired verification token",
   AUTH_VERIFY_FAILED: "Email verification failed",
 
+  AUTH_RESEND_VERIFICATION_EMAIL_MISSING: "Email is required",
+  AUTH_RESEND_VERIFICATION_FAILED: "Could not process resend verification request",
+
   UNAUTHORIZED: "Unauthorized",
 
   USER_NOT_FOUND: "User not found",
