@@ -95,11 +95,9 @@ router.post("/register", async (req: Request, res: Response) => {
       console.error("sendVerificationEmail (register):", mailErr);
     }
 
-    const token = signToken(user.id, user.email);
-
     res.status(201).json({
-      token,
-      user: mapUser(user, 0),
+      success: true,
+      message: "Account created. Please verify your email.",
     });
   } catch (err) {
     console.error("Register error:", err);

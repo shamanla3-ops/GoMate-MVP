@@ -1,20 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
-import { messageFromApiError } from "../lib/errorMessages";
+import {
+  messageFromApiError,
+  type ApiErrorPayload,
+} from "../lib/errorMessages";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 
+const REDIRECT_MS = 3500;
+
 export default function Register() {
   const { t, locale } = useTranslation();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const id = window.setTimeout(() => {
+      navigate("/login");
+    }, REDIRECT_MS);
+    return () => window.clearTimeout(id);
+  }, [successMessage, navigate]);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-    setMessage("");
+    setErrorMessage("");
+    setSuccessMessage("");
     setLoading(true);
 
     try {
@@ -31,28 +48,31 @@ export default function Register() {
         }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as Record<string, unknown>;
 
       if (!response.ok) {
-        setMessage(messageFromApiError(data, t, "auth.register.error"));
+        setErrorMessage(
+          messageFromApiError(data as ApiErrorPayload, t, "auth.register.error")
+        );
         return;
       }
 
-      const token = data.token;
+      const rawMsg = data.message;
+      const apiText =
+        typeof rawMsg === "string" && rawMsg.trim() !== ""
+          ? rawMsg.trim()
+          : t("auth.register.verifySuccess");
 
-      if (!token) {
-        setMessage(t("auth.register.noToken"));
-        return;
-      }
-
-      localStorage.setItem("token", token);
-      window.location.href = "/";
+      setSuccessMessage(apiText);
+      setPassword("");
     } catch {
-      setMessage(t("auth.register.serverError"));
+      setErrorMessage(t("auth.register.serverError"));
     } finally {
       setLoading(false);
     }
   }
+
+  const formDisabled = Boolean(successMessage);
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#eef4f8] text-[#193549]">
@@ -117,10 +137,11 @@ export default function Register() {
                       </label>
                       <input
                         type="text"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
                         placeholder="Yurii"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        disabled={formDisabled}
                       />
                     </div>
 
@@ -130,10 +151,11 @@ export default function Register() {
                       </label>
                       <input
                         type="email"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        disabled={formDisabled}
                       />
                     </div>
 
@@ -143,16 +165,17 @@ export default function Register() {
                       </label>
                       <input
                         type="password"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
                         placeholder={t("auth.register.passwordHint")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        disabled={formDisabled}
                       />
                     </div>
 
                     <button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || formDisabled}
                       className="flex h-14 w-full items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                     >
                       {loading
@@ -161,9 +184,25 @@ export default function Register() {
                     </button>
                   </form>
 
-                  {message && (
-                    <div className="mt-4 rounded-2xl bg-white/85 px-4 py-3 text-sm text-[#b42318] shadow-sm">
-                      {message}
+                  {errorMessage && (
+                    <div className="mt-4 rounded-2xl bg-[#fff1f0] px-4 py-3 text-sm text-[#b42318] shadow-sm">
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  {successMessage && (
+                    <div className="mt-4 space-y-3 rounded-2xl bg-[#e8f7e8] px-4 py-3 text-sm text-[#17663a] shadow-sm">
+                      <p className="font-semibold">{successMessage}</p>
+                      <p className="text-xs text-[#35556c]">
+                        {t("auth.register.redirectHint")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate("/login")}
+                        className="flex h-11 w-full items-center justify-center rounded-full border border-[#17663a]/30 bg-white px-6 text-sm font-bold text-[#17663a] shadow-sm transition hover:bg-[#f0faf0]"
+                      >
+                        {t("auth.register.goToLogin")}
+                      </button>
                     </div>
                   )}
 

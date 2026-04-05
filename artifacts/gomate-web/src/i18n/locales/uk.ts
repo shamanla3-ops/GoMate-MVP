@@ -320,7 +320,18 @@ export default {
   "auth.register.signInLink": "Увійти",
   "auth.register.error": "Помилка реєстрації",
   "auth.register.noToken": "Сервер не повернув токен",
+  "auth.register.verifySuccess": "Обліковий запис створено. Підтвердьте email.",
+  "auth.register.goToLogin": "Перейти до входу",
+  "auth.register.redirectHint": "За кілька секунд вас перенаправлять на сторінку входу.",
   "auth.register.serverError": "Не вдалося з’єднатися з сервером",
+
+  "auth.verify.title": "Підтвердження email",
+  "auth.verify.subtitle": "Підтвердьте email, щоб користуватися GoMate.",
+  "auth.verify.loading": "Перевіряємо ваш email…",
+  "auth.verify.success": "Email підтверджено.",
+  "auth.verify.tokenMissing": "Відсутній токен підтвердження",
+  "auth.verify.failed": "Не вдалося підтвердити email",
+  "auth.verify.goToLogin": "Перейти до входу",
 
   "profilePage.loadError": "Не вдалося завантажити профіль",
   "profilePage.serverError": "Не вдалося з’єднатися з сервером",

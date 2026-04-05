@@ -319,7 +319,18 @@ export default {
   "auth.register.signInLink": "Sign in",
   "auth.register.error": "Registration failed",
   "auth.register.noToken": "Token was not returned by server",
+  "auth.register.verifySuccess": "Account created. Please verify your email.",
+  "auth.register.goToLogin": "Go to login",
+  "auth.register.redirectHint": "You will be redirected to sign in in a few seconds.",
   "auth.register.serverError": "Cannot connect to server",
+
+  "auth.verify.title": "Verify email",
+  "auth.verify.subtitle": "Confirm your email address to use GoMate.",
+  "auth.verify.loading": "Verifying your email...",
+  "auth.verify.success": "Your email has been verified.",
+  "auth.verify.tokenMissing": "Verification token is missing",
+  "auth.verify.failed": "Verification failed",
+  "auth.verify.goToLogin": "Go to login",
 
   "profilePage.loadError": "Could not load profile",
   "profilePage.serverError": "Could not connect to server",
