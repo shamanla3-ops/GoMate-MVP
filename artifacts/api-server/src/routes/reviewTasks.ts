@@ -14,6 +14,7 @@ import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { refreshRevieweeRating } from "../lib/reviewRating.js";
 import { jsonApiError } from "../lib/apiErrors.js";
 import { withApiSuccess } from "../lib/apiSuccess.js";
+import { reconcilePendingReviewTasks } from "../lib/reviewTaskStale.js";
 
 const router: Router = Router();
 
@@ -55,8 +56,17 @@ router.get("/pending", authMiddleware, async (req: AuthRequest, res: Response) =
       )
       .orderBy(desc(reviewTasks.createdAt));
 
+    const keys = rows.map((r) => ({
+      id: r.id,
+      tripId: r.tripId,
+      targetUserId: r.targetUserId,
+    }));
+    const activeIds = await reconcilePendingReviewTasks(userId, keys);
+
+    const visible = rows.filter((r) => activeIds.has(r.id));
+
     res.json({
-      tasks: rows.map((r) => ({
+      tasks: visible.map((r) => ({
         id: r.id,
         tripId: r.tripId,
         targetUserId: r.targetUserId,
@@ -170,34 +180,58 @@ router.post(
         return;
       }
 
-      await db.insert(userReviews).values({
-        tripId: task.tripId,
-        authorId: userId,
-        revieweeId: task.targetUserId,
-        rating,
-        comment: commentText,
-        tripHappened,
-        noShowReason: tripHappened ? null : noShowReason,
-      });
+      try {
+        await db.insert(userReviews).values({
+          tripId: task.tripId,
+          authorId: userId,
+          revieweeId: task.targetUserId,
+          rating,
+          comment: commentText,
+          tripHappened,
+          noShowReason: tripHappened ? null : noShowReason,
+        });
 
-      await db
-        .update(reviewTasks)
-        .set({ status: "done" })
-        .where(eq(reviewTasks.id, taskId));
+        await db
+          .update(reviewTasks)
+          .set({ status: "done" })
+          .where(eq(reviewTasks.id, taskId));
 
-      await refreshRevieweeRating(task.targetUserId);
+        await refreshRevieweeRating(task.targetUserId);
 
-      res
-        .status(201)
-        .json(withApiSuccess({ success: true }, "REVIEW_SUBMITTED"));
+        res
+          .status(201)
+          .json(withApiSuccess({ success: true }, "REVIEW_SUBMITTED"));
+      } catch (insertErr) {
+        const pg =
+          typeof insertErr === "object" && insertErr !== null
+            ? (insertErr as { code?: string })
+            : {};
+        if (pg.code === "23505") {
+          await db
+            .update(reviewTasks)
+            .set({ status: "done" })
+            .where(eq(reviewTasks.id, taskId));
+          await refreshRevieweeRating(task.targetUserId);
+          res
+            .status(201)
+            .json(
+              withApiSuccess(
+                { success: true, alreadyExisted: true },
+                "REVIEW_SUBMITTED"
+              )
+            );
+          return;
+        }
+        throw insertErr;
+      }
     } catch (err) {
       console.error("review-tasks submit error:", err);
       const pg =
         typeof err === "object" && err !== null
           ? (err as { code?: string })
           : {};
-      if (pg.code === "23505") {
-        jsonApiError(res, 409, "REVIEWS_DUPLICATE");
+      if (pg.code === "42703" || pg.code === "42P01") {
+        jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED_REVIEWS");
         return;
       }
       jsonApiError(res, 500, "REVIEWS_SUBMIT_FAILED");

@@ -6,6 +6,7 @@ import {
   count,
   desc,
   eq,
+  inArray,
   isNotNull,
   isNull,
   lte,
@@ -15,7 +16,7 @@ import {
 
 import * as schema from "./schema/index.js";
 export * from "./schema/index.js";
-export { and, asc, count, desc, eq, isNotNull, isNull, lte, or, sql };
+export { and, asc, count, desc, eq, inArray, isNotNull, isNull, lte, or, sql };
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

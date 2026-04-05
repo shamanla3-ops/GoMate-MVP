@@ -11,6 +11,7 @@ import {
   asc,
   count,
 } from "@gomate/db";
+import { countReconciledPendingReviewTasks } from "./reviewTaskStale.js";
 
 function getReadAtForUser(
   chat: typeof tripChats.$inferSelect,
@@ -83,8 +84,12 @@ export async function getNotificationCounts(userId: string): Promise<{
   const incomingPending = Number(incomingRow?.n ?? 0);
   const outgoingPending = Number(outgoingRow?.n ?? 0);
 
-  const [reviewRow] = await db
-    .select({ n: count() })
+  const reviewTaskRows = await db
+    .select({
+      id: reviewTasks.id,
+      tripId: reviewTasks.tripId,
+      targetUserId: reviewTasks.targetUserId,
+    })
     .from(reviewTasks)
     .innerJoin(trips, eq(reviewTasks.tripId, trips.id))
     .where(
@@ -95,7 +100,10 @@ export async function getNotificationCounts(userId: string): Promise<{
       )
     );
 
-  const reviewTasksPending = Number(reviewRow?.n ?? 0);
+  const reviewTasksPending = await countReconciledPendingReviewTasks(
+    userId,
+    reviewTaskRows
+  );
 
   return {
     chatsUnread,
