@@ -5,6 +5,9 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
+import { fetchDrivingDurationMinutes } from "../lib/osrmClient";
 
 const WEEKDAY_VALUES = [
   "mon",
@@ -102,6 +105,23 @@ export default function CreateTrip() {
     try {
       const priceCents = Math.round(parsedPrice * 100);
 
+      let estimatedDurationMinutes: number | undefined;
+      const ac = new AbortController();
+      const timer = window.setTimeout(() => ac.abort(), 12_000);
+      try {
+        estimatedDurationMinutes = await fetchDrivingDurationMinutes(
+          origin.lat as number,
+          origin.lng as number,
+          destination.lat as number,
+          destination.lng as number,
+          ac.signal
+        );
+      } catch {
+        /* server computes duration */
+      } finally {
+        window.clearTimeout(timer);
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/trips`, {
         method: "POST",
         headers: {
@@ -121,18 +141,21 @@ export default function CreateTrip() {
           currency,
           tripType,
           weekdays: tripType === "regular" ? weekdays : [],
+          ...(estimatedDurationMinutes !== undefined
+            ? { estimatedDurationMinutes }
+            : {}),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("createTrip.fail"));
+        setMessage(messageFromApiError(data, t, "createTrip.fail"));
         return;
       }
 
       setIsSuccess(true);
-      setMessage(t("createTrip.success"));
+      setMessage(messageFromApiSuccess(data, t, "createTrip.success"));
 
       setOrigin({ label: "", lat: null, lng: null });
       setDestination({ label: "", lat: null, lng: null });

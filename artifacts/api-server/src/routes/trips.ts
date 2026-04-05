@@ -12,6 +12,8 @@ import {
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { resolveDrivingDurationMinutes } from "../lib/osrmDuration.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -105,7 +107,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -137,6 +139,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       originLng?: unknown;
       destinationLat?: unknown;
       destinationLng?: unknown;
+      estimatedDurationMinutes?: unknown;
     };
 
     if (
@@ -147,10 +150,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       !currency ||
       !tripType
     ) {
-      res.status(400).json({
-        error:
-          "Missing required fields: origin, destination, departureTime, seatsTotal, price, currency, tripType",
-      });
+      jsonApiError(res, 400, "TRIP_CREATE_FIELDS_MISSING");
       return;
     }
 
@@ -169,10 +169,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       !isValidLat(dLat) ||
       !isValidLng(dLng)
     ) {
-      res.status(400).json({
-        error:
-          "Valid coordinates are required for origin and destination (originLat, originLng, destinationLat, destinationLng)",
-      });
+      jsonApiError(res, 400, "TRIP_COORDINATES_INVALID");
       return;
     }
 
@@ -182,27 +179,27 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const departureDate = new Date(departureTime);
 
     if (rawSeats === undefined || Number.isNaN(seatsNumber) || seatsNumber < 1) {
-      res.status(400).json({ error: "seatsTotal must be at least 1" });
+      jsonApiError(res, 400, "TRIP_SEATS_INVALID");
       return;
     }
 
     if (Number.isNaN(priceNumber) || priceNumber < 0) {
-      res.status(400).json({ error: "price must be a positive number or 0" });
+      jsonApiError(res, 400, "TRIP_PRICE_INVALID");
       return;
     }
 
     if (!["EUR", "USD", "PLN"].includes(currency)) {
-      res.status(400).json({ error: "currency must be EUR, USD, or PLN" });
+      jsonApiError(res, 400, "TRIP_CURRENCY_INVALID");
       return;
     }
 
     if (!["one-time", "regular"].includes(tripType)) {
-      res.status(400).json({ error: "tripType must be one-time or regular" });
+      jsonApiError(res, 400, "TRIP_TYPE_INVALID");
       return;
     }
 
     if (Number.isNaN(departureDate.getTime())) {
-      res.status(400).json({ error: "departureTime must be a valid date" });
+      jsonApiError(res, 400, "TRIP_DEPARTURE_INVALID");
       return;
     }
 
@@ -210,9 +207,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
     if (tripType === "regular") {
       if (!Array.isArray(weekdays)) {
-        res.status(400).json({
-          error: "weekdays must be an array for regular trips",
-        });
+        jsonApiError(res, 400, "TRIP_WEEKDAYS_ARRAY_REQUIRED");
         return;
       }
 
@@ -225,22 +220,33 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       ];
 
       if (filtered.length === 0) {
-        res.status(400).json({
-          error:
-            "regular trips must have at least one weekday (mon, tue, wed, thu, fri, sat, sun)",
-        });
+        jsonApiError(res, 400, "TRIP_WEEKDAYS_EMPTY");
         return;
       }
 
       weekdaysValue = filtered;
     }
 
-    const durationMinutes = await resolveDrivingDurationMinutes(
+    const serverDurationMinutes = await resolveDrivingDurationMinutes(
       oLat,
       oLng,
       dLat,
       dLng
     );
+
+    const clientRaw = (req.body as { estimatedDurationMinutes?: unknown })
+      .estimatedDurationMinutes;
+    let durationMinutes = serverDurationMinutes;
+    if (typeof clientRaw === "number" && Number.isFinite(clientRaw)) {
+      const c = Math.round(clientRaw);
+      if (c >= 5 && c <= 48 * 60 && serverDurationMinutes > 0) {
+        const ratio = c / serverDurationMinutes;
+        if (ratio >= 0.65 && ratio <= 1.35) {
+          durationMinutes = c;
+        }
+      }
+    }
+
     const expectedEndTime = new Date(
       departureDate.getTime() + durationMinutes * 60 * 1000
     );
@@ -272,11 +278,15 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!driver) {
-      res.status(500).json({ error: "Driver not found after trip creation" });
+      jsonApiError(res, 500, "TRIP_DRIVER_MISSING");
       return;
     }
 
-    res.status(201).json({ trip: mapTripWithDriver(trip, driver) });
+    res
+      .status(201)
+      .json(
+        withApiSuccess({ trip: mapTripWithDriver(trip, driver) }, "TRIP_CREATED")
+      );
   } catch (err) {
     console.error("Create trip error:", err);
     const pg =
@@ -288,11 +298,11 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       (typeof pg.message === "string" &&
         (pg.message.includes("does not exist") ||
           pg.message.includes("column")));
-    res.status(500).json({
-      error: missingColumn
-        ? "Database schema is out of date (missing columns). Run migrations / SQL for trips (coordinates, weekdays)."
-        : "Failed to create trip",
-    });
+    if (missingColumn) {
+      jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED_TRIPS");
+    } else {
+      jsonApiError(res, 500, "TRIP_CREATE_FAILED");
+    }
   }
 });
 
@@ -323,7 +333,7 @@ router.get("/search", async (req: Request, res: Response) => {
     res.json({ trips: filteredTrips });
   } catch (err) {
     console.error("Search trips error:", err);
-    res.status(500).json({ error: "Failed to search trips" });
+    jsonApiError(res, 500, "TRIP_SEARCH_FAILED");
   }
 });
 
@@ -333,7 +343,7 @@ router.get("/", async (_req: Request, res: Response) => {
     res.json({ trips: allTrips });
   } catch (err) {
     console.error("Load trips error:", err);
-    res.status(500).json({ error: "Failed to load trips" });
+    jsonApiError(res, 500, "TRIP_LIST_FAILED");
   }
 });
 
@@ -342,7 +352,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     const tripId = String(req.params.id || "").trim();
 
     if (!tripId) {
-      res.status(400).json({ error: "Trip id is required" });
+      jsonApiError(res, 400, "TRIP_ID_REQUIRED");
       return;
     }
 
@@ -358,14 +368,14 @@ router.get("/:id", async (req: Request, res: Response) => {
     const row = rows[0];
 
     if (!row) {
-      res.status(404).json({ error: "Trip not found" });
+      jsonApiError(res, 404, "TRIP_NOT_FOUND");
       return;
     }
 
     res.json({ trip: mapTripWithDriver(row.trip, row.driver) });
   } catch (err) {
     console.error("Load trip details error:", err);
-    res.status(500).json({ error: "Failed to load trip details" });
+    jsonApiError(res, 500, "TRIP_DETAILS_FAILED");
   }
 });
 
@@ -374,14 +384,14 @@ async function handleDeleteTrip(req: AuthRequest, res: Response) {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     const tripId = String(req.params.id || "").trim();
 
     if (!tripId) {
-      res.status(400).json({ error: "Trip id is required" });
+      jsonApiError(res, 400, "TRIP_ID_REQUIRED");
       return;
     }
 
@@ -390,19 +400,17 @@ async function handleDeleteTrip(req: AuthRequest, res: Response) {
     });
 
     if (!existingTrip) {
-      res.status(404).json({ error: "Trip not found" });
+      jsonApiError(res, 404, "TRIP_NOT_FOUND");
       return;
     }
 
     if (existingTrip.driverId !== user.userId) {
-      res.status(403).json({
-        error: "You do not have permission to delete this trip",
-      });
+      jsonApiError(res, 403, "TRIP_DELETE_FORBIDDEN");
       return;
     }
 
     if (existingTrip.status === "cancelled") {
-      res.status(400).json({ error: "Trip is already cancelled" });
+      jsonApiError(res, 400, "TRIP_ALREADY_CANCELLED");
       return;
     }
 
@@ -428,13 +436,12 @@ async function handleDeleteTrip(req: AuthRequest, res: Response) {
         )
       );
 
-    res.json({
-      success: true,
-      deletedTripId: tripId,
-    });
+    res.json(
+      withApiSuccess({ success: true, deletedTripId: tripId }, "TRIP_DELETED")
+    );
   } catch (err) {
     console.error("Delete trip error:", err);
-    res.status(500).json({ error: "Failed to delete trip" });
+    jsonApiError(res, 500, "TRIP_DELETE_FAILED");
   }
 }
 

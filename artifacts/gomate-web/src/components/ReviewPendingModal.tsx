@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { messageFromApiError } from "../lib/errorMessages";
 
 type PendingTask = {
   id: string;
@@ -61,9 +62,9 @@ export function ReviewPendingModal() {
       const res = await fetch(`${API_BASE_URL}/api/review-tasks/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = (await res.json()) as { tasks?: PendingTask[]; error?: string };
+      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || t("reviewModal.loadError"));
+        setError(messageFromApiError(data, t, "reviewModal.loadError"));
         setTasks([]);
         return;
       }
@@ -149,26 +150,19 @@ export function ReviewPendingModal() {
         }
       );
 
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data?.error || t("reviewModal.submitError"));
+        setError(messageFromApiError(data, t, "reviewModal.submitError"));
         return;
       }
 
       await refresh();
-      setTasks((prev) => {
-        const next = prev.slice(1);
-        if (next.length === 0) {
-          setOpen(false);
-        } else {
-          setStep("happened");
-          setTripHappenedChoice(null);
-          setRating(5);
-          setComment("");
-          setNoShowReason("driver_no_show");
-        }
-        return next;
-      });
+      setStep("happened");
+      setTripHappenedChoice(null);
+      setRating(5);
+      setComment("");
+      setNoShowReason("driver_no_show");
+      await loadTasks();
     } catch {
       setError(t("reviewModal.submitError"));
     } finally {
@@ -305,7 +299,7 @@ export function ReviewPendingModal() {
             >
               {NO_SHOW_VALUES.map((val, i) => (
                 <option key={val} value={val}>
-                  {t(NO_SHOW_KEYS[i])}
+                  {t(NO_SHOW_KEYS[i]!)}
                 </option>
               ))}
             </select>

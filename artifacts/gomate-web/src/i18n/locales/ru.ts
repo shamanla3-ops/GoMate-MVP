@@ -556,5 +556,158 @@ export default {
   "profilePage.reviewReason.driver_no_show": "Водитель не приехал",
   "profilePage.reviewReason.passenger_no_show": "Пассажир не приехал",
   "profilePage.reviewReason.trip_cancelled": "Поездка отменена",
-  "profilePage.reviewReason.other": "Другое"
+  "profilePage.reviewReason.other": "Другое",
+
+  "errors.UNKNOWN": "Что-то пошло не так. Попробуйте ещё раз.",
+  "errors.SERVER_ERROR": "Что-то пошло не так",
+
+  "errors.AUTH_MISSING_HEADER": "Отсутствует или неверный заголовок авторизации",
+  "errors.SERVER_MISCONFIGURED": "Ошибка конфигурации сервера",
+  "errors.AUTH_TOKEN_INVALID": "Недействительный или просроченный токен",
+  "errors.AUTH_REGISTER_FIELDS_MISSING":
+    "Не хватает обязательных полей: email, пароль, имя",
+  "errors.AUTH_EMAIL_IN_USE": "Этот email уже зарегистрирован",
+  "errors.AUTH_REGISTRATION_FAILED": "Регистрация не удалась",
+  "errors.AUTH_LOGIN_FIELDS_MISSING": "Не хватает email или пароля",
+  "errors.AUTH_INVALID_CREDENTIALS": "Неверный email или пароль",
+  "errors.AUTH_LOGIN_FAILED": "Вход не удался",
+  "errors.UNAUTHORIZED": "Нет доступа",
+  "errors.USER_NOT_FOUND": "Пользователь не найден",
+  "errors.PROFILE_LOAD_FAILED": "Не удалось загрузить профиль",
+
+  "errors.TRIP_CREATE_FIELDS_MISSING":
+    "Не хватает полей: откуда, куда, время, места, цена, валюта, тип поездки",
+  "errors.TRIP_COORDINATES_INVALID":
+    "Нужны корректные координаты начала и конца на карте",
+  "errors.TRIP_SEATS_INVALID": "Число мест должно быть не меньше 1",
+  "errors.TRIP_PRICE_INVALID": "Цена должна быть неотрицательным числом",
+  "errors.TRIP_CURRENCY_INVALID": "Валюта должна быть EUR, USD или PLN",
+  "errors.TRIP_TYPE_INVALID": "Тип поездки: разовая или регулярная",
+  "errors.TRIP_DEPARTURE_INVALID": "Время отправления должно быть корректной датой",
+  "errors.TRIP_WEEKDAYS_ARRAY_REQUIRED":
+    "Для регулярных поездок нужен список дней недели",
+  "errors.TRIP_WEEKDAYS_EMPTY":
+    "Регулярная поездка требует хотя бы один день (пн–вс)",
+  "errors.TRIP_DRIVER_MISSING": "Не удалось загрузить водителя после создания поездки",
+  "errors.DATABASE_SCHEMA_OUTDATED_TRIPS":
+    "База данных сервера устарела. Обратитесь в поддержку.",
+  "errors.TRIP_CREATE_FAILED": "Не удалось создать поездку",
+  "errors.TRIP_SEARCH_FAILED": "Не удалось выполнить поиск",
+  "errors.TRIP_LIST_FAILED": "Не удалось загрузить поездки",
+  "errors.TRIP_ID_REQUIRED": "Нужен идентификатор поездки",
+  "errors.TRIP_NOT_FOUND": "Поездка не найдена",
+  "errors.TRIP_DETAILS_FAILED": "Не удалось загрузить детали поездки",
+  "errors.TRIP_DELETE_FORBIDDEN": "Вы не можете удалить эту поездку",
+  "errors.TRIP_ALREADY_CANCELLED": "Поездка уже отменена",
+  "errors.TRIP_DELETE_FAILED": "Не удалось удалить поездку",
+
+  "errors.TEMPLATE_FIELDS_MISSING":
+    "Не хватает полей: название, маршрут, места, цена, валюта, тип",
+  "errors.TEMPLATE_COORDINATES_INVALID":
+    "Нужны корректные координаты начала и конца на карте",
+  "errors.TEMPLATE_SEATS_INVALID": "Число мест должно быть не меньше 1",
+  "errors.TEMPLATE_PRICE_INVALID": "Цена должна быть неотрицательным числом",
+  "errors.TEMPLATE_CURRENCY_INVALID": "Валюта должна быть EUR, USD или PLN",
+  "errors.TEMPLATE_TYPE_INVALID": "Тип: разовый или регулярный",
+  "errors.TEMPLATE_WEEKDAYS_ARRAY_REQUIRED":
+    "Для регулярных шаблонов нужен список дней недели",
+  "errors.TEMPLATE_WEEKDAYS_EMPTY":
+    "Регулярный шаблон требует хотя бы один день (пн–вс)",
+  "errors.TEMPLATE_CREATE_FAILED": "Не удалось создать шаблон",
+  "errors.TEMPLATE_LIST_FAILED": "Не удалось загрузить шаблоны",
+  "errors.TEMPLATE_ID_REQUIRED": "Нужен идентификатор шаблона",
+  "errors.TEMPLATE_NOT_FOUND": "Шаблон не найден",
+  "errors.TEMPLATE_DELETE_FORBIDDEN": "Вы не можете удалить этот шаблон",
+  "errors.TEMPLATE_DELETE_FAILED": "Не удалось удалить шаблон",
+
+  "errors.REQUEST_TRIP_ID_REQUIRED": "Нужен идентификатор поездки",
+  "errors.REQUEST_SEATS_INVALID": "Число мест должно быть не меньше 1",
+  "errors.REQUEST_OWN_TRIP_FORBIDDEN": "Нельзя присоединиться к своей поездке",
+  "errors.TRIP_NOT_AVAILABLE": "Эта поездка больше недоступна",
+  "errors.TRIP_SEATS_NOT_ENOUGH": "Недостаточно свободных мест",
+  "errors.TRIP_SEATS_NOT_ENOUGH_ACCEPT": "Свободных мест больше недостаточно",
+  "errors.REQUEST_DUPLICATE_ACTIVE":
+    "У вас уже есть активная заявка на эту поездку",
+  "errors.REQUEST_CREATE_FAILED": "Не удалось создать заявку",
+  "errors.REQUEST_INCOMING_LOAD_FAILED": "Не удалось загрузить входящие заявки",
+  "errors.REQUEST_OUTGOING_LOAD_FAILED": "Не удалось загрузить исходящие заявки",
+  "errors.REQUEST_ID_REQUIRED": "Нужен идентификатор заявки",
+  "errors.REQUEST_NOT_FOUND": "Заявка не найдена",
+  "errors.REQUEST_MANAGE_FORBIDDEN": "Вы не можете управлять этой заявкой",
+  "errors.REQUEST_ACCEPT_NOT_PENDING": "Принять можно только ожидающую заявку",
+  "errors.REQUEST_ACCEPT_FAILED": "Не удалось принять заявку",
+  "errors.REQUEST_REJECT_NOT_PENDING": "Отклонить можно только ожидающую заявку",
+  "errors.REQUEST_REJECT_FAILED": "Не удалось отклонить заявку",
+  "errors.REQUEST_CANCEL_FORBIDDEN": "Отменить можно только свою заявку",
+  "errors.REQUEST_CANCEL_INVALID_STATE":
+    "Отменить можно только ожидающую или принятую заявку",
+  "errors.REQUEST_CANCEL_FAILED": "Не удалось отменить заявку",
+
+  "errors.CHAT_TRIP_ID_REQUIRED": "Нужен идентификатор поездки",
+  "errors.CHAT_DRIVER_CANNOT_MESSAGE_SELF": "Водитель не может чатить сам с собой",
+  "errors.CHAT_OPEN_FAILED": "Не удалось открыть чат",
+  "errors.CHAT_LIST_FAILED": "Не удалось загрузить чаты",
+  "errors.CHAT_ID_REQUIRED": "Нужен идентификатор чата",
+  "errors.CHAT_NOT_FOUND": "Чат не найден",
+  "errors.CHAT_MESSAGES_LOAD_FAILED": "Не удалось загрузить сообщения",
+  "errors.CHAT_MESSAGE_TEXT_REQUIRED": "Нужен текст сообщения",
+  "errors.CHAT_MESSAGE_SEND_FAILED": "Не удалось отправить сообщение",
+  "errors.CHAT_READ_FAILED": "Не удалось отметить чат прочитанным",
+
+  "errors.PROFILE_NAME_REQUIRED": "Имя обязательно",
+  "errors.PROFILE_AVATAR_TOO_LARGE":
+    "Аватар слишком большой. Используйте меньшее изображение (до ~2 МБ).",
+  "errors.PROFILE_AGE_INVALID": "Возраст должен быть от 1 до 120",
+  "errors.DATABASE_SCHEMA_OUTDATED":
+    "База данных сервера устарела. Обратитесь в поддержку.",
+  "errors.PROFILE_SAVE_FAILED": "Не удалось сохранить профиль",
+
+  "errors.REVIEWS_SUBJECT_REQUIRED": "Нужен идентификатор пользователя",
+  "errors.REVIEWS_LIST_FAILED": "Не удалось загрузить отзывы",
+  "errors.REVIEWS_ELIGIBLE_FAILED": "Не удалось загрузить варианты оценки",
+  "errors.REVIEWS_BODY_INVALID": "Нужны поездка и пользователь для оценки",
+  "errors.REVIEWS_RATING_INVALID": "Оценка должна быть целым числом от 1 до 5",
+  "errors.REVIEWS_SELF_FORBIDDEN": "Нельзя оценить самого себя",
+  "errors.REVIEWS_NOT_ALLOWED":
+    "Отзывы недоступны для этой поездки в текущем состоянии",
+  "errors.REVIEWS_FORBIDDEN_TARGET":
+    "Можно оценить только водителя или принятых пассажиров этой поездки",
+  "errors.REVIEWS_COMMENT_REQUIRED":
+    "При оценке 3 и ниже нужен комментарий",
+  "errors.REVIEWS_DUPLICATE": "Вы уже оценили этого человека в этой поездке",
+  "errors.REVIEWS_TRIP_NOT_COMPLETED":
+    "Поездка должна быть завершена, прежде чем можно оставить отзыв",
+  "errors.REVIEW_TASK_REQUIRED":
+    "Нет ожидающего задания на отзыв для этого человека в этой поездке. Откройте напоминания об отзыве или страницу поездки.",
+  "errors.DATABASE_SCHEMA_OUTDATED_REVIEWS":
+    "База данных сервера устарела. Обратитесь в поддержку.",
+  "errors.REVIEWS_SUBMIT_FAILED": "Не удалось отправить отзыв",
+
+  "errors.REVIEW_TASKS_LOAD_FAILED": "Не удалось загрузить задания на отзыв",
+  "errors.REVIEW_TASK_ID_REQUIRED": "Нужен идентификатор задания",
+  "errors.REVIEW_TASK_NOT_FOUND": "Задание на отзыв не найдено",
+  "errors.REVIEW_TASK_NOT_PENDING": "Это задание больше не ожидает выполнения",
+  "errors.REVIEW_TASK_TRIP_UNAVAILABLE": "Поездка недоступна для отзыва",
+  "errors.REVIEW_TASK_NO_SHOW_REASON_INVALID": "Неверная причина",
+  "errors.REVIEW_TASK_RELATIONSHIP_INVALID":
+    "Нельзя отправить этот отзыв для этой поездки",
+
+  "errors.PUSH_SUBSCRIPTION_INVALID": "Неверная push-подписка",
+  "errors.PUSH_SUBSCRIBE_FAILED": "Не удалось включить уведомления",
+
+  "errors.NOTIFICATION_SUMMARY_FAILED": "Не удалось загрузить уведомления",
+
+  "success.PROFILE_SAVED": "Профиль сохранён",
+  "success.REQUEST_SENT": "Заявка отправлена водителю",
+  "success.REQUEST_ACCEPTED": "Заявка принята",
+  "success.REQUEST_REJECTED": "Заявка отклонена",
+  "success.REQUEST_CANCELLED": "Заявка отменена",
+  "success.REQUEST_PARTICIPATION_CANCELLED": "Участие отменено",
+  "success.PUSH_SUBSCRIPTION_SAVED": "Подписка на уведомления сохранена",
+  "success.TRIP_DELETED": "Поездка удалена",
+  "success.TRIP_CREATED": "Поездка создана",
+  "success.TEMPLATE_CREATED": "Шаблон создан",
+  "success.TEMPLATE_DELETED": "Шаблон удалён",
+  "success.REVIEW_SUBMITTED": "Отзыв отправлен",
+  "success.CHAT_MESSAGE_SENT": "Сообщение отправлено"
 } as const;

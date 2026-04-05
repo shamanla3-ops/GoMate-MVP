@@ -4,6 +4,8 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type RequestStatus =
   | "pending"
@@ -191,7 +193,9 @@ export default function Requests() {
       const outgoingData = await outgoingResponse.json();
 
       if (!incomingResponse.ok) {
-        setMessage(incomingData.error || t("requestsPage.loadIncomingError"));
+        setMessage(
+          messageFromApiError(incomingData, t, "requestsPage.loadIncomingError")
+        );
         setIncomingRequests([]);
       } else {
         setIncomingRequests(
@@ -200,7 +204,10 @@ export default function Requests() {
       }
 
       if (!outgoingResponse.ok) {
-        setMessage((prev) => prev || outgoingData.error || t("requestsPage.loadOutgoingError"));
+        setMessage((prev) =>
+          prev ||
+          messageFromApiError(outgoingData, t, "requestsPage.loadOutgoingError")
+        );
         setOutgoingRequests([]);
       } else {
         setOutgoingRequests(
@@ -284,9 +291,19 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("requestsPage.updateError"));
+        setMessage(messageFromApiError(data, t, "requestsPage.updateError"));
         return;
       }
+
+      setMessage(
+        messageFromApiSuccess(
+          data,
+          t,
+          action === "accept"
+            ? "requestsPage.incomingAcceptedNote"
+            : "requestsPage.incomingRejectedNote"
+        )
+      );
 
       setIncomingRequests((prev) =>
         prev.map((request) => {
@@ -353,9 +370,11 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("requestsPage.cancelError"));
+        setMessage(messageFromApiError(data, t, "requestsPage.cancelError"));
         return;
       }
+
+      setMessage(messageFromApiSuccess(data, t, "myRequestsPage.cancelled"));
 
       setOutgoingRequests((prev) =>
         prev.map((item) =>
@@ -397,9 +416,13 @@ export default function Requests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("requestsPage.deleteTripError"));
+        setMessage(messageFromApiError(data, t, "requestsPage.deleteTripError"));
         return;
       }
+
+      setMessage(
+        messageFromApiSuccess(data, t, "requestsPage.tripCancelledByDriver")
+      );
 
       setIncomingRequests((prev) =>
         prev.map((request) =>
@@ -418,8 +441,6 @@ export default function Requests() {
             : request
         )
       );
-
-      setMessage(t("requestsPage.tripCancelledByDriver"));
     } catch {
       setMessage(t("requestsPage.serverError"));
     } finally {

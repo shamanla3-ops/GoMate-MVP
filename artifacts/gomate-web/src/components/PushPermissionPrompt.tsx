@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
+import { messageFromApiError } from "../lib/errorMessages";
 
 const DISMISS_KEY = "gomate-push-prompt-dismissed";
 
@@ -110,7 +111,7 @@ export default function PushPermissionPrompt() {
       const publicKeyData = await publicKeyResponse.json();
 
       if (!publicKeyResponse.ok || !publicKeyData.key) {
-        throw new Error("Failed to load VAPID public key");
+        throw new Error(t("errors.UNKNOWN"));
       }
 
       let subscription = await registration.pushManager.getSubscription();
@@ -135,7 +136,7 @@ export default function PushPermissionPrompt() {
 
       if (!subscribeResponse.ok) {
         throw new Error(
-          subscribeData?.error || "Failed to save push subscription"
+          messageFromApiError(subscribeData, t, "errors.PUSH_SUBSCRIBE_FAILED")
         );
       }
 

@@ -1,10 +1,21 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { and, asc, count, desc, eq, lte, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import * as schema from "./schema/index.js";
 export * from "./schema/index.js";
-export { and, asc, count, desc, eq, lte, or, sql };
+export { and, asc, count, desc, eq, isNotNull, isNull, lte, or, sql };
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

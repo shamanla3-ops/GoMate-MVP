@@ -5,6 +5,8 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { formatDateTimeShort } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type CurrentUserLike = {
   id?: string;
@@ -139,7 +141,7 @@ export default function Trips() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("tripsPage.loadError"));
+        setMessage(messageFromApiError(data, t, "tripsPage.loadError"));
         setTrips([]);
         return;
       }
@@ -268,7 +270,7 @@ export default function Trips() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("tripsPage.searchFailed"));
+        setMessage(messageFromApiError(data, t, "tripsPage.searchFailed"));
         setTrips([]);
         return;
       }
@@ -306,10 +308,11 @@ export default function Trips() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || t("tripsPage.deleteTripError"));
+        alert(messageFromApiError(data, t, "tripsPage.deleteTripError"));
         return;
       }
 
+      setMessage(messageFromApiSuccess(data, t, "success.TRIP_DELETED"));
       setTrips((prev) => prev.filter((trip) => trip.id !== tripId));
       await Promise.all([
         loadIncomingCount(),
@@ -354,10 +357,11 @@ export default function Trips() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || t("tripsPage.cancelRequestError"));
+        alert(messageFromApiError(data, t, "tripsPage.cancelRequestError"));
         return;
       }
 
+      setMessage(messageFromApiSuccess(data, t, "myRequestsPage.cancelled"));
       setOutgoingRequests((prev) =>
         prev.map((item) =>
           item.id === request.id

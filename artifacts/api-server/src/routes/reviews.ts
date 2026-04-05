@@ -9,17 +9,18 @@ import {
   eq,
   and,
   desc,
+  count,
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { refreshRevieweeRating } from "../lib/reviewRating.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
 function tripAllowsReviews(trip: typeof trips.$inferSelect): boolean {
   if (trip.status === "cancelled") return false;
-  if (trip.status === "completed") return true;
-  const dep = new Date(trip.departureTime);
-  return dep.getTime() <= Date.now();
+  return trip.status === "completed";
 }
 
 /** GET /api/reviews?subjectId=uuid — public list of reviews received by user */
@@ -27,7 +28,7 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const subjectId = String(req.query.subjectId ?? "").trim();
     if (!subjectId) {
-      res.status(400).json({ error: "subjectId query is required" });
+      jsonApiError(res, 400, "REVIEWS_SUBJECT_REQUIRED");
       return;
     }
 
@@ -65,7 +66,7 @@ router.get("/", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("List reviews error:", err);
-    res.status(500).json({ error: "Failed to load reviews" });
+    jsonApiError(res, 500, "REVIEWS_LIST_FAILED");
   }
 });
 
@@ -77,13 +78,13 @@ router.get(
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
+        jsonApiError(res, 401, "UNAUTHORIZED");
         return;
       }
 
       const tripId = String(req.params.tripId ?? "").trim();
       if (!tripId) {
-        res.status(400).json({ error: "tripId is required" });
+        jsonApiError(res, 400, "TRIP_ID_REQUIRED");
         return;
       }
 
@@ -92,7 +93,7 @@ router.get(
       });
 
       if (!trip) {
-        res.status(404).json({ error: "Trip not found" });
+        jsonApiError(res, 404, "TRIP_NOT_FOUND");
         return;
       }
 
@@ -100,6 +101,12 @@ router.get(
         res.json({ targets: [] });
         return;
       }
+
+      const [taskCountRow] = await db
+        .select({ c: count() })
+        .from(reviewTasks)
+        .where(eq(reviewTasks.tripId, tripId));
+      const taskCount = Number(taskCountRow?.c ?? 0);
 
       const existing = await db
         .select({ revieweeId: userReviews.revieweeId })
@@ -111,6 +118,30 @@ router.get(
           )
         );
       const reviewedIds = new Set(existing.map((e) => e.revieweeId));
+
+      if (taskCount > 0) {
+        const pendingRows = await db
+          .select({
+            targetUserId: reviewTasks.targetUserId,
+            targetName: users.name,
+          })
+          .from(reviewTasks)
+          .innerJoin(users, eq(reviewTasks.targetUserId, users.id))
+          .where(
+            and(
+              eq(reviewTasks.tripId, tripId),
+              eq(reviewTasks.reviewerUserId, userId),
+              eq(reviewTasks.status, "pending")
+            )
+          );
+
+        const targets = pendingRows
+          .filter((row) => !reviewedIds.has(row.targetUserId))
+          .map((row) => ({ userId: row.targetUserId, name: row.targetName }));
+
+        res.json({ targets });
+        return;
+      }
 
       const targets: { userId: string; name: string }[] = [];
 
@@ -155,7 +186,7 @@ router.get(
       res.json({ targets });
     } catch (err) {
       console.error("Eligible reviews error:", err);
-      res.status(500).json({ error: "Failed to load review targets" });
+      jsonApiError(res, 500, "REVIEWS_ELIGIBLE_FAILED");
     }
   }
 );
@@ -164,7 +195,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -180,17 +211,17 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const rNum = Number(rating);
 
     if (!tId || !rId) {
-      res.status(400).json({ error: "tripId and revieweeId are required" });
+      jsonApiError(res, 400, "REVIEWS_BODY_INVALID");
       return;
     }
 
     if (!Number.isFinite(rNum) || rNum < 1 || rNum > 5 || !Number.isInteger(rNum)) {
-      res.status(400).json({ error: "rating must be an integer from 1 to 5" });
+      jsonApiError(res, 400, "REVIEWS_RATING_INVALID");
       return;
     }
 
     if (rId === userId) {
-      res.status(400).json({ error: "You cannot review yourself" });
+      jsonApiError(res, 400, "REVIEWS_SELF_FORBIDDEN");
       return;
     }
 
@@ -199,15 +230,16 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!trip) {
-      res.status(404).json({ error: "Trip not found" });
+      jsonApiError(res, 404, "TRIP_NOT_FOUND");
       return;
     }
 
     if (!tripAllowsReviews(trip)) {
-      res.status(400).json({
-        error:
-          "Reviews are available after the trip is completed or departure time for accepted participants",
-      });
+      if (trip.status === "scheduled") {
+        jsonApiError(res, 400, "REVIEWS_TRIP_NOT_COMPLETED");
+        return;
+      }
+      jsonApiError(res, 400, "REVIEWS_NOT_ALLOWED");
       return;
     }
 
@@ -234,19 +266,36 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     if (!allowed) {
-      res.status(403).json({
-        error: "You can only review your driver or accepted passengers on this trip",
-      });
+      jsonApiError(res, 403, "REVIEWS_FORBIDDEN_TARGET");
       return;
+    }
+
+    const [taskCountRow] = await db
+      .select({ c: count() })
+      .from(reviewTasks)
+      .where(eq(reviewTasks.tripId, tId));
+    const taskCount = Number(taskCountRow?.c ?? 0);
+
+    if (taskCount > 0) {
+      const pendingTask = await db.query.reviewTasks.findFirst({
+        where: and(
+          eq(reviewTasks.tripId, tId),
+          eq(reviewTasks.reviewerUserId, userId),
+          eq(reviewTasks.targetUserId, rId),
+          eq(reviewTasks.status, "pending")
+        ),
+      });
+      if (!pendingTask) {
+        jsonApiError(res, 403, "REVIEW_TASK_REQUIRED");
+        return;
+      }
     }
 
     const commentText =
       typeof comment === "string" ? comment.trim().slice(0, 2000) : null;
 
     if (rNum <= 3 && (!commentText || commentText.length === 0)) {
-      res.status(400).json({
-        error: "Comment is required when rating is 3 or lower",
-      });
+      jsonApiError(res, 400, "REVIEWS_COMMENT_REQUIRED");
       return;
     }
 
@@ -274,7 +323,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
     await refreshRevieweeRating(rId);
 
-    res.status(201).json({ success: true });
+    res.status(201).json(withApiSuccess({ success: true }, "REVIEW_SUBMITTED"));
   } catch (err) {
     console.error("Create review error:", err);
     const pg =
@@ -282,16 +331,14 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
         ? (err as { code?: string })
         : {};
     if (pg.code === "23505") {
-      res.status(409).json({ error: "You already reviewed this person for this trip" });
+      jsonApiError(res, 409, "REVIEWS_DUPLICATE");
       return;
     }
     if (pg.code === "42703" || pg.code === "42P01") {
-      res.status(500).json({
-        error: "Database schema is out of date. Run migrations for user_reviews.",
-      });
+      jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED_REVIEWS");
       return;
     }
-    res.status(500).json({ error: "Failed to submit review" });
+    jsonApiError(res, 500, "REVIEWS_SUBMIT_FAILED");
   }
 });
 

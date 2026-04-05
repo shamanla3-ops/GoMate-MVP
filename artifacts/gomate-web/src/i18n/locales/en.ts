@@ -556,5 +556,158 @@ export default {
   "profilePage.reviewReason.driver_no_show": "Driver didn't show",
   "profilePage.reviewReason.passenger_no_show": "Passenger didn't show",
   "profilePage.reviewReason.trip_cancelled": "Trip cancelled",
-  "profilePage.reviewReason.other": "Other"
+  "profilePage.reviewReason.other": "Other",
+
+  "errors.UNKNOWN": "Something went wrong. Please try again.",
+  "errors.SERVER_ERROR": "Something went wrong",
+
+  "errors.AUTH_MISSING_HEADER": "Missing or invalid Authorization header",
+  "errors.SERVER_MISCONFIGURED": "Server misconfiguration",
+  "errors.AUTH_TOKEN_INVALID": "Invalid or expired token",
+  "errors.AUTH_REGISTER_FIELDS_MISSING":
+    "Missing required fields: email, password, name",
+  "errors.AUTH_EMAIL_IN_USE": "Email already registered",
+  "errors.AUTH_REGISTRATION_FAILED": "Registration failed",
+  "errors.AUTH_LOGIN_FIELDS_MISSING": "Missing email or password",
+  "errors.AUTH_INVALID_CREDENTIALS": "Invalid email or password",
+  "errors.AUTH_LOGIN_FAILED": "Login failed",
+  "errors.UNAUTHORIZED": "Unauthorized",
+  "errors.USER_NOT_FOUND": "User not found",
+  "errors.PROFILE_LOAD_FAILED": "Failed to load profile",
+
+  "errors.TRIP_CREATE_FIELDS_MISSING":
+    "Missing required fields: origin, destination, departure time, seats, price, currency, trip type",
+  "errors.TRIP_COORDINATES_INVALID":
+    "Valid map coordinates are required for origin and destination",
+  "errors.TRIP_SEATS_INVALID": "Number of seats must be at least 1",
+  "errors.TRIP_PRICE_INVALID": "Price must be zero or a positive number",
+  "errors.TRIP_CURRENCY_INVALID": "Currency must be EUR, USD, or PLN",
+  "errors.TRIP_TYPE_INVALID": "Trip type must be one-time or regular",
+  "errors.TRIP_DEPARTURE_INVALID": "Departure time must be a valid date",
+  "errors.TRIP_WEEKDAYS_ARRAY_REQUIRED":
+    "For regular trips, weekdays must be a list",
+  "errors.TRIP_WEEKDAYS_EMPTY":
+    "Regular trips need at least one weekday (Mon–Sun)",
+  "errors.TRIP_DRIVER_MISSING": "Could not load driver after creating the trip",
+  "errors.DATABASE_SCHEMA_OUTDATED_TRIPS":
+    "Server database is out of date. Please contact support.",
+  "errors.TRIP_CREATE_FAILED": "Failed to create trip",
+  "errors.TRIP_SEARCH_FAILED": "Failed to search trips",
+  "errors.TRIP_LIST_FAILED": "Failed to load trips",
+  "errors.TRIP_ID_REQUIRED": "Trip id is required",
+  "errors.TRIP_NOT_FOUND": "Trip not found",
+  "errors.TRIP_DETAILS_FAILED": "Failed to load trip details",
+  "errors.TRIP_DELETE_FORBIDDEN": "You cannot delete this trip",
+  "errors.TRIP_ALREADY_CANCELLED": "Trip is already cancelled",
+  "errors.TRIP_DELETE_FAILED": "Failed to delete trip",
+
+  "errors.TEMPLATE_FIELDS_MISSING":
+    "Missing required fields: name, route, seats, price, currency, trip type",
+  "errors.TEMPLATE_COORDINATES_INVALID":
+    "Valid map coordinates are required for origin and destination",
+  "errors.TEMPLATE_SEATS_INVALID": "Seats must be at least 1",
+  "errors.TEMPLATE_PRICE_INVALID": "Price must be zero or a positive number",
+  "errors.TEMPLATE_CURRENCY_INVALID": "Currency must be EUR, USD, or PLN",
+  "errors.TEMPLATE_TYPE_INVALID": "Trip type must be one-time or regular",
+  "errors.TEMPLATE_WEEKDAYS_ARRAY_REQUIRED":
+    "For regular templates, weekdays must be a list",
+  "errors.TEMPLATE_WEEKDAYS_EMPTY":
+    "Regular templates need at least one weekday (Mon–Sun)",
+  "errors.TEMPLATE_CREATE_FAILED": "Failed to create template",
+  "errors.TEMPLATE_LIST_FAILED": "Failed to load templates",
+  "errors.TEMPLATE_ID_REQUIRED": "Template id is required",
+  "errors.TEMPLATE_NOT_FOUND": "Template not found",
+  "errors.TEMPLATE_DELETE_FORBIDDEN": "You cannot delete this template",
+  "errors.TEMPLATE_DELETE_FAILED": "Failed to delete template",
+
+  "errors.REQUEST_TRIP_ID_REQUIRED": "Trip id is required",
+  "errors.REQUEST_SEATS_INVALID": "Number of seats must be at least 1",
+  "errors.REQUEST_OWN_TRIP_FORBIDDEN": "You cannot join your own trip",
+  "errors.TRIP_NOT_AVAILABLE": "This trip is no longer available",
+  "errors.TRIP_SEATS_NOT_ENOUGH": "Not enough free seats",
+  "errors.TRIP_SEATS_NOT_ENOUGH_ACCEPT": "Not enough free seats anymore",
+  "errors.REQUEST_DUPLICATE_ACTIVE":
+    "You already have an active request for this trip",
+  "errors.REQUEST_CREATE_FAILED": "Failed to create trip request",
+  "errors.REQUEST_INCOMING_LOAD_FAILED": "Failed to load incoming requests",
+  "errors.REQUEST_OUTGOING_LOAD_FAILED": "Failed to load outgoing requests",
+  "errors.REQUEST_ID_REQUIRED": "Request id is required",
+  "errors.REQUEST_NOT_FOUND": "Request not found",
+  "errors.REQUEST_MANAGE_FORBIDDEN": "You cannot manage this request",
+  "errors.REQUEST_ACCEPT_NOT_PENDING": "Only pending requests can be accepted",
+  "errors.REQUEST_ACCEPT_FAILED": "Failed to accept request",
+  "errors.REQUEST_REJECT_NOT_PENDING": "Only pending requests can be rejected",
+  "errors.REQUEST_REJECT_FAILED": "Failed to reject request",
+  "errors.REQUEST_CANCEL_FORBIDDEN": "You can cancel only your own request",
+  "errors.REQUEST_CANCEL_INVALID_STATE":
+    "Only pending or accepted requests can be cancelled",
+  "errors.REQUEST_CANCEL_FAILED": "Failed to cancel request",
+
+  "errors.CHAT_TRIP_ID_REQUIRED": "Trip id is required",
+  "errors.CHAT_DRIVER_CANNOT_MESSAGE_SELF": "You cannot open a chat with yourself",
+  "errors.CHAT_OPEN_FAILED": "Failed to open chat",
+  "errors.CHAT_LIST_FAILED": "Failed to load chats",
+  "errors.CHAT_ID_REQUIRED": "Chat id is required",
+  "errors.CHAT_NOT_FOUND": "Chat not found",
+  "errors.CHAT_MESSAGES_LOAD_FAILED": "Failed to load messages",
+  "errors.CHAT_MESSAGE_TEXT_REQUIRED": "Message text is required",
+  "errors.CHAT_MESSAGE_SEND_FAILED": "Failed to send message",
+  "errors.CHAT_READ_FAILED": "Failed to mark chat as read",
+
+  "errors.PROFILE_NAME_REQUIRED": "Name is required",
+  "errors.PROFILE_AVATAR_TOO_LARGE":
+    "Avatar is too large. Use a smaller image (max ~2 MB).",
+  "errors.PROFILE_AGE_INVALID": "Age must be between 1 and 120",
+  "errors.DATABASE_SCHEMA_OUTDATED":
+    "Server database is out of date. Please contact support.",
+  "errors.PROFILE_SAVE_FAILED": "Failed to save profile",
+
+  "errors.REVIEWS_SUBJECT_REQUIRED": "User id is required",
+  "errors.REVIEWS_LIST_FAILED": "Failed to load reviews",
+  "errors.REVIEWS_ELIGIBLE_FAILED": "Failed to load review options",
+  "errors.REVIEWS_BODY_INVALID": "Trip and person to review are required",
+  "errors.REVIEWS_RATING_INVALID": "Rating must be a whole number from 1 to 5",
+  "errors.REVIEWS_SELF_FORBIDDEN": "You cannot review yourself",
+  "errors.REVIEWS_NOT_ALLOWED":
+    "Reviews are not available for this trip in its current state",
+  "errors.REVIEWS_FORBIDDEN_TARGET":
+    "You can only review your driver or accepted passengers on this trip",
+  "errors.REVIEWS_COMMENT_REQUIRED":
+    "Comment is required when rating is 3 or lower",
+  "errors.REVIEWS_DUPLICATE": "You already reviewed this person for this trip",
+  "errors.REVIEWS_TRIP_NOT_COMPLETED":
+    "The trip must be completed before you can leave a review",
+  "errors.REVIEW_TASK_REQUIRED":
+    "There is no pending review task for this person on this trip. Open your review reminders or the trip page.",
+  "errors.DATABASE_SCHEMA_OUTDATED_REVIEWS":
+    "Server database is out of date. Please contact support.",
+  "errors.REVIEWS_SUBMIT_FAILED": "Failed to submit review",
+
+  "errors.REVIEW_TASKS_LOAD_FAILED": "Failed to load review tasks",
+  "errors.REVIEW_TASK_ID_REQUIRED": "Task id is required",
+  "errors.REVIEW_TASK_NOT_FOUND": "Review task not found",
+  "errors.REVIEW_TASK_NOT_PENDING": "This review task is no longer pending",
+  "errors.REVIEW_TASK_TRIP_UNAVAILABLE": "Trip is not available for review",
+  "errors.REVIEW_TASK_NO_SHOW_REASON_INVALID": "Invalid reason selected",
+  "errors.REVIEW_TASK_RELATIONSHIP_INVALID":
+    "You cannot submit this review for this trip",
+
+  "errors.PUSH_SUBSCRIPTION_INVALID": "Invalid push subscription",
+  "errors.PUSH_SUBSCRIBE_FAILED": "Failed to enable notifications",
+
+  "errors.NOTIFICATION_SUMMARY_FAILED": "Failed to load notifications",
+
+  "success.PROFILE_SAVED": "Profile saved",
+  "success.REQUEST_SENT": "Request sent to the driver",
+  "success.REQUEST_ACCEPTED": "Request accepted",
+  "success.REQUEST_REJECTED": "Request declined",
+  "success.REQUEST_CANCELLED": "Request cancelled",
+  "success.REQUEST_PARTICIPATION_CANCELLED": "Participation cancelled",
+  "success.PUSH_SUBSCRIPTION_SAVED": "Push subscription saved",
+  "success.TRIP_DELETED": "Trip deleted",
+  "success.TRIP_CREATED": "Trip created",
+  "success.TEMPLATE_CREATED": "Template created",
+  "success.TEMPLATE_DELETED": "Template deleted",
+  "success.REVIEW_SUBMITTED": "Review submitted",
+  "success.CHAT_MESSAGE_SENT": "Message sent"
 } as const;

@@ -6,6 +6,7 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort, formatTimeOnly } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
 
 type CurrentUserLike = {
   id?: string;
@@ -131,7 +132,7 @@ export default function Chat() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || t("chatPage.loadError"));
+        setMessage(messageFromApiError(data, t, "chatPage.loadError"));
         setLoading(false);
         return;
       }
@@ -177,7 +178,7 @@ export default function Chat() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || t("chatPage.sendError"));
+        setMessage(messageFromApiError(data, t, "chatPage.sendError"));
         return;
       }
 

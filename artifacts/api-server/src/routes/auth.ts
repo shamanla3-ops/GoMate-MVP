@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { db, users, eq } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { jsonApiError } from "../lib/apiErrors.js";
 
 const router: Router = Router();
 const SALT_ROUNDS = 10;
@@ -55,9 +56,7 @@ router.post("/register", async (req: Request, res: Response) => {
     };
 
     if (!email || !password || !name) {
-      res.status(400).json({
-        error: "Missing required fields: email, password, name",
-      });
+      jsonApiError(res, 400, "AUTH_REGISTER_FIELDS_MISSING");
       return;
     }
 
@@ -66,7 +65,7 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     if (existing) {
-      res.status(409).json({ error: "Email already registered" });
+      jsonApiError(res, 409, "AUTH_EMAIL_IN_USE");
       return;
     }
 
@@ -91,7 +90,7 @@ router.post("/register", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("Register error:", err);
-    res.status(500).json({ error: "Registration failed" });
+    jsonApiError(res, 500, "AUTH_REGISTRATION_FAILED");
   }
 });
 
@@ -104,7 +103,7 @@ router.post("/login", async (req: Request, res: Response) => {
     };
 
     if (!email || !password) {
-      res.status(400).json({ error: "Missing email or password" });
+      jsonApiError(res, 400, "AUTH_LOGIN_FIELDS_MISSING");
       return;
     }
 
@@ -114,14 +113,14 @@ router.post("/login", async (req: Request, res: Response) => {
       .where(eq(users.email, email.toLowerCase()));
 
     if (!user) {
-      res.status(401).json({ error: "Invalid email or password" });
+      jsonApiError(res, 401, "AUTH_INVALID_CREDENTIALS");
       return;
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
 
     if (!valid) {
-      res.status(401).json({ error: "Invalid email or password" });
+      jsonApiError(res, 401, "AUTH_INVALID_CREDENTIALS");
       return;
     }
 
@@ -149,7 +148,7 @@ router.post("/login", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: "Login failed" });
+    jsonApiError(res, 500, "AUTH_LOGIN_FAILED");
   }
 });
 
@@ -162,14 +161,14 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      jsonApiError(res, 404, "USER_NOT_FOUND");
       return;
     }
 
     res.json({ user: mapUser(user, 0) });
   } catch (err) {
     console.error("Me error:", err);
-    res.status(500).json({ error: "Failed to load profile" });
+    jsonApiError(res, 500, "PROFILE_LOAD_FAILED");
   }
 });
 

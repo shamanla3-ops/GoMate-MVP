@@ -1,6 +1,8 @@
 import { Router, Response } from "express";
-import { db, users, userReviews, eq, count } from "@gomate/db";
+import { db, users, userReviews, eq, and, count, isNotNull } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -31,7 +33,7 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -40,19 +42,25 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      jsonApiError(res, 404, "USER_NOT_FOUND");
       return;
     }
 
     const [countRow] = await db
       .select({ c: count() })
       .from(userReviews)
-      .where(eq(userReviews.revieweeId, userId));
+      .where(
+        and(
+          eq(userReviews.revieweeId, userId),
+          eq(userReviews.tripHappened, true),
+          isNotNull(userReviews.rating)
+        )
+      );
 
     res.json({ user: mapUser(user, Number(countRow?.c ?? 0)) });
   } catch (err) {
     console.error("Profile GET error:", err);
-    res.status(500).json({ error: "Failed to load profile" });
+    jsonApiError(res, 500, "PROFILE_LOAD_FAILED");
   }
 });
 
@@ -60,7 +68,7 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -77,16 +85,14 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) {
-      res.status(400).json({ error: "Name is required" });
+      jsonApiError(res, 400, "PROFILE_NAME_REQUIRED");
       return;
     }
 
     const avatarUrl =
       typeof body.avatarUrl === "string" ? body.avatarUrl.trim() : "";
     if (avatarUrl.length > MAX_AVATAR_URL_LENGTH) {
-      res.status(400).json({
-        error: "Avatar is too large. Use a smaller image (max ~2 MB).",
-      });
+      jsonApiError(res, 400, "PROFILE_AVATAR_TOO_LARGE");
       return;
     }
 
@@ -94,7 +100,7 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
     if (body.age !== undefined && body.age !== null && String(body.age).trim() !== "") {
       const n = Number(body.age);
       if (!Number.isFinite(n) || n < 1 || n > 120) {
-        res.status(400).json({ error: "Age must be between 1 and 120" });
+        jsonApiError(res, 400, "PROFILE_AGE_INVALID");
         return;
       }
       age = Math.round(n);
@@ -122,19 +128,27 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
       .returning();
 
     if (!updated) {
-      res.status(404).json({ error: "User not found" });
+      jsonApiError(res, 404, "USER_NOT_FOUND");
       return;
     }
 
     const [countRow] = await db
       .select({ c: count() })
       .from(userReviews)
-      .where(eq(userReviews.revieweeId, userId));
+      .where(
+        and(
+          eq(userReviews.revieweeId, userId),
+          eq(userReviews.tripHappened, true),
+          isNotNull(userReviews.rating)
+        )
+      );
 
-    res.json({
-      user: mapUser(updated, Number(countRow?.c ?? 0)),
-      message: "Profile saved",
-    });
+    res.json(
+      withApiSuccess(
+        { user: mapUser(updated, Number(countRow?.c ?? 0)) },
+        "PROFILE_SAVED"
+      )
+    );
   } catch (err) {
     console.error("Profile PUT error:", err);
     const pg =
@@ -142,13 +156,10 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
         ? (err as { code?: string })
         : {};
     if (pg.code === "42703") {
-      res.status(500).json({
-        error:
-          "Database schema is out of date. Run migrations (including user_reviews).",
-      });
+      jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED");
       return;
     }
-    res.status(500).json({ error: "Failed to save profile" });
+    jsonApiError(res, 500, "PROFILE_SAVE_FAILED");
   }
 });
 

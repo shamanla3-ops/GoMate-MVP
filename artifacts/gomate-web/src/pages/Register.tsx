@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { messageFromApiError } from "../lib/errorMessages";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 
@@ -33,7 +34,7 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || data.message || t("auth.register.error"));
+        setMessage(messageFromApiError(data, t, "auth.register.error"));
         return;
       }
 

@@ -560,5 +560,158 @@ export default {
   "profilePage.reviewReason.driver_no_show": "Kierowca nie przyjechał",
   "profilePage.reviewReason.passenger_no_show": "Pasażer nie przyjechał",
   "profilePage.reviewReason.trip_cancelled": "Przejazd odwołany",
-  "profilePage.reviewReason.other": "Inne"
+  "profilePage.reviewReason.other": "Inne",
+
+  "errors.UNKNOWN": "Coś poszło nie tak. Spróbuj ponownie.",
+  "errors.SERVER_ERROR": "Coś poszło nie tak",
+
+  "errors.AUTH_MISSING_HEADER": "Brak lub nieprawidłowy nagłówek autoryzacji",
+  "errors.SERVER_MISCONFIGURED": "Błąd konfiguracji serwera",
+  "errors.AUTH_TOKEN_INVALID": "Nieprawidłowy lub wygasły token",
+  "errors.AUTH_REGISTER_FIELDS_MISSING":
+    "Brakuje wymaganych pól: e-mail, hasło, imię",
+  "errors.AUTH_EMAIL_IN_USE": "Ten e-mail jest już zarejestrowany",
+  "errors.AUTH_REGISTRATION_FAILED": "Rejestracja nie powiodła się",
+  "errors.AUTH_LOGIN_FIELDS_MISSING": "Brakuje e-maila lub hasła",
+  "errors.AUTH_INVALID_CREDENTIALS": "Nieprawidłowy e-mail lub hasło",
+  "errors.AUTH_LOGIN_FAILED": "Logowanie nie powiodło się",
+  "errors.UNAUTHORIZED": "Brak uprawnień",
+  "errors.USER_NOT_FOUND": "Nie znaleziono użytkownika",
+  "errors.PROFILE_LOAD_FAILED": "Nie udało się wczytać profilu",
+
+  "errors.TRIP_CREATE_FIELDS_MISSING":
+    "Brakuje wymaganych pól: skąd, dokąd, czas wyjazdu, miejsca, cena, waluta, typ przejazdu",
+  "errors.TRIP_COORDINATES_INVALID":
+    "Wymagane są prawidłowe współrzędne początku i celu na mapie",
+  "errors.TRIP_SEATS_INVALID": "Liczba miejsc musi wynosić co najmniej 1",
+  "errors.TRIP_PRICE_INVALID": "Cena musi być liczbą nieujemną",
+  "errors.TRIP_CURRENCY_INVALID": "Waluta musi być EUR, USD lub PLN",
+  "errors.TRIP_TYPE_INVALID": "Typ przejazdu musi być jednorazowy lub regularny",
+  "errors.TRIP_DEPARTURE_INVALID": "Czas wyjazdu musi być prawidłową datą",
+  "errors.TRIP_WEEKDAYS_ARRAY_REQUIRED":
+    "Dla przejazdów regularnych wymagana jest lista dni tygodnia",
+  "errors.TRIP_WEEKDAYS_EMPTY":
+    "Przejazd regularny wymaga co najmniej jednego dnia (pon–niedz)",
+  "errors.TRIP_DRIVER_MISSING": "Nie udało się wczytać kierowcy po utworzeniu przejazdu",
+  "errors.DATABASE_SCHEMA_OUTDATED_TRIPS":
+    "Baza serwera jest nieaktualna. Skontaktuj się z pomocą.",
+  "errors.TRIP_CREATE_FAILED": "Nie udało się utworzyć przejazdu",
+  "errors.TRIP_SEARCH_FAILED": "Nie udało się wyszukać przejazdów",
+  "errors.TRIP_LIST_FAILED": "Nie udało się wczytać przejazdów",
+  "errors.TRIP_ID_REQUIRED": "Wymagany jest identyfikator przejazdu",
+  "errors.TRIP_NOT_FOUND": "Nie znaleziono przejazdu",
+  "errors.TRIP_DETAILS_FAILED": "Nie udało się wczytać szczegółów przejazdu",
+  "errors.TRIP_DELETE_FORBIDDEN": "Nie możesz usunąć tego przejazdu",
+  "errors.TRIP_ALREADY_CANCELLED": "Przejazd jest już anulowany",
+  "errors.TRIP_DELETE_FAILED": "Nie udało się usunąć przejazdu",
+
+  "errors.TEMPLATE_FIELDS_MISSING":
+    "Brakuje wymaganych pól: nazwa, trasa, miejsca, cena, waluta, typ",
+  "errors.TEMPLATE_COORDINATES_INVALID":
+    "Wymagane są prawidłowe współrzędne początku i celu na mapie",
+  "errors.TEMPLATE_SEATS_INVALID": "Liczba miejsc musi wynosić co najmniej 1",
+  "errors.TEMPLATE_PRICE_INVALID": "Cena musi być liczbą nieujemną",
+  "errors.TEMPLATE_CURRENCY_INVALID": "Waluta musi być EUR, USD lub PLN",
+  "errors.TEMPLATE_TYPE_INVALID": "Typ musi być jednorazowy lub regularny",
+  "errors.TEMPLATE_WEEKDAYS_ARRAY_REQUIRED":
+    "Dla szablonów regularnych wymagana jest lista dni tygodnia",
+  "errors.TEMPLATE_WEEKDAYS_EMPTY":
+    "Szablon regularny wymaga co najmniej jednego dnia (pon–niedz)",
+  "errors.TEMPLATE_CREATE_FAILED": "Nie udało się utworzyć szablonu",
+  "errors.TEMPLATE_LIST_FAILED": "Nie udało się wczytać szablonów",
+  "errors.TEMPLATE_ID_REQUIRED": "Wymagany jest identyfikator szablonu",
+  "errors.TEMPLATE_NOT_FOUND": "Nie znaleziono szablonu",
+  "errors.TEMPLATE_DELETE_FORBIDDEN": "Nie możesz usunąć tego szablonu",
+  "errors.TEMPLATE_DELETE_FAILED": "Nie udało się usunąć szablonu",
+
+  "errors.REQUEST_TRIP_ID_REQUIRED": "Wymagany jest identyfikator przejazdu",
+  "errors.REQUEST_SEATS_INVALID": "Liczba miejsc musi wynosić co najmniej 1",
+  "errors.REQUEST_OWN_TRIP_FORBIDDEN": "Nie możesz dołączyć do własnego przejazdu",
+  "errors.TRIP_NOT_AVAILABLE": "Ten przejazd nie jest już dostępny",
+  "errors.TRIP_SEATS_NOT_ENOUGH": "Brak wolnych miejsc",
+  "errors.TRIP_SEATS_NOT_ENOUGH_ACCEPT": "Brak wystarczającej liczby wolnych miejsc",
+  "errors.REQUEST_DUPLICATE_ACTIVE":
+    "Masz już aktywną prośbę o ten przejazd",
+  "errors.REQUEST_CREATE_FAILED": "Nie udało się utworzyć prośby",
+  "errors.REQUEST_INCOMING_LOAD_FAILED": "Nie udało się wczytać przychodzących próśb",
+  "errors.REQUEST_OUTGOING_LOAD_FAILED": "Nie udało się wczytać wysłanych próśb",
+  "errors.REQUEST_ID_REQUIRED": "Wymagany jest identyfikator prośby",
+  "errors.REQUEST_NOT_FOUND": "Nie znaleziono prośby",
+  "errors.REQUEST_MANAGE_FORBIDDEN": "Nie możesz zarządzać tą prośbą",
+  "errors.REQUEST_ACCEPT_NOT_PENDING": "Można zaakceptować tylko oczekujące prośby",
+  "errors.REQUEST_ACCEPT_FAILED": "Nie udało się zaakceptować prośby",
+  "errors.REQUEST_REJECT_NOT_PENDING": "Można odrzucić tylko oczekujące prośby",
+  "errors.REQUEST_REJECT_FAILED": "Nie udało się odrzucić prośby",
+  "errors.REQUEST_CANCEL_FORBIDDEN": "Możesz anulować tylko własną prośbę",
+  "errors.REQUEST_CANCEL_INVALID_STATE":
+    "Można anulować tylko oczekujące lub zaakceptowane prośby",
+  "errors.REQUEST_CANCEL_FAILED": "Nie udało się anulować prośby",
+
+  "errors.CHAT_TRIP_ID_REQUIRED": "Wymagany jest identyfikator przejazdu",
+  "errors.CHAT_DRIVER_CANNOT_MESSAGE_SELF": "Kierowca nie może czatować sam ze sobą",
+  "errors.CHAT_OPEN_FAILED": "Nie udało się otworzyć czatu",
+  "errors.CHAT_LIST_FAILED": "Nie udało się wczytać czatów",
+  "errors.CHAT_ID_REQUIRED": "Wymagany jest identyfikator czatu",
+  "errors.CHAT_NOT_FOUND": "Nie znaleziono czatu",
+  "errors.CHAT_MESSAGES_LOAD_FAILED": "Nie udało się wczytać wiadomości",
+  "errors.CHAT_MESSAGE_TEXT_REQUIRED": "Treść wiadomości jest wymagana",
+  "errors.CHAT_MESSAGE_SEND_FAILED": "Nie udało się wysłać wiadomości",
+  "errors.CHAT_READ_FAILED": "Nie udało się oznaczyć czatu jako przeczytany",
+
+  "errors.PROFILE_NAME_REQUIRED": "Imię jest wymagane",
+  "errors.PROFILE_AVATAR_TOO_LARGE":
+    "Awatar jest za duży. Użyj mniejszego obrazu (ok. max 2 MB).",
+  "errors.PROFILE_AGE_INVALID": "Wiek musi być między 1 a 120",
+  "errors.DATABASE_SCHEMA_OUTDATED":
+    "Baza serwera jest nieaktualna. Skontaktuj się z pomocą.",
+  "errors.PROFILE_SAVE_FAILED": "Nie udało się zapisać profilu",
+
+  "errors.REVIEWS_SUBJECT_REQUIRED": "Wymagany jest identyfikator użytkownika",
+  "errors.REVIEWS_LIST_FAILED": "Nie udało się wczytać opinii",
+  "errors.REVIEWS_ELIGIBLE_FAILED": "Nie udało się wczytać opcji oceny",
+  "errors.REVIEWS_BODY_INVALID": "Wymagany jest przejazd i oceniana osoba",
+  "errors.REVIEWS_RATING_INVALID": "Ocena musi być liczbą całkowitą od 1 do 5",
+  "errors.REVIEWS_SELF_FORBIDDEN": "Nie możesz ocenić samego siebie",
+  "errors.REVIEWS_NOT_ALLOWED":
+    "Opinie nie są dostępne dla tego przejazdu w obecnym stanie",
+  "errors.REVIEWS_FORBIDDEN_TARGET":
+    "Możesz ocenić tylko kierowcę lub zaakceptowanych pasażerów w tym przejeździe",
+  "errors.REVIEWS_COMMENT_REQUIRED":
+    "Przy ocenie 3 lub niżej wymagany jest komentarz",
+  "errors.REVIEWS_DUPLICATE": "Już oceniłeś tę osobę w tym przejeździe",
+  "errors.REVIEWS_TRIP_NOT_COMPLETED":
+    "Przejazd musi być zakończony, zanim dodasz opinię",
+  "errors.REVIEW_TASK_REQUIRED":
+    "Brak oczekującego zadania oceny dla tej osoby w tym przejeździe. Otwórz przypomnienia o ocenie lub stronę przejazdu.",
+  "errors.DATABASE_SCHEMA_OUTDATED_REVIEWS":
+    "Baza serwera jest nieaktualna. Skontaktuj się z pomocą.",
+  "errors.REVIEWS_SUBMIT_FAILED": "Nie udało się wysłać opinii",
+
+  "errors.REVIEW_TASKS_LOAD_FAILED": "Nie udało się wczytać zadań oceny",
+  "errors.REVIEW_TASK_ID_REQUIRED": "Wymagany jest identyfikator zadania",
+  "errors.REVIEW_TASK_NOT_FOUND": "Nie znaleziono zadania oceny",
+  "errors.REVIEW_TASK_NOT_PENDING": "To zadanie oceny nie jest już oczekujące",
+  "errors.REVIEW_TASK_TRIP_UNAVAILABLE": "Przejazd nie jest dostępny do oceny",
+  "errors.REVIEW_TASK_NO_SHOW_REASON_INVALID": "Nieprawidłowy powód",
+  "errors.REVIEW_TASK_RELATIONSHIP_INVALID":
+    "Nie możesz wysłać tej opinii dla tego przejazdu",
+
+  "errors.PUSH_SUBSCRIPTION_INVALID": "Nieprawidłowa subskrypcja powiadomień",
+  "errors.PUSH_SUBSCRIBE_FAILED": "Nie udało się włączyć powiadomień",
+
+  "errors.NOTIFICATION_SUMMARY_FAILED": "Nie udało się wczytać powiadomień",
+
+  "success.PROFILE_SAVED": "Profil zapisany",
+  "success.REQUEST_SENT": "Prośba wysłana do kierowcy",
+  "success.REQUEST_ACCEPTED": "Prośba zaakceptowana",
+  "success.REQUEST_REJECTED": "Prośba odrzucona",
+  "success.REQUEST_CANCELLED": "Prośba anulowana",
+  "success.REQUEST_PARTICIPATION_CANCELLED": "Udział anulowany",
+  "success.PUSH_SUBSCRIPTION_SAVED": "Subskrypcja powiadomień zapisana",
+  "success.TRIP_DELETED": "Przejazd usunięty",
+  "success.TRIP_CREATED": "Przejazd utworzony",
+  "success.TEMPLATE_CREATED": "Szablon utworzony",
+  "success.TEMPLATE_DELETED": "Szablon usunięty",
+  "success.REVIEW_SUBMITTED": "Opinia wysłana",
+  "success.CHAT_MESSAGE_SENT": "Wiadomość wysłana"
 } as const;

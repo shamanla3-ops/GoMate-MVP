@@ -557,5 +557,158 @@ export default {
   "profilePage.reviewReason.driver_no_show": "Водій не приїхав",
   "profilePage.reviewReason.passenger_no_show": "Пасажир не приїхав",
   "profilePage.reviewReason.trip_cancelled": "Поїздку скасовано",
-  "profilePage.reviewReason.other": "Інше"
+  "profilePage.reviewReason.other": "Інше",
+
+  "errors.UNKNOWN": "Щось пішло не так. Спробуйте ще раз.",
+  "errors.SERVER_ERROR": "Щось пішло не так",
+
+  "errors.AUTH_MISSING_HEADER": "Відсутній або некоректний заголовок авторизації",
+  "errors.SERVER_MISCONFIGURED": "Помилка конфігурації сервера",
+  "errors.AUTH_TOKEN_INVALID": "Недійсний або прострочений токен",
+  "errors.AUTH_REGISTER_FIELDS_MISSING":
+    "Не вистачає обов’язкових полів: email, пароль, ім’я",
+  "errors.AUTH_EMAIL_IN_USE": "Цей email уже зареєстровано",
+  "errors.AUTH_REGISTRATION_FAILED": "Реєстрація не вдалася",
+  "errors.AUTH_LOGIN_FIELDS_MISSING": "Не вистачає email або пароля",
+  "errors.AUTH_INVALID_CREDENTIALS": "Невірний email або пароль",
+  "errors.AUTH_LOGIN_FAILED": "Вхід не вдався",
+  "errors.UNAUTHORIZED": "Немає доступу",
+  "errors.USER_NOT_FOUND": "Користувача не знайдено",
+  "errors.PROFILE_LOAD_FAILED": "Не вдалося завантажити профіль",
+
+  "errors.TRIP_CREATE_FIELDS_MISSING":
+    "Не вистачає полів: звідки, куди, час, місця, ціна, валюта, тип поїздки",
+  "errors.TRIP_COORDINATES_INVALID":
+    "Потрібні коректні координати початку й кінця на мапі",
+  "errors.TRIP_SEATS_INVALID": "Кількість місць має бути не менше 1",
+  "errors.TRIP_PRICE_INVALID": "Ціна має бути невід’ємним числом",
+  "errors.TRIP_CURRENCY_INVALID": "Валюта має бути EUR, USD або PLN",
+  "errors.TRIP_TYPE_INVALID": "Тип поїздки: разова або регулярна",
+  "errors.TRIP_DEPARTURE_INVALID": "Час відправлення має бути коректною датою",
+  "errors.TRIP_WEEKDAYS_ARRAY_REQUIRED":
+    "Для регулярних поїздок потрібен список днів тижня",
+  "errors.TRIP_WEEKDAYS_EMPTY":
+    "Регулярна поїздка потребує хоча б один день (пн–нд)",
+  "errors.TRIP_DRIVER_MISSING": "Не вдалося завантажити водія після створення поїздки",
+  "errors.DATABASE_SCHEMA_OUTDATED_TRIPS":
+    "База даних сервера застаріла. Зверніться в підтримку.",
+  "errors.TRIP_CREATE_FAILED": "Не вдалося створити поїздку",
+  "errors.TRIP_SEARCH_FAILED": "Не вдалося виконати пошук",
+  "errors.TRIP_LIST_FAILED": "Не вдалося завантажити поїздки",
+  "errors.TRIP_ID_REQUIRED": "Потрібен ідентифікатор поїздки",
+  "errors.TRIP_NOT_FOUND": "Поїздку не знайдено",
+  "errors.TRIP_DETAILS_FAILED": "Не вдалося завантажити деталі поїздки",
+  "errors.TRIP_DELETE_FORBIDDEN": "Ви не можете видалити цю поїздку",
+  "errors.TRIP_ALREADY_CANCELLED": "Поїздку вже скасовано",
+  "errors.TRIP_DELETE_FAILED": "Не вдалося видалити поїздку",
+
+  "errors.TEMPLATE_FIELDS_MISSING":
+    "Не вистачає полів: назва, маршрут, місця, ціна, валюта, тип",
+  "errors.TEMPLATE_COORDINATES_INVALID":
+    "Потрібні коректні координати початку й кінця на мапі",
+  "errors.TEMPLATE_SEATS_INVALID": "Кількість місць має бути не менше 1",
+  "errors.TEMPLATE_PRICE_INVALID": "Ціна має бути невід’ємним числом",
+  "errors.TEMPLATE_CURRENCY_INVALID": "Валюта має бути EUR, USD або PLN",
+  "errors.TEMPLATE_TYPE_INVALID": "Тип: разовий або регулярний",
+  "errors.TEMPLATE_WEEKDAYS_ARRAY_REQUIRED":
+    "Для регулярних шаблонів потрібен список днів тижня",
+  "errors.TEMPLATE_WEEKDAYS_EMPTY":
+    "Регулярний шаблон потребує хоча б один день (пн–нд)",
+  "errors.TEMPLATE_CREATE_FAILED": "Не вдалося створити шаблон",
+  "errors.TEMPLATE_LIST_FAILED": "Не вдалося завантажити шаблони",
+  "errors.TEMPLATE_ID_REQUIRED": "Потрібен ідентифікатор шаблону",
+  "errors.TEMPLATE_NOT_FOUND": "Шаблон не знайдено",
+  "errors.TEMPLATE_DELETE_FORBIDDEN": "Ви не можете видалити цей шаблон",
+  "errors.TEMPLATE_DELETE_FAILED": "Не вдалося видалити шаблон",
+
+  "errors.REQUEST_TRIP_ID_REQUIRED": "Потрібен ідентифікатор поїздки",
+  "errors.REQUEST_SEATS_INVALID": "Кількість місць має бути не менше 1",
+  "errors.REQUEST_OWN_TRIP_FORBIDDEN": "Не можна приєднатися до власної поїздки",
+  "errors.TRIP_NOT_AVAILABLE": "Ця поїздка більше недоступна",
+  "errors.TRIP_SEATS_NOT_ENOUGH": "Недостатньо вільних місць",
+  "errors.TRIP_SEATS_NOT_ENOUGH_ACCEPT": "Вільних місць більше недостатньо",
+  "errors.REQUEST_DUPLICATE_ACTIVE":
+    "У вас уже є активний запит на цю поїздку",
+  "errors.REQUEST_CREATE_FAILED": "Не вдалося створити запит",
+  "errors.REQUEST_INCOMING_LOAD_FAILED": "Не вдалося завантажити вхідні запити",
+  "errors.REQUEST_OUTGOING_LOAD_FAILED": "Не вдалося завантажити вихідні запити",
+  "errors.REQUEST_ID_REQUIRED": "Потрібен ідентифікатор запиту",
+  "errors.REQUEST_NOT_FOUND": "Запит не знайдено",
+  "errors.REQUEST_MANAGE_FORBIDDEN": "Ви не можете керувати цим запитом",
+  "errors.REQUEST_ACCEPT_NOT_PENDING": "Прийняти можна лише очікуючий запит",
+  "errors.REQUEST_ACCEPT_FAILED": "Не вдалося прийняти запит",
+  "errors.REQUEST_REJECT_NOT_PENDING": "Відхилити можна лише очікуючий запит",
+  "errors.REQUEST_REJECT_FAILED": "Не вдалося відхилити запит",
+  "errors.REQUEST_CANCEL_FORBIDDEN": "Скасувати можна лише власний запит",
+  "errors.REQUEST_CANCEL_INVALID_STATE":
+    "Скасувати можна лише очікуючий або прийнятий запит",
+  "errors.REQUEST_CANCEL_FAILED": "Не вдалося скасувати запит",
+
+  "errors.CHAT_TRIP_ID_REQUIRED": "Потрібен ідентифікатор поїздки",
+  "errors.CHAT_DRIVER_CANNOT_MESSAGE_SELF": "Водій не може чатити сам із собою",
+  "errors.CHAT_OPEN_FAILED": "Не вдалося відкрити чат",
+  "errors.CHAT_LIST_FAILED": "Не вдалося завантажити чати",
+  "errors.CHAT_ID_REQUIRED": "Потрібен ідентифікатор чату",
+  "errors.CHAT_NOT_FOUND": "Чат не знайдено",
+  "errors.CHAT_MESSAGES_LOAD_FAILED": "Не вдалося завантажити повідомлення",
+  "errors.CHAT_MESSAGE_TEXT_REQUIRED": "Потрібен текст повідомлення",
+  "errors.CHAT_MESSAGE_SEND_FAILED": "Не вдалося надіслати повідомлення",
+  "errors.CHAT_READ_FAILED": "Не вдалося позначити чат прочитаним",
+
+  "errors.PROFILE_NAME_REQUIRED": "Ім’я обов’язкове",
+  "errors.PROFILE_AVATAR_TOO_LARGE":
+    "Аватар завеликий. Використайте менше зображення (до ~2 МБ).",
+  "errors.PROFILE_AGE_INVALID": "Вік має бути від 1 до 120",
+  "errors.DATABASE_SCHEMA_OUTDATED":
+    "База даних сервера застаріла. Зверніться в підтримку.",
+  "errors.PROFILE_SAVE_FAILED": "Не вдалося зберегти профіль",
+
+  "errors.REVIEWS_SUBJECT_REQUIRED": "Потрібен ідентифікатор користувача",
+  "errors.REVIEWS_LIST_FAILED": "Не вдалося завантажити відгуки",
+  "errors.REVIEWS_ELIGIBLE_FAILED": "Не вдалося завантажити варіанти оцінки",
+  "errors.REVIEWS_BODY_INVALID": "Потрібні поїздка й особа для оцінки",
+  "errors.REVIEWS_RATING_INVALID": "Оцінка має бути цілим числом від 1 до 5",
+  "errors.REVIEWS_SELF_FORBIDDEN": "Не можна оцінити себе",
+  "errors.REVIEWS_NOT_ALLOWED":
+    "Відгуки недоступні для цієї поїздки в поточному стані",
+  "errors.REVIEWS_FORBIDDEN_TARGET":
+    "Можна оцінити лише водія або прийнятих пасажирів цієї поїздки",
+  "errors.REVIEWS_COMMENT_REQUIRED":
+    "Для оцінки 3 і нижче потрібен коментар",
+  "errors.REVIEWS_DUPLICATE": "Ви вже оцінили цю людину в цій поїздці",
+  "errors.REVIEWS_TRIP_NOT_COMPLETED":
+    "Поїздку має бути завершено, перш ніж можна залишити відгук",
+  "errors.REVIEW_TASK_REQUIRED":
+    "Немає очікуваного завдання з відгуку для цієї людини в цій поїздці. Відкрийте нагадування про відгук або сторінку поїздки.",
+  "errors.DATABASE_SCHEMA_OUTDATED_REVIEWS":
+    "База даних сервера застаріла. Зверніться в підтримку.",
+  "errors.REVIEWS_SUBMIT_FAILED": "Не вдалося надіслати відгук",
+
+  "errors.REVIEW_TASKS_LOAD_FAILED": "Не вдалося завантажити завдання з відгуків",
+  "errors.REVIEW_TASK_ID_REQUIRED": "Потрібен ідентифікатор завдання",
+  "errors.REVIEW_TASK_NOT_FOUND": "Завдання з відгуку не знайдено",
+  "errors.REVIEW_TASK_NOT_PENDING": "Це завдання більше не очікує виконання",
+  "errors.REVIEW_TASK_TRIP_UNAVAILABLE": "Поїздка недоступна для відгуку",
+  "errors.REVIEW_TASK_NO_SHOW_REASON_INVALID": "Некоректна причина",
+  "errors.REVIEW_TASK_RELATIONSHIP_INVALID":
+    "Не можна надіслати цей відгук для цієї поїздки",
+
+  "errors.PUSH_SUBSCRIPTION_INVALID": "Некоректна push-підписка",
+  "errors.PUSH_SUBSCRIBE_FAILED": "Не вдалося ввімкнути сповіщення",
+
+  "errors.NOTIFICATION_SUMMARY_FAILED": "Не вдалося завантажити сповіщення",
+
+  "success.PROFILE_SAVED": "Профіль збережено",
+  "success.REQUEST_SENT": "Запит надіслано водію",
+  "success.REQUEST_ACCEPTED": "Запит прийнято",
+  "success.REQUEST_REJECTED": "Запит відхилено",
+  "success.REQUEST_CANCELLED": "Запит скасовано",
+  "success.REQUEST_PARTICIPATION_CANCELLED": "Участь скасовано",
+  "success.PUSH_SUBSCRIPTION_SAVED": "Підписку на сповіщення збережено",
+  "success.TRIP_DELETED": "Поїздку видалено",
+  "success.TRIP_CREATED": "Поїздку створено",
+  "success.TEMPLATE_CREATED": "Шаблон створено",
+  "success.TEMPLATE_DELETED": "Шаблон видалено",
+  "success.REVIEW_SUBMITTED": "Відгук надіслано",
+  "success.CHAT_MESSAGE_SENT": "Повідомлення надіслано"
 } as const;

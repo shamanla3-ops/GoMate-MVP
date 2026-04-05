@@ -2,6 +2,8 @@ import { Router } from "express";
 import webpush from "web-push";
 import { db, pushSubscriptions, eq } from "@gomate/db";
 import { authMiddleware } from "../middleware/auth.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -53,7 +55,8 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
     const subscription = (req.body ?? {}) as PushSubscriptionBody;
 
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
+      return;
     }
 
     if (
@@ -61,7 +64,8 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       !subscription.keys?.p256dh ||
       !subscription.keys?.auth
     ) {
-      return res.status(400).json({ error: "Invalid subscription" });
+      jsonApiError(res, 400, "PUSH_SUBSCRIPTION_INVALID");
+      return;
     }
 
     const endpoint = subscription.endpoint;
@@ -83,11 +87,12 @@ router.post("/subscribe", authMiddleware, async (req: any, res) => {
       endpointPrefix: endpoint.slice(0, 48),
     });
 
-    return res.json({ success: true });
+    return res.json(withApiSuccess({ success: true }, "PUSH_SUBSCRIPTION_SAVED"));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[push] Subscribe error:", message, error);
-    return res.status(500).json({ error: "Failed to subscribe" });
+    jsonApiError(res, 500, "PUSH_SUBSCRIBE_FAILED");
+    return;
   }
 });
 

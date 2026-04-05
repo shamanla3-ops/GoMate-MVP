@@ -1,10 +1,16 @@
-import { db, users, userReviews, eq } from "@gomate/db";
+import { db, users, userReviews, eq, and, isNotNull } from "@gomate/db";
 
 export async function refreshRevieweeRating(revieweeId: string) {
   const rows = await db
     .select({ rating: userReviews.rating })
     .from(userReviews)
-    .where(eq(userReviews.revieweeId, revieweeId));
+    .where(
+      and(
+        eq(userReviews.revieweeId, revieweeId),
+        eq(userReviews.tripHappened, true),
+        isNotNull(userReviews.rating)
+      )
+    );
 
   const valid = rows.filter(
     (r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5

@@ -7,6 +7,8 @@ import {
   sendRequestRejectedNotification,
   sendRequestCancelledByPassengerNotification,
 } from "../lib/notifications.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -91,7 +93,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -101,14 +103,14 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     };
 
     if (!tripId) {
-      res.status(400).json({ error: "tripId is required" });
+      jsonApiError(res, 400, "REQUEST_TRIP_ID_REQUIRED");
       return;
     }
 
     const requestedSeats = Number(seatsRequested);
 
     if (!Number.isInteger(requestedSeats) || requestedSeats < 1) {
-      res.status(400).json({ error: "seatsRequested must be at least 1" });
+      jsonApiError(res, 400, "REQUEST_SEATS_INVALID");
       return;
     }
 
@@ -117,22 +119,22 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!trip) {
-      res.status(404).json({ error: "Trip not found" });
+      jsonApiError(res, 404, "TRIP_NOT_FOUND");
       return;
     }
 
     if (trip.driverId === user.userId) {
-      res.status(400).json({ error: "You cannot join your own trip" });
+      jsonApiError(res, 400, "REQUEST_OWN_TRIP_FORBIDDEN");
       return;
     }
 
     if (trip.status !== "scheduled") {
-      res.status(400).json({ error: "This trip is not available anymore" });
+      jsonApiError(res, 400, "TRIP_NOT_AVAILABLE");
       return;
     }
 
     if (requestedSeats > trip.availableSeats) {
-      res.status(400).json({ error: "Not enough free seats" });
+      jsonApiError(res, 400, "TRIP_SEATS_NOT_ENOUGH");
       return;
     }
 
@@ -148,9 +150,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (existingRequest) {
-      res.status(409).json({
-        error: "You already have an active request for this trip",
-      });
+      jsonApiError(res, 409, "REQUEST_DUPLICATE_ACTIVE");
       return;
     }
 
@@ -177,13 +177,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
-    res.status(201).json({
-      message: "Request sent to the driver",
-      request,
-    });
+    res.status(201).json(withApiSuccess({ request }, "REQUEST_SENT"));
   } catch (err) {
     console.error("Create trip request error:", err);
-    res.status(500).json({ error: "Failed to create trip request" });
+    jsonApiError(res, 500, "REQUEST_CREATE_FAILED");
   }
 });
 
@@ -192,7 +189,7 @@ router.get("/incoming", authMiddleware, async (req: AuthRequest, res: Response) 
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -215,7 +212,7 @@ router.get("/incoming", authMiddleware, async (req: AuthRequest, res: Response) 
     });
   } catch (err) {
     console.error("Load incoming requests error:", err);
-    res.status(500).json({ error: "Failed to load incoming requests" });
+    jsonApiError(res, 500, "REQUEST_INCOMING_LOAD_FAILED");
   }
 });
 
@@ -224,7 +221,7 @@ router.get("/outgoing", authMiddleware, async (req: AuthRequest, res: Response) 
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -247,7 +244,7 @@ router.get("/outgoing", authMiddleware, async (req: AuthRequest, res: Response) 
     });
   } catch (err) {
     console.error("Load outgoing requests error:", err);
-    res.status(500).json({ error: "Failed to load outgoing requests" });
+    jsonApiError(res, 500, "REQUEST_OUTGOING_LOAD_FAILED");
   }
 });
 
@@ -256,14 +253,14 @@ router.patch("/:id/accept", authMiddleware, async (req: AuthRequest, res: Respon
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     const requestId = String(req.params.id || "").trim();
 
     if (!requestId) {
-      res.status(400).json({ error: "Request id is required" });
+      jsonApiError(res, 400, "REQUEST_ID_REQUIRED");
       return;
     }
 
@@ -279,22 +276,22 @@ router.patch("/:id/accept", authMiddleware, async (req: AuthRequest, res: Respon
     const row = rows[0];
 
     if (!row) {
-      res.status(404).json({ error: "Request not found" });
+      jsonApiError(res, 404, "REQUEST_NOT_FOUND");
       return;
     }
 
     if (row.trip.driverId !== user.userId) {
-      res.status(403).json({ error: "You cannot manage this request" });
+      jsonApiError(res, 403, "REQUEST_MANAGE_FORBIDDEN");
       return;
     }
 
     if (row.request.status !== "pending") {
-      res.status(400).json({ error: "Only pending requests can be accepted" });
+      jsonApiError(res, 400, "REQUEST_ACCEPT_NOT_PENDING");
       return;
     }
 
     if (row.request.seatsRequested > row.trip.availableSeats) {
-      res.status(400).json({ error: "Not enough free seats anymore" });
+      jsonApiError(res, 400, "TRIP_SEATS_NOT_ENOUGH_ACCEPT");
       return;
     }
 
@@ -325,14 +322,15 @@ router.patch("/:id/accept", authMiddleware, async (req: AuthRequest, res: Respon
       );
     }
 
-    res.json({
-      message: "Request accepted",
-      request: updatedRequest,
-      trip: updatedTrip,
-    });
+    res.json(
+      withApiSuccess(
+        { request: updatedRequest, trip: updatedTrip },
+        "REQUEST_ACCEPTED"
+      )
+    );
   } catch (err) {
     console.error("Accept trip request error:", err);
-    res.status(500).json({ error: "Failed to accept trip request" });
+    jsonApiError(res, 500, "REQUEST_ACCEPT_FAILED");
   }
 });
 
@@ -341,14 +339,14 @@ router.patch("/:id/reject", authMiddleware, async (req: AuthRequest, res: Respon
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     const requestId = String(req.params.id || "").trim();
 
     if (!requestId) {
-      res.status(400).json({ error: "Request id is required" });
+      jsonApiError(res, 400, "REQUEST_ID_REQUIRED");
       return;
     }
 
@@ -364,17 +362,17 @@ router.patch("/:id/reject", authMiddleware, async (req: AuthRequest, res: Respon
     const row = rows[0];
 
     if (!row) {
-      res.status(404).json({ error: "Request not found" });
+      jsonApiError(res, 404, "REQUEST_NOT_FOUND");
       return;
     }
 
     if (row.trip.driverId !== user.userId) {
-      res.status(403).json({ error: "You cannot manage this request" });
+      jsonApiError(res, 403, "REQUEST_MANAGE_FORBIDDEN");
       return;
     }
 
     if (row.request.status !== "pending") {
-      res.status(400).json({ error: "Only pending requests can be rejected" });
+      jsonApiError(res, 400, "REQUEST_REJECT_NOT_PENDING");
       return;
     }
 
@@ -397,13 +395,10 @@ router.patch("/:id/reject", authMiddleware, async (req: AuthRequest, res: Respon
       );
     }
 
-    res.json({
-      message: "Request rejected",
-      request: updatedRequest,
-    });
+    res.json(withApiSuccess({ request: updatedRequest }, "REQUEST_REJECTED"));
   } catch (err) {
     console.error("Reject trip request error:", err);
-    res.status(500).json({ error: "Failed to reject trip request" });
+    jsonApiError(res, 500, "REQUEST_REJECT_FAILED");
   }
 });
 
@@ -412,14 +407,14 @@ router.patch("/:id/cancel", authMiddleware, async (req: AuthRequest, res: Respon
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     const requestId = String(req.params.id || "").trim();
 
     if (!requestId) {
-      res.status(400).json({ error: "Request id is required" });
+      jsonApiError(res, 400, "REQUEST_ID_REQUIRED");
       return;
     }
 
@@ -435,19 +430,17 @@ router.patch("/:id/cancel", authMiddleware, async (req: AuthRequest, res: Respon
     const row = rows[0];
 
     if (!row) {
-      res.status(404).json({ error: "Request not found" });
+      jsonApiError(res, 404, "REQUEST_NOT_FOUND");
       return;
     }
 
     if (row.request.passengerId !== user.userId) {
-      res.status(403).json({ error: "You can cancel only your own request" });
+      jsonApiError(res, 403, "REQUEST_CANCEL_FORBIDDEN");
       return;
     }
 
     if (row.request.status !== "pending" && row.request.status !== "accepted") {
-      res.status(400).json({
-        error: "Only pending or accepted requests can be cancelled",
-      });
+      jsonApiError(res, 400, "REQUEST_CANCEL_INVALID_STATE");
       return;
     }
 
@@ -491,17 +484,19 @@ router.patch("/:id/cancel", authMiddleware, async (req: AuthRequest, res: Respon
       );
     }
 
-    res.json({
-      message:
-        row.request.status === "accepted"
-          ? "Participation cancelled"
-          : "Request cancelled",
-      request: updatedRequest,
-      trip: updatedTrip,
-    });
+    const cancelCode =
+      row.request.status === "accepted"
+        ? "REQUEST_PARTICIPATION_CANCELLED"
+        : "REQUEST_CANCELLED";
+    res.json(
+      withApiSuccess(
+        { request: updatedRequest, trip: updatedTrip },
+        cancelCode
+      )
+    );
   } catch (err) {
     console.error("Cancel trip request error:", err);
-    res.status(500).json({ error: "Failed to cancel trip request" });
+    jsonApiError(res, 500, "REQUEST_CANCEL_FAILED");
   }
 });
 

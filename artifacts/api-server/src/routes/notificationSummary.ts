@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { getNotificationCounts } from "../lib/notificationCounts.js";
+import { jsonApiError } from "../lib/apiErrors.js";
 
 const router: Router = Router();
 
@@ -9,7 +10,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -17,7 +18,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json(counts);
   } catch (err) {
     console.error("Notification summary error:", err);
-    res.status(500).json({ error: "Failed to load notification summary" });
+    jsonApiError(res, 500, "NOTIFICATION_SUMMARY_FAILED");
   }
 });
 

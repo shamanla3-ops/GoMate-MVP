@@ -557,5 +557,158 @@ export default {
   "profilePage.reviewReason.driver_no_show": "Fahrer:in nicht erschienen",
   "profilePage.reviewReason.passenger_no_show": "Mitfahrer:in nicht erschienen",
   "profilePage.reviewReason.trip_cancelled": "Fahrt abgesagt",
-  "profilePage.reviewReason.other": "Sonstiges"
+  "profilePage.reviewReason.other": "Sonstiges",
+
+  "errors.UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "errors.SERVER_ERROR": "Etwas ist schiefgelaufen",
+
+  "errors.AUTH_MISSING_HEADER": "Fehlender oder ungültiger Authorization-Header",
+  "errors.SERVER_MISCONFIGURED": "Server ist falsch konfiguriert",
+  "errors.AUTH_TOKEN_INVALID": "Ungültiges oder abgelaufenes Token",
+  "errors.AUTH_REGISTER_FIELDS_MISSING":
+    "Pflichtfelder fehlen: E-Mail, Passwort, Name",
+  "errors.AUTH_EMAIL_IN_USE": "Diese E-Mail ist bereits registriert",
+  "errors.AUTH_REGISTRATION_FAILED": "Registrierung fehlgeschlagen",
+  "errors.AUTH_LOGIN_FIELDS_MISSING": "E-Mail oder Passwort fehlt",
+  "errors.AUTH_INVALID_CREDENTIALS": "Ungültige E-Mail oder Passwort",
+  "errors.AUTH_LOGIN_FAILED": "Anmeldung fehlgeschlagen",
+  "errors.UNAUTHORIZED": "Nicht autorisiert",
+  "errors.USER_NOT_FOUND": "Benutzer nicht gefunden",
+  "errors.PROFILE_LOAD_FAILED": "Profil konnte nicht geladen werden",
+
+  "errors.TRIP_CREATE_FIELDS_MISSING":
+    "Pflichtfelder fehlen: Start, Ziel, Abfahrt, Plätze, Preis, Währung, Fahrttyp",
+  "errors.TRIP_COORDINATES_INVALID":
+    "Gültige Kartenkoordinaten für Start und Ziel sind erforderlich",
+  "errors.TRIP_SEATS_INVALID": "Plätze müssen mindestens 1 sein",
+  "errors.TRIP_PRICE_INVALID": "Preis muss 0 oder positiv sein",
+  "errors.TRIP_CURRENCY_INVALID": "Währung muss EUR, USD oder PLN sein",
+  "errors.TRIP_TYPE_INVALID": "Fahrttyp muss einmalig oder regelmäßig sein",
+  "errors.TRIP_DEPARTURE_INVALID": "Abfahrtszeit muss ein gültiges Datum sein",
+  "errors.TRIP_WEEKDAYS_ARRAY_REQUIRED":
+    "Bei regelmäßigen Fahrten ist eine Wochentagsliste nötig",
+  "errors.TRIP_WEEKDAYS_EMPTY":
+    "Regelmäßige Fahrten brauchen mindestens einen Wochentag (Mo–So)",
+  "errors.TRIP_DRIVER_MISSING": "Fahrer nach dem Erstellen nicht gefunden",
+  "errors.DATABASE_SCHEMA_OUTDATED_TRIPS":
+    "Server-Datenbank ist veraltet. Bitte Support kontaktieren.",
+  "errors.TRIP_CREATE_FAILED": "Fahrt konnte nicht erstellt werden",
+  "errors.TRIP_SEARCH_FAILED": "Suche fehlgeschlagen",
+  "errors.TRIP_LIST_FAILED": "Fahrten konnten nicht geladen werden",
+  "errors.TRIP_ID_REQUIRED": "Fahrt-ID ist erforderlich",
+  "errors.TRIP_NOT_FOUND": "Fahrt nicht gefunden",
+  "errors.TRIP_DETAILS_FAILED": "Fahrtdetails konnten nicht geladen werden",
+  "errors.TRIP_DELETE_FORBIDDEN": "Du darfst diese Fahrt nicht löschen",
+  "errors.TRIP_ALREADY_CANCELLED": "Fahrt ist bereits storniert",
+  "errors.TRIP_DELETE_FAILED": "Fahrt konnte nicht gelöscht werden",
+
+  "errors.TEMPLATE_FIELDS_MISSING":
+    "Pflichtfelder fehlen: Name, Route, Plätze, Preis, Währung, Typ",
+  "errors.TEMPLATE_COORDINATES_INVALID":
+    "Gültige Kartenkoordinaten für Start und Ziel sind erforderlich",
+  "errors.TEMPLATE_SEATS_INVALID": "Plätze müssen mindestens 1 sein",
+  "errors.TEMPLATE_PRICE_INVALID": "Preis muss 0 oder positiv sein",
+  "errors.TEMPLATE_CURRENCY_INVALID": "Währung muss EUR, USD oder PLN sein",
+  "errors.TEMPLATE_TYPE_INVALID": "Typ muss einmalig oder regelmäßig sein",
+  "errors.TEMPLATE_WEEKDAYS_ARRAY_REQUIRED":
+    "Bei regelmäßigen Vorlagen ist eine Wochentagsliste nötig",
+  "errors.TEMPLATE_WEEKDAYS_EMPTY":
+    "Regelmäßige Vorlagen brauchen mindestens einen Wochentag (Mo–So)",
+  "errors.TEMPLATE_CREATE_FAILED": "Vorlage konnte nicht erstellt werden",
+  "errors.TEMPLATE_LIST_FAILED": "Vorlagen konnten nicht geladen werden",
+  "errors.TEMPLATE_ID_REQUIRED": "Vorlagen-ID ist erforderlich",
+  "errors.TEMPLATE_NOT_FOUND": "Vorlage nicht gefunden",
+  "errors.TEMPLATE_DELETE_FORBIDDEN": "Du darfst diese Vorlage nicht löschen",
+  "errors.TEMPLATE_DELETE_FAILED": "Vorlage konnte nicht gelöscht werden",
+
+  "errors.REQUEST_TRIP_ID_REQUIRED": "Fahrt-ID ist erforderlich",
+  "errors.REQUEST_SEATS_INVALID": "Plätze müssen mindestens 1 sein",
+  "errors.REQUEST_OWN_TRIP_FORBIDDEN": "Du kannst deiner eigenen Fahrt nicht beitreten",
+  "errors.TRIP_NOT_AVAILABLE": "Diese Fahrt ist nicht mehr verfügbar",
+  "errors.TRIP_SEATS_NOT_ENOUGH": "Nicht genug freie Plätze",
+  "errors.TRIP_SEATS_NOT_ENOUGH_ACCEPT": "Nicht mehr genug freie Plätze",
+  "errors.REQUEST_DUPLICATE_ACTIVE":
+    "Du hast bereits eine aktive Anfrage für diese Fahrt",
+  "errors.REQUEST_CREATE_FAILED": "Anfrage konnte nicht erstellt werden",
+  "errors.REQUEST_INCOMING_LOAD_FAILED": "Eingehende Anfragen konnten nicht geladen werden",
+  "errors.REQUEST_OUTGOING_LOAD_FAILED": "Ausgehende Anfragen konnten nicht geladen werden",
+  "errors.REQUEST_ID_REQUIRED": "Anfrage-ID ist erforderlich",
+  "errors.REQUEST_NOT_FOUND": "Anfrage nicht gefunden",
+  "errors.REQUEST_MANAGE_FORBIDDEN": "Du kannst diese Anfrage nicht verwalten",
+  "errors.REQUEST_ACCEPT_NOT_PENDING": "Nur ausstehende Anfragen können akzeptiert werden",
+  "errors.REQUEST_ACCEPT_FAILED": "Anfrage konnte nicht akzeptiert werden",
+  "errors.REQUEST_REJECT_NOT_PENDING": "Nur ausstehende Anfragen können abgelehnt werden",
+  "errors.REQUEST_REJECT_FAILED": "Anfrage konnte nicht abgelehnt werden",
+  "errors.REQUEST_CANCEL_FORBIDDEN": "Du kannst nur deine eigene Anfrage stornieren",
+  "errors.REQUEST_CANCEL_INVALID_STATE":
+    "Nur ausstehende oder akzeptierte Anfragen können storniert werden",
+  "errors.REQUEST_CANCEL_FAILED": "Anfrage konnte nicht storniert werden",
+
+  "errors.CHAT_TRIP_ID_REQUIRED": "Fahrt-ID ist erforderlich",
+  "errors.CHAT_DRIVER_CANNOT_MESSAGE_SELF": "Als Fahrer kannst du keinen Chat mit dir selbst öffnen",
+  "errors.CHAT_OPEN_FAILED": "Chat konnte nicht geöffnet werden",
+  "errors.CHAT_LIST_FAILED": "Chats konnten nicht geladen werden",
+  "errors.CHAT_ID_REQUIRED": "Chat-ID ist erforderlich",
+  "errors.CHAT_NOT_FOUND": "Chat nicht gefunden",
+  "errors.CHAT_MESSAGES_LOAD_FAILED": "Nachrichten konnten nicht geladen werden",
+  "errors.CHAT_MESSAGE_TEXT_REQUIRED": "Nachrichtentext ist erforderlich",
+  "errors.CHAT_MESSAGE_SEND_FAILED": "Nachricht konnte nicht gesendet werden",
+  "errors.CHAT_READ_FAILED": "Chat konnte nicht als gelesen markiert werden",
+
+  "errors.PROFILE_NAME_REQUIRED": "Name ist erforderlich",
+  "errors.PROFILE_AVATAR_TOO_LARGE":
+    "Avatar ist zu groß. Bitte ein kleineres Bild verwenden (max. ~2 MB).",
+  "errors.PROFILE_AGE_INVALID": "Alter muss zwischen 1 und 120 liegen",
+  "errors.DATABASE_SCHEMA_OUTDATED":
+    "Server-Datenbank ist veraltet. Bitte Support kontaktieren.",
+  "errors.PROFILE_SAVE_FAILED": "Profil konnte nicht gespeichert werden",
+
+  "errors.REVIEWS_SUBJECT_REQUIRED": "Benutzer-ID ist erforderlich",
+  "errors.REVIEWS_LIST_FAILED": "Bewertungen konnten nicht geladen werden",
+  "errors.REVIEWS_ELIGIBLE_FAILED": "Bewertungsoptionen konnten nicht geladen werden",
+  "errors.REVIEWS_BODY_INVALID": "Fahrt und zu bewertende Person sind erforderlich",
+  "errors.REVIEWS_RATING_INVALID": "Bewertung muss eine ganze Zahl von 1 bis 5 sein",
+  "errors.REVIEWS_SELF_FORBIDDEN": "Du kannst dich nicht selbst bewerten",
+  "errors.REVIEWS_NOT_ALLOWED":
+    "Bewertungen sind für diese Fahrt im aktuellen Status nicht verfügbar",
+  "errors.REVIEWS_FORBIDDEN_TARGET":
+    "Du kannst nur Fahrer oder akzeptierte Mitfahrer auf dieser Fahrt bewerten",
+  "errors.REVIEWS_COMMENT_REQUIRED":
+    "Bei 3 Sternen oder weniger ist ein Kommentar erforderlich",
+  "errors.REVIEWS_DUPLICATE": "Du hast diese Person für diese Fahrt schon bewertet",
+  "errors.REVIEWS_TRIP_NOT_COMPLETED":
+    "Die Fahrt muss abgeschlossen sein, bevor du eine Bewertung abgeben kannst",
+  "errors.REVIEW_TASK_REQUIRED":
+    "Es gibt keine ausstehende Bewertungsaufgabe für diese Person auf dieser Fahrt. Öffne deine Bewertungserinnerungen oder die Fahrtseite.",
+  "errors.DATABASE_SCHEMA_OUTDATED_REVIEWS":
+    "Server-Datenbank ist veraltet. Bitte Support kontaktieren.",
+  "errors.REVIEWS_SUBMIT_FAILED": "Bewertung konnte nicht gesendet werden",
+
+  "errors.REVIEW_TASKS_LOAD_FAILED": "Bewertungsaufgaben konnten nicht geladen werden",
+  "errors.REVIEW_TASK_ID_REQUIRED": "Aufgaben-ID ist erforderlich",
+  "errors.REVIEW_TASK_NOT_FOUND": "Bewertungsaufgabe nicht gefunden",
+  "errors.REVIEW_TASK_NOT_PENDING": "Diese Bewertungsaufgabe ist nicht mehr ausstehend",
+  "errors.REVIEW_TASK_TRIP_UNAVAILABLE": "Fahrt ist für eine Bewertung nicht verfügbar",
+  "errors.REVIEW_TASK_NO_SHOW_REASON_INVALID": "Ungültiger Grund",
+  "errors.REVIEW_TASK_RELATIONSHIP_INVALID":
+    "Diese Bewertung ist für diese Fahrt nicht zulässig",
+
+  "errors.PUSH_SUBSCRIPTION_INVALID": "Ungültiges Push-Abonnement",
+  "errors.PUSH_SUBSCRIBE_FAILED": "Benachrichtigungen konnten nicht aktiviert werden",
+
+  "errors.NOTIFICATION_SUMMARY_FAILED": "Benachrichtigungen konnten nicht geladen werden",
+
+  "success.PROFILE_SAVED": "Profil gespeichert",
+  "success.REQUEST_SENT": "Anfrage an den Fahrer gesendet",
+  "success.REQUEST_ACCEPTED": "Anfrage akzeptiert",
+  "success.REQUEST_REJECTED": "Anfrage abgelehnt",
+  "success.REQUEST_CANCELLED": "Anfrage storniert",
+  "success.REQUEST_PARTICIPATION_CANCELLED": "Teilnahme storniert",
+  "success.PUSH_SUBSCRIPTION_SAVED": "Push-Abonnement gespeichert",
+  "success.TRIP_DELETED": "Fahrt gelöscht",
+  "success.TRIP_CREATED": "Fahrt erstellt",
+  "success.TEMPLATE_CREATED": "Vorlage erstellt",
+  "success.TEMPLATE_DELETED": "Vorlage gelöscht",
+  "success.REVIEW_SUBMITTED": "Bewertung gesendet",
+  "success.CHAT_MESSAGE_SENT": "Nachricht gesendet"
 } as const;

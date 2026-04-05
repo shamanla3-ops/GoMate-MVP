@@ -7,6 +7,8 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { TripRoutePreviewMap } from "../components/TripRoutePreviewMap";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type CurrentUserLike = {
   id?: string;
@@ -149,7 +151,7 @@ export default function TripDetails() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || t("tripDetails.loadError"));
+        setMessage(messageFromApiError(data, t, "tripDetails.loadError"));
         setTrip(null);
         return;
       }
@@ -298,15 +300,18 @@ export default function TripDetails() {
           comment: comment.trim() || undefined,
         }),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = await res.json();
 
       if (!res.ok) {
-        setReviewMessage(data.error || t("tripDetails.review.error"));
+        setReviewMessage(messageFromApiError(data, t, "tripDetails.review.error"));
         return;
       }
 
-      setReviewMessage(t("tripDetails.review.success"));
+      setReviewMessage(
+        messageFromApiSuccess(data, t, "tripDetails.review.success")
+      );
       await Promise.all([loadReviewTargets(), loadTrip()]);
+      void refreshNotificationCounts();
     } catch {
       setReviewMessage(t("tripDetails.review.error"));
     } finally {
@@ -339,7 +344,7 @@ export default function TripDetails() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || t("tripDetails.createChatError"));
+        alert(messageFromApiError(data, t, "tripDetails.createChatError"));
         return;
       }
 
@@ -402,11 +407,11 @@ export default function TripDetails() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("tripDetails.joinError"));
+        setMessage(messageFromApiError(data, t, "tripDetails.joinError"));
         return;
       }
 
-      setMessage(t("tripDetails.requestSent"));
+      setMessage(messageFromApiSuccess(data, t, "tripDetails.requestSent"));
       await Promise.all([loadTrip(), loadMyRequest()]);
       void refreshNotificationCounts();
     } catch {
@@ -445,11 +450,11 @@ export default function TripDetails() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("tripDetails.cancelError"));
+        setMessage(messageFromApiError(data, t, "tripDetails.cancelError"));
         return;
       }
 
-      setMessage(t("tripDetails.cancelSuccess"));
+      setMessage(messageFromApiSuccess(data, t, "tripDetails.cancelSuccess"));
       await Promise.all([loadTrip(), loadMyRequest()]);
     } catch {
       setMessage(t("tripDetails.connectError"));
@@ -845,7 +850,7 @@ export default function TripDetails() {
                 </div>
               )}
 
-            {currentUserId && (
+            {currentUserId && trip.status === "completed" && (
               <div className="mt-8 rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
                 <h2 className="text-xl font-extrabold text-[#173651]">
                   {t("tripDetails.review.sectionTitle")}

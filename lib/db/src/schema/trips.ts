@@ -67,6 +67,14 @@ export const trips = pgTable("trips", {
   /** "automatic" | "manual" — set when trip is completed */
   completionMode: text("completion_mode"),
 
+  /**
+   * When set, completion push notifications for this trip were already sent.
+   * Prevents duplicate pushes if maintenance logic is retried.
+   */
+  completionPushSentAt: timestamp("completion_push_sent_at", {
+    withTimezone: true,
+  }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

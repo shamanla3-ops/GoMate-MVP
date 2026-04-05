@@ -6,29 +6,16 @@ import {
   eq,
   and,
   lte,
+  isNull,
 } from "@gomate/db";
 import { sendPushToUser } from "../routes/push.js";
-
-/** Must pass after expected end before trip is auto-completed */
-const GRACE_AFTER_END_MS = 60 * 60 * 1000;
+import {
+  repairScheduledTripTiming,
+  shouldAutoCompleteScheduledTrip,
+} from "../lib/tripTiming.js";
 
 /** Pending review tasks older than this → expired */
 const REVIEW_TASK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function expectedEndDate(trip: typeof trips.$inferSelect): Date {
-  if (trip.expectedEndTime) {
-    return new Date(trip.expectedEndTime);
-  }
-  const dep = new Date(trip.departureTime).getTime();
-  const mins = trip.estimatedDurationMinutes ?? 60;
-  return new Date(dep + mins * 60 * 1000);
-}
-
-function shouldAutoCompleteNow(trip: typeof trips.$inferSelect): boolean {
-  if (trip.status !== "scheduled") return false;
-  const end = expectedEndDate(trip).getTime();
-  return Date.now() >= end + GRACE_AFTER_END_MS;
-}
 
 export async function expireOldReviewTasks(): Promise<number> {
   const cutoff = new Date(Date.now() - REVIEW_TASK_TTL_MS);
@@ -46,6 +33,20 @@ export async function expireOldReviewTasks(): Promise<number> {
   return updated.length;
 }
 
+/** One row per passenger: duplicate accepted rows would break batched insert (unique conflict in one statement). */
+function dedupeAcceptedPassengers(
+  rows: { passengerId: string }[]
+): { passengerId: string }[] {
+  const seen = new Set<string>();
+  const out: { passengerId: string }[] = [];
+  for (const r of rows) {
+    if (seen.has(r.passengerId)) continue;
+    seen.add(r.passengerId);
+    out.push(r);
+  }
+  return out;
+}
+
 export async function runAutoCompleteTrips(): Promise<{
   completedTrips: number;
   reviewTasksCreated: number;
@@ -57,26 +58,19 @@ export async function runAutoCompleteTrips(): Promise<{
   let completedTrips = 0;
   let reviewTasksCreated = 0;
 
-  for (const trip of scheduled) {
-    if (!shouldAutoCompleteNow(trip)) continue;
+  for (const rawTrip of scheduled) {
+    const trip = await repairScheduledTripTiming(rawTrip);
 
-    const accepted = await db.query.tripRequests.findMany({
+    if (!shouldAutoCompleteScheduledTrip(trip)) continue;
+
+    const acceptedRaw = await db.query.tripRequests.findMany({
       where: and(
         eq(tripRequests.tripId, trip.id),
         eq(tripRequests.status, "accepted")
       ),
     });
 
-    await db
-      .update(trips)
-      .set({
-        status: "completed",
-        completedAt: new Date(),
-        completionMode: "automatic",
-      })
-      .where(eq(trips.id, trip.id));
-
-    completedTrips += 1;
+    const accepted = dedupeAcceptedPassengers(acceptedRaw);
 
     const taskRows: {
       tripId: string;
@@ -86,6 +80,9 @@ export async function runAutoCompleteTrips(): Promise<{
     }[] = [];
 
     for (const req of accepted) {
+      if (req.passengerId === trip.driverId) {
+        continue;
+      }
       taskRows.push({
         tripId: trip.id,
         reviewerUserId: req.passengerId,
@@ -100,9 +97,61 @@ export async function runAutoCompleteTrips(): Promise<{
       });
     }
 
-    if (taskRows.length > 0) {
-      await db.insert(reviewTasks).values(taskRows).onConflictDoNothing();
-      reviewTasksCreated += taskRows.length;
+    const result = await db.transaction(async (tx) => {
+      const [updatedTrip] = await tx
+        .update(trips)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          completionMode: "automatic",
+        })
+        .where(and(eq(trips.id, trip.id), eq(trips.status, "scheduled")))
+        .returning({ id: trips.id });
+
+      if (!updatedTrip) {
+        return { completed: false as const, inserted: [] as { id: string }[] };
+      }
+
+      if (taskRows.length === 0) {
+        return { completed: true as const, inserted: [] as { id: string }[] };
+      }
+
+      const insertedRows = await tx
+        .insert(reviewTasks)
+        .values(taskRows)
+        .onConflictDoNothing({
+          target: [
+            reviewTasks.tripId,
+            reviewTasks.reviewerUserId,
+            reviewTasks.targetUserId,
+          ],
+        })
+        .returning({ id: reviewTasks.id });
+
+      return { completed: true as const, inserted: insertedRows };
+    });
+
+    if (!result.completed) {
+      continue;
+    }
+
+    completedTrips += 1;
+    reviewTasksCreated += result.inserted.length;
+
+    const [claimed] = await db
+      .update(trips)
+      .set({ completionPushSentAt: new Date() })
+      .where(
+        and(
+          eq(trips.id, trip.id),
+          eq(trips.status, "completed"),
+          isNull(trips.completionPushSentAt)
+        )
+      )
+      .returning({ id: trips.id });
+
+    if (!claimed) {
+      continue;
     }
 
     for (const req of accepted) {

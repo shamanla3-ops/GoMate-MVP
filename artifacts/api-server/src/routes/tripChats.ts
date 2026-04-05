@@ -12,6 +12,7 @@ import {
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { sendNewChatMessageNotification } from "../lib/notifications.js";
+import { jsonApiError } from "../lib/apiErrors.js";
 
 const router: Router = Router();
 
@@ -142,12 +143,12 @@ router.post("/by-trip/:tripId", authMiddleware, async (req: AuthRequest, res: Re
     const tripId = String(req.params.tripId || "").trim();
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     if (!tripId) {
-      res.status(400).json({ error: "Trip id is required" });
+      jsonApiError(res, 400, "CHAT_TRIP_ID_REQUIRED");
       return;
     }
 
@@ -156,12 +157,12 @@ router.post("/by-trip/:tripId", authMiddleware, async (req: AuthRequest, res: Re
     });
 
     if (!trip) {
-      res.status(404).json({ error: "Trip not found" });
+      jsonApiError(res, 404, "TRIP_NOT_FOUND");
       return;
     }
 
     if (trip.driverId === user.userId) {
-      res.status(400).json({ error: "Driver cannot create chat with self" });
+      jsonApiError(res, 400, "CHAT_DRIVER_CANNOT_MESSAGE_SELF");
       return;
     }
 
@@ -193,7 +194,7 @@ router.post("/by-trip/:tripId", authMiddleware, async (req: AuthRequest, res: Re
     res.status(201).json({ chat: createdChat });
   } catch (err) {
     console.error("Create or get chat by trip error:", err);
-    res.status(500).json({ error: "Failed to create or open chat" });
+    jsonApiError(res, 500, "CHAT_OPEN_FAILED");
   }
 });
 
@@ -202,7 +203,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -304,7 +305,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     });
   } catch (err) {
     console.error("Load chats error:", err);
-    res.status(500).json({ error: "Failed to load chats" });
+    jsonApiError(res, 500, "CHAT_LIST_FAILED");
   }
 });
 
@@ -314,26 +315,26 @@ router.get("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: Re
     const chatId = String(req.params.chatId || "").trim();
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     if (!chatId) {
-      res.status(400).json({ error: "Chat id is required" });
+      jsonApiError(res, 400, "CHAT_ID_REQUIRED");
       return;
     }
 
     const accessChat = await canUserAccessChat(chatId, user.userId);
 
     if (!accessChat) {
-      res.status(404).json({ error: "Chat not found" });
+      jsonApiError(res, 404, "CHAT_NOT_FOUND");
       return;
     }
 
     const fullChat = await loadChatDetails(chatId);
 
     if (!fullChat) {
-      res.status(404).json({ error: "Chat not found" });
+      jsonApiError(res, 404, "CHAT_NOT_FOUND");
       return;
     }
 
@@ -364,7 +365,7 @@ router.get("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: Re
     });
   } catch (err) {
     console.error("Load chat messages error:", err);
-    res.status(500).json({ error: "Failed to load messages" });
+    jsonApiError(res, 500, "CHAT_MESSAGES_LOAD_FAILED");
   }
 });
 
@@ -375,24 +376,24 @@ router.post("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: R
     const text = String(req.body?.text || "").trim();
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     if (!chatId) {
-      res.status(400).json({ error: "Chat id is required" });
+      jsonApiError(res, 400, "CHAT_ID_REQUIRED");
       return;
     }
 
     if (!text) {
-      res.status(400).json({ error: "Text is required" });
+      jsonApiError(res, 400, "CHAT_MESSAGE_TEXT_REQUIRED");
       return;
     }
 
     const chat = await canUserAccessChat(chatId, user.userId);
 
     if (!chat) {
-      res.status(404).json({ error: "Chat not found" });
+      jsonApiError(res, 404, "CHAT_NOT_FOUND");
       return;
     }
 
@@ -440,6 +441,7 @@ router.post("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: R
     }
 
     res.status(201).json({
+      messageCode: "CHAT_MESSAGE_SENT",
       message: {
         id: createdMessage.id,
         chatId: createdMessage.chatId,
@@ -457,7 +459,7 @@ router.post("/:chatId/messages", authMiddleware, async (req: AuthRequest, res: R
     });
   } catch (err) {
     console.error("Send message error:", err);
-    res.status(500).json({ error: "Failed to send message" });
+    jsonApiError(res, 500, "CHAT_MESSAGE_SEND_FAILED");
   }
 });
 
@@ -467,19 +469,19 @@ router.patch("/:chatId/read", authMiddleware, async (req: AuthRequest, res: Resp
     const chatId = String(req.params.chatId || "").trim();
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     if (!chatId) {
-      res.status(400).json({ error: "Chat id is required" });
+      jsonApiError(res, 400, "CHAT_ID_REQUIRED");
       return;
     }
 
     const chat = await canUserAccessChat(chatId, user.userId);
 
     if (!chat) {
-      res.status(404).json({ error: "Chat not found" });
+      jsonApiError(res, 404, "CHAT_NOT_FOUND");
       return;
     }
 
@@ -504,7 +506,7 @@ router.patch("/:chatId/read", authMiddleware, async (req: AuthRequest, res: Resp
     res.json({ success: true });
   } catch (err) {
     console.error("Mark chat as read error:", err);
-    res.status(500).json({ error: "Failed to mark chat as read" });
+    jsonApiError(res, 500, "CHAT_READ_FAILED");
   }
 });
 

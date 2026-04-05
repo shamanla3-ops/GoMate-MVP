@@ -12,6 +12,8 @@ import {
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { refreshRevieweeRating } from "../lib/reviewRating.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -27,7 +29,7 @@ router.get("/pending", authMiddleware, async (req: AuthRequest, res: Response) =
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -47,7 +49,8 @@ router.get("/pending", authMiddleware, async (req: AuthRequest, res: Response) =
       .where(
         and(
           eq(reviewTasks.reviewerUserId, userId),
-          eq(reviewTasks.status, "pending")
+          eq(reviewTasks.status, "pending"),
+          eq(trips.status, "completed")
         )
       )
       .orderBy(desc(reviewTasks.createdAt));
@@ -64,7 +67,7 @@ router.get("/pending", authMiddleware, async (req: AuthRequest, res: Response) =
     });
   } catch (err) {
     console.error("review-tasks pending error:", err);
-    res.status(500).json({ error: "Failed to load review tasks" });
+    jsonApiError(res, 500, "REVIEW_TASKS_LOAD_FAILED");
   }
 });
 
@@ -76,13 +79,13 @@ router.post(
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
+        jsonApiError(res, 401, "UNAUTHORIZED");
         return;
       }
 
       const taskId = String(req.params.taskId ?? "").trim();
       if (!taskId) {
-        res.status(400).json({ error: "taskId is required" });
+        jsonApiError(res, 400, "REVIEW_TASK_ID_REQUIRED");
         return;
       }
 
@@ -91,12 +94,12 @@ router.post(
       });
 
       if (!task || task.reviewerUserId !== userId) {
-        res.status(404).json({ error: "Review task not found" });
+        jsonApiError(res, 404, "REVIEW_TASK_NOT_FOUND");
         return;
       }
 
       if (task.status !== "pending") {
-        res.status(409).json({ error: "This review task is no longer pending" });
+        jsonApiError(res, 409, "REVIEW_TASK_NOT_PENDING");
         return;
       }
 
@@ -104,8 +107,8 @@ router.post(
         where: eq(trips.id, task.tripId),
       });
 
-      if (!trip || trip.status === "cancelled") {
-        res.status(400).json({ error: "Trip is not available for review" });
+      if (!trip || trip.status === "cancelled" || trip.status !== "completed") {
+        jsonApiError(res, 400, "REVIEW_TASK_TRIP_UNAVAILABLE");
         return;
       }
 
@@ -133,16 +136,14 @@ router.post(
           rNum < 1 ||
           rNum > 5
         ) {
-          res.status(400).json({ error: "rating must be an integer from 1 to 5" });
+          jsonApiError(res, 400, "REVIEWS_RATING_INVALID");
           return;
         }
         rating = rNum;
         const c =
           typeof body.comment === "string" ? body.comment.trim().slice(0, 2000) : "";
         if (rNum <= 3 && c.length === 0) {
-          res.status(400).json({
-            error: "Comment is required when rating is 3 or lower",
-          });
+          jsonApiError(res, 400, "REVIEWS_COMMENT_REQUIRED");
           return;
         }
         commentText = c.length > 0 ? c : null;
@@ -150,7 +151,7 @@ router.post(
         const reason =
           typeof body.noShowReason === "string" ? body.noShowReason.trim() : "";
         if (!NO_SHOW_REASONS.has(reason)) {
-          res.status(400).json({ error: "Invalid noShowReason" });
+          jsonApiError(res, 400, "REVIEW_TASK_NO_SHOW_REASON_INVALID");
           return;
         }
         noShowReason = reason;
@@ -165,7 +166,7 @@ router.post(
         task.targetUserId
       );
       if (!allowed) {
-        res.status(403).json({ error: "Invalid review relationship for this trip" });
+        jsonApiError(res, 403, "REVIEW_TASK_RELATIONSHIP_INVALID");
         return;
       }
 
@@ -186,7 +187,9 @@ router.post(
 
       await refreshRevieweeRating(task.targetUserId);
 
-      res.status(201).json({ success: true });
+      res
+        .status(201)
+        .json(withApiSuccess({ success: true }, "REVIEW_SUBMITTED"));
     } catch (err) {
       console.error("review-tasks submit error:", err);
       const pg =
@@ -194,12 +197,10 @@ router.post(
           ? (err as { code?: string })
           : {};
       if (pg.code === "23505") {
-        res
-          .status(409)
-          .json({ error: "You already reviewed this person for this trip" });
+        jsonApiError(res, 409, "REVIEWS_DUPLICATE");
         return;
       }
-      res.status(500).json({ error: "Failed to submit review" });
+      jsonApiError(res, 500, "REVIEWS_SUBMIT_FAILED");
     }
   }
 );

@@ -1,6 +1,8 @@
 import { Router, Response } from "express";
 import { db, routeTemplates, type NewRouteTemplate, eq } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { jsonApiError } from "../lib/apiErrors.js";
+import { withApiSuccess } from "../lib/apiSuccess.js";
 
 const router: Router = Router();
 
@@ -30,7 +32,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -73,10 +75,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       !currency ||
       !tripType
     ) {
-      res.status(400).json({
-        error:
-          "Missing required fields: name, origin, destination, availableSeats, price, currency, tripType",
-      });
+      jsonApiError(res, 400, "TEMPLATE_FIELDS_MISSING");
       return;
     }
 
@@ -95,10 +94,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       !isValidLat(dLat) ||
       !isValidLng(dLng)
     ) {
-      res.status(400).json({
-        error:
-          "Valid coordinates are required for origin and destination (originLat, originLng, destinationLat, destinationLng)",
-      });
+      jsonApiError(res, 400, "TEMPLATE_COORDINATES_INVALID");
       return;
     }
 
@@ -106,22 +102,22 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const priceNumber = Number(price);
 
     if (Number.isNaN(seatsNumber) || seatsNumber < 1) {
-      res.status(400).json({ error: "availableSeats must be at least 1" });
+      jsonApiError(res, 400, "TEMPLATE_SEATS_INVALID");
       return;
     }
 
     if (Number.isNaN(priceNumber) || priceNumber < 0) {
-      res.status(400).json({ error: "price must be a positive number or 0" });
+      jsonApiError(res, 400, "TEMPLATE_PRICE_INVALID");
       return;
     }
 
     if (!["EUR", "USD", "PLN"].includes(currency)) {
-      res.status(400).json({ error: "currency must be EUR, USD, or PLN" });
+      jsonApiError(res, 400, "TEMPLATE_CURRENCY_INVALID");
       return;
     }
 
     if (!["one-time", "regular"].includes(tripType)) {
-      res.status(400).json({ error: "tripType must be one-time or regular" });
+      jsonApiError(res, 400, "TEMPLATE_TYPE_INVALID");
       return;
     }
 
@@ -129,9 +125,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
     if (tripType === "regular") {
       if (!Array.isArray(weekdays)) {
-        res.status(400).json({
-          error: "weekdays must be an array for regular templates",
-        });
+        jsonApiError(res, 400, "TEMPLATE_WEEKDAYS_ARRAY_REQUIRED");
         return;
       }
 
@@ -144,10 +138,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       ];
 
       if (normalizedWeekdays.length === 0) {
-        res.status(400).json({
-          error:
-            "regular templates must have at least one weekday (mon, tue, wed, thu, fri, sat, sun)",
-        });
+        jsonApiError(res, 400, "TEMPLATE_WEEKDAYS_EMPTY");
         return;
       }
 
@@ -179,10 +170,10 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       .values(insertValues)
       .returning();
 
-    res.status(201).json({ template });
+    res.status(201).json(withApiSuccess({ template }, "TEMPLATE_CREATED"));
   } catch (err) {
     console.error("Create template error:", err);
-    res.status(500).json({ error: "Failed to create template" });
+    jsonApiError(res, 500, "TEMPLATE_CREATE_FAILED");
   }
 });
 
@@ -191,7 +182,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
@@ -206,7 +197,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json({ templates });
   } catch (err) {
     console.error("Load templates error:", err);
-    res.status(500).json({ error: "Failed to load templates" });
+    jsonApiError(res, 500, "TEMPLATE_LIST_FAILED");
   }
 });
 
@@ -215,14 +206,14 @@ async function handleDeleteTemplate(req: AuthRequest, res: Response) {
     const user = req.user;
 
     if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
+      jsonApiError(res, 401, "UNAUTHORIZED");
       return;
     }
 
     const templateId = String(req.params.id || "").trim();
 
     if (!templateId) {
-      res.status(400).json({ error: "Template id is required" });
+      jsonApiError(res, 400, "TEMPLATE_ID_REQUIRED");
       return;
     }
 
@@ -232,23 +223,21 @@ async function handleDeleteTemplate(req: AuthRequest, res: Response) {
     });
 
     if (!existingTemplate) {
-      res.status(404).json({ error: "Template not found" });
+      jsonApiError(res, 404, "TEMPLATE_NOT_FOUND");
       return;
     }
 
     if (existingTemplate.userId !== user.userId) {
-      res.status(403).json({
-        error: "You do not have permission to delete this template",
-      });
+      jsonApiError(res, 403, "TEMPLATE_DELETE_FORBIDDEN");
       return;
     }
 
     await db.delete(routeTemplates).where(eq(routeTemplates.id, templateId));
 
-    res.json({ success: true });
+    res.json(withApiSuccess({ success: true }, "TEMPLATE_DELETED"));
   } catch (err) {
     console.error("Delete template error:", err);
-    res.status(500).json({ error: "Failed to delete template" });
+    jsonApiError(res, 500, "TEMPLATE_DELETE_FAILED");
   }
 }
 

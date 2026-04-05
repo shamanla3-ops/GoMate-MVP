@@ -4,6 +4,8 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 const WEEKDAY_VALUES = [
   "mon",
@@ -153,7 +155,7 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || t("templatesPage.loadError"));
+        alert(messageFromApiError(data, t, "templatesPage.loadError"));
         setTemplates([]);
         return;
       }
@@ -237,7 +239,7 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || t("templatesPage.loadError"));
+        alert(messageFromApiError(data, t, "templatesPage.loadError"));
         return;
       }
 
@@ -252,7 +254,7 @@ export default function Templates() {
       setWeekdays([]);
 
       await loadTemplates();
-      alert(t("templatesPage.created"));
+      alert(messageFromApiSuccess(data, t, "templatesPage.created"));
     } catch {
       alert(t("templatesPage.connectError"));
     } finally {
@@ -323,11 +325,11 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || t("templatesPage.tripError"));
+        alert(messageFromApiError(data, t, "templatesPage.tripError"));
         return;
       }
 
-      alert(t("templatesPage.tripCreated"));
+      alert(messageFromApiSuccess(data, t, "templatesPage.tripCreated"));
       window.location.href = "/trips";
     } catch {
       alert(t("templatesPage.connectError"));
@@ -363,12 +365,12 @@ export default function Templates() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.message || t("templatesPage.deleteError"));
+        alert(messageFromApiError(data, t, "templatesPage.deleteError"));
         return;
       }
 
       setTemplates((prev) => prev.filter((item) => item.id !== templateId));
-      alert(t("templatesPage.deleted"));
+      alert(messageFromApiSuccess(data, t, "templatesPage.deleted"));
     } catch {
       alert(t("templatesPage.connectError"));
     } finally {

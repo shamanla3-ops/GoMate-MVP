@@ -3,6 +3,8 @@ import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type OutgoingRequest = {
   id: string;
@@ -118,7 +120,7 @@ export default function MyRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("myRequestsPage.loadError"));
+        setMessage(messageFromApiError(data, t, "myRequestsPage.loadError"));
         setRequests([]);
         return;
       }
@@ -161,7 +163,7 @@ export default function MyRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("myRequestsPage.cancelError"));
+        setMessage(messageFromApiError(data, t, "myRequestsPage.cancelError"));
         return;
       }
 
@@ -170,7 +172,7 @@ export default function MyRequests() {
           item.id === requestId ? { ...item, status: "cancelled" } : item
         )
       );
-      setMessage(t("myRequestsPage.cancelled"));
+      setMessage(messageFromApiSuccess(data, t, "myRequestsPage.cancelled"));
     } catch {
       setMessage(t("myRequestsPage.serverError"));
     } finally {

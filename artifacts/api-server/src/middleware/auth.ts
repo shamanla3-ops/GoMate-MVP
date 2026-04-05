@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { jsonApiError } from "../lib/apiErrors.js";
 
 export interface JwtPayload {
   userId: string;
@@ -17,13 +18,13 @@ export function authMiddleware(
 ): void {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or invalid Authorization header" });
+    jsonApiError(res, 401, "AUTH_MISSING_HEADER");
     return;
   }
   const token = authHeader.slice(7);
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    res.status(503).json({ error: "Server misconfiguration" });
+    jsonApiError(res, 503, "SERVER_MISCONFIGURED");
     return;
   }
   try {
@@ -31,6 +32,6 @@ export function authMiddleware(
     req.user = decoded;
     next();
   } catch {
-    res.status(401).json({ error: "Invalid or expired token" });
+    jsonApiError(res, 401, "AUTH_TOKEN_INVALID");
   }
 }

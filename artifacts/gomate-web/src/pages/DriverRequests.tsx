@@ -3,6 +3,8 @@ import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type IncomingRequest = {
   id: string;
@@ -79,7 +81,7 @@ export default function DriverRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || t("driverRequestsPage.loadError"));
+        setMessage(messageFromApiError(data, t, "driverRequestsPage.loadError"));
         setRequests([]);
         return;
       }
@@ -121,10 +123,19 @@ export default function DriverRequests() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || t("driverRequestsPage.updateError"));
+        alert(messageFromApiError(data, t, "driverRequestsPage.updateError"));
         return;
       }
 
+      alert(
+        messageFromApiSuccess(
+          data,
+          t,
+          action === "accept"
+            ? "requestsPage.incomingAcceptedNote"
+            : "requestsPage.incomingRejectedNote"
+        )
+      );
       await loadRequests();
     } catch {
       alert(t("driverRequestsPage.serverError"));

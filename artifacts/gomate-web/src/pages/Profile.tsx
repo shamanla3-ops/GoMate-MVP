@@ -4,6 +4,8 @@ import { type CurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { messageFromApiError } from "../lib/errorMessages";
+import { messageFromApiSuccess } from "../lib/successMessages";
 
 type ProfileForm = {
   name: string;
@@ -159,7 +161,7 @@ export default function Profile() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || t("profilePage.loadError"));
+        setError(messageFromApiError(data, t, "profilePage.loadError"));
         return;
       }
 
@@ -270,12 +272,12 @@ export default function Profile() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || t("profilePage.saveError"));
+        setError(messageFromApiError(data, t, "profilePage.saveError"));
         return;
       }
 
       setUser(data.user);
-      setMessage(data.message || t("profilePage.saved"));
+      setMessage(messageFromApiSuccess(data, t, "profilePage.saved"));
     } catch {
       setError(t("profilePage.serverError"));
     } finally {

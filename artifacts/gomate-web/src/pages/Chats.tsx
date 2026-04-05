@@ -5,6 +5,7 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeChatList } from "../lib/intlLocale";
+import { messageFromApiError } from "../lib/errorMessages";
 
 type CurrentUserLike = {
   id?: string;
@@ -94,7 +95,7 @@ export default function Chats() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.error || t("chatsPage.loadError"));
+        setMessage(messageFromApiError(data, t, "chatsPage.loadError"));
         setChats([]);
         setTotalUnread(0);
         return;

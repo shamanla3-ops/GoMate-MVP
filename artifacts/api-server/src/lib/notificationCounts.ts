@@ -86,10 +86,12 @@ export async function getNotificationCounts(userId: string): Promise<{
   const [reviewRow] = await db
     .select({ n: count() })
     .from(reviewTasks)
+    .innerJoin(trips, eq(reviewTasks.tripId, trips.id))
     .where(
       and(
         eq(reviewTasks.reviewerUserId, userId),
-        eq(reviewTasks.status, "pending")
+        eq(reviewTasks.status, "pending"),
+        eq(trips.status, "completed")
       )
     );
 
