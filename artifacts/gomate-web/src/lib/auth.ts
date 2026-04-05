@@ -16,6 +16,10 @@ export type CurrentUser = {
   rating?: number | null;
   co2SavedKg?: number | null;
   createdAt: string;
+  emailVerified?: boolean;
+  termsAccepted?: boolean;
+  termsAcceptedAt?: string | null;
+  termsVersion?: string | null;
   /** How many reviews this user has received */
   reviewCount?: number | null;
 };

@@ -11,6 +11,9 @@ import { sendVerificationEmail } from "../lib/email.js";
 const router: Router = Router();
 const SALT_ROUNDS = 10;
 
+/** Active Terms of Use version recorded on acceptance (register / accept-terms). */
+const TERMS_VERSION = "2026-04-05";
+
 const VERIFICATION_EMAIL_RESEND_COOLDOWN_MS = 60_000;
 
 type UserLanguage = (typeof users.$inferSelect)["language"];
@@ -58,6 +61,9 @@ function mapUser(user: typeof users.$inferSelect, reviewCount?: number) {
     co2SavedKg: user.co2SavedKg,
     createdAt: user.createdAt,
     emailVerified: user.emailVerified,
+    termsAccepted: user.termsAccepted,
+    termsAcceptedAt: user.termsAcceptedAt,
+    termsVersion: user.termsVersion,
     reviewCount: reviewCount ?? 0,
   };
 }
@@ -76,15 +82,21 @@ function isWithinVerificationResendCooldown(sentAt: Date | null): boolean {
 
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { email, password, name, language } = req.body as {
+    const { email, password, name, language, termsAccepted } = req.body as {
       email?: string;
       password?: string;
       name?: string;
       language?: string;
+      termsAccepted?: unknown;
     };
 
     if (!email || !password || !name) {
       jsonApiError(res, 400, "AUTH_REGISTER_FIELDS_MISSING");
+      return;
+    }
+
+    if (termsAccepted !== true) {
+      jsonApiError(res, 400, "AUTH_TERMS_REQUIRED");
       return;
     }
 
@@ -103,6 +115,7 @@ router.post("/register", async (req: Request, res: Response) => {
     const normalizedLanguage = normalizeLanguage(language);
     const emailVerificationToken = randomUUID();
     const emailVerificationSentAt = new Date();
+    const termsAcceptedAt = new Date();
 
     const [user] = await db
       .insert(users)
@@ -114,6 +127,9 @@ router.post("/register", async (req: Request, res: Response) => {
         emailVerified: false,
         emailVerificationToken,
         emailVerificationSentAt,
+        termsAccepted: true,
+        termsAcceptedAt,
+        termsVersion: TERMS_VERSION,
       })
       .returning();
 
@@ -326,5 +342,38 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
     jsonApiError(res, 500, "PROFILE_LOAD_FAILED");
   }
 });
+
+router.post(
+  "/accept-terms",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const now = new Date();
+
+      await db
+        .update(users)
+        .set({
+          termsAccepted: true,
+          termsAcceptedAt: now,
+          termsVersion: TERMS_VERSION,
+        })
+        .where(eq(users.id, userId));
+
+      res.json(withApiSuccess({ success: true }, "TERMS_ACCEPTED"));
+    } catch (err) {
+      console.error("accept-terms error:", err);
+      const pg =
+        typeof err === "object" && err !== null
+          ? (err as { code?: string })
+          : {};
+      if (pg.code === "42703" || pg.code === "42P01") {
+        jsonApiError(res, 500, "DATABASE_SCHEMA_OUTDATED");
+        return;
+      }
+      jsonApiError(res, 500, "AUTH_ACCEPT_TERMS_FAILED");
+    }
+  }
+);
 
 export default router;

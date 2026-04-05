@@ -20,10 +20,12 @@ import LegalInfo from "./pages/LegalInfo";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
 import { ReviewPendingModal } from "./components/ReviewPendingModal";
 import { Footer } from "./components/Footer";
+import { TermsAcceptanceGate } from "./components/TermsAcceptanceGate";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <TermsAcceptanceGate />
       <div className="flex min-h-screen min-h-[100dvh] flex-col">
         <main className="min-w-0 flex-1">
           <Routes>

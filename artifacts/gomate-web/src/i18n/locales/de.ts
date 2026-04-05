@@ -329,17 +329,42 @@ export default {
   "auth.register.formTitle": "Registrierung",
   "auth.register.subtitle": "Konto erstellen und GoMate nutzen",
   "auth.register.name": "Name",
+  "auth.register.namePlaceholder": "Dein Name",
+  "auth.register.email": "E-Mail",
+  "auth.register.emailPlaceholder": "du@beispiel.de",
   "auth.register.passwordHint": "Mindestens 6 Zeichen",
+  "auth.register.acceptTerms":
+    "Ich akzeptiere die [[terms]] und verstehe, dass GoMate eine Plattform ist, die Nutzer verbindet und keine Transportdienstleistungen anbietet.",
+  "auth.register.termsOfUse": "Nutzungsbedingungen",
+  "auth.register.mustAcceptTerms":
+    "Du musst die Nutzungsbedingungen akzeptieren.",
+  "auth.register.legalNote":
+    "GoMate ist eine digitale Plattform, die Fahrer und Fahrgäste verbindet. Alle Fahrten werden direkt zwischen den Nutzern vereinbart. GoMate ist kein Transportunternehmen.",
+  "auth.register.contactSupport": "Support kontaktieren",
+  "auth.register.supportEmail": "support@getgomate.com",
+  "auth.register.supportMailSubject": "GoMate-Supportanfrage",
   "auth.register.submit": "Konto erstellen",
   "auth.register.submitting": "Erstellen…",
   "auth.register.hasAccount": "Bereits ein Konto?",
   "auth.register.signInLink": "Anmelden",
   "auth.register.error": "Registrierung fehlgeschlagen",
   "auth.register.noToken": "Server hat kein Token zurückgegeben",
-  "auth.register.verifySuccess": "Konto erstellt. Bitte bestätige deine E-Mail.",
-  "auth.register.goToLogin": "Zur Anmeldung",
+  "auth.register.verifySuccess":
+    "Konto erstellt. Bitte bestätige deine E-Mail vor dem Login.",
+  "auth.register.goToLogin": "Zum Login",
   "auth.register.redirectHint": "Du wirst in wenigen Sekunden zur Anmeldung weitergeleitet.",
   "auth.register.serverError": "Keine Verbindung zum Server",
+
+  "auth.termsGate.title": "Aktualisierung der Nutzungsbedingungen",
+  "auth.termsGate.body":
+    "Bevor du fortfährst, musst du die Nutzungsbedingungen von GoMate akzeptieren. GoMate ist eine digitale Plattform, die Fahrer und Fahrgäste verbindet, und bietet keine Transportdienstleistungen an.",
+  "auth.termsGate.viewTerms": "Nutzungsbedingungen lesen",
+  "auth.termsGate.accept": "Akzeptieren und fortfahren",
+  "auth.termsGate.accepting": "Wird gespeichert…",
+  "auth.termsGate.logout": "Abmelden",
+  "auth.termsGate.loading": "Konto wird geprüft…",
+  "auth.termsGate.acceptError":
+    "Die Akzeptanz konnte nicht gespeichert werden. Bitte versuche es erneut.",
 
   "auth.verify.title": "E-Mail bestätigen",
   "auth.verify.subtitle": "Bestätige deine E-Mail-Adresse, um GoMate zu nutzen.",
@@ -603,6 +628,10 @@ export default {
   "errors.AUTH_TOKEN_INVALID": "Ungültiges oder abgelaufenes Token",
   "errors.AUTH_REGISTER_FIELDS_MISSING":
     "Pflichtfelder fehlen: E-Mail, Passwort, Name",
+  "errors.AUTH_TERMS_REQUIRED":
+    "Du musst die Nutzungsbedingungen akzeptieren, um dich zu registrieren",
+  "errors.AUTH_ACCEPT_TERMS_FAILED":
+    "Die Akzeptanz der Nutzungsbedingungen konnte nicht gespeichert werden",
   "errors.AUTH_EMAIL_IN_USE": "Diese E-Mail ist bereits registriert",
   "errors.AUTH_REGISTRATION_FAILED": "Registrierung fehlgeschlagen",
   "errors.AUTH_LOGIN_FIELDS_MISSING": "E-Mail oder Passwort fehlt",

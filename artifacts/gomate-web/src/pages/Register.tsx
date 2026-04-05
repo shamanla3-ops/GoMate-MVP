@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import {
   messageFromApiError,
@@ -9,6 +9,36 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 
 const REDIRECT_MS = 3500;
+const TERMS_MARKER = "[[terms]]";
+
+function RegisterAcceptTermsLabel() {
+  const { t } = useTranslation();
+  const raw = t("auth.register.acceptTerms");
+  const parts = raw.split(TERMS_MARKER);
+  const linkClass =
+    "font-semibold text-[#138fe3] underline decoration-[#138fe3]/35 underline-offset-2 hover:decoration-[#138fe3]";
+
+  if (parts.length === 2) {
+    return (
+      <>
+        {parts[0]}
+        <Link to="/terms" className={linkClass}>
+          {t("auth.register.termsOfUse")}
+        </Link>
+        {parts[1]}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {raw}{" "}
+      <Link to="/terms" className={linkClass}>
+        {t("auth.register.termsOfUse")}
+      </Link>
+    </>
+  );
+}
 
 export default function Register() {
   const { t, locale } = useTranslation();
@@ -16,9 +46,17 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsError, setTermsError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const supportMailHref = useMemo(() => {
+    const addr = t("auth.register.supportEmail");
+    const subject = encodeURIComponent(t("auth.register.supportMailSubject"));
+    return `mailto:${addr}?subject=${subject}`;
+  }, [t, locale]);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -32,6 +70,13 @@ export default function Register() {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
+    setTermsError("");
+
+    if (!acceptTerms) {
+      setTermsError(t("auth.register.mustAcceptTerms"));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -45,6 +90,7 @@ export default function Register() {
           email: email.trim(),
           password,
           language: locale,
+          termsAccepted: true,
         }),
       });
 
@@ -57,13 +103,7 @@ export default function Register() {
         return;
       }
 
-      const rawMsg = data.message;
-      const apiText =
-        typeof rawMsg === "string" && rawMsg.trim() !== ""
-          ? rawMsg.trim()
-          : t("auth.register.verifySuccess");
-
-      setSuccessMessage(apiText);
+      setSuccessMessage(t("auth.register.verifySuccess"));
       setPassword("");
     } catch {
       setErrorMessage(t("auth.register.serverError"));
@@ -138,7 +178,7 @@ export default function Register() {
                       <input
                         type="text"
                         className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
-                        placeholder="Yurii"
+                        placeholder={t("auth.register.namePlaceholder")}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={formDisabled}
@@ -147,12 +187,12 @@ export default function Register() {
 
                     <div>
                       <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        Email
+                        {t("auth.register.email")}
                       </label>
                       <input
                         type="email"
                         className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
-                        placeholder="you@example.com"
+                        placeholder={t("auth.register.emailPlaceholder")}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={formDisabled}
@@ -173,6 +213,36 @@ export default function Register() {
                       />
                     </div>
 
+                    <div className="rounded-2xl border border-white/60 bg-white/40 px-3 py-3 sm:px-4 sm:py-4">
+                      <label className="flex cursor-pointer gap-3 text-left">
+                        <input
+                          type="checkbox"
+                          checked={acceptTerms}
+                          onChange={(e) => {
+                            const next = e.target.checked;
+                            setAcceptTerms(next);
+                            if (next) setTermsError("");
+                          }}
+                          disabled={formDisabled}
+                          className="mt-0.5 h-[1.125rem] w-[1.125rem] shrink-0 rounded border-[#b8c9d6] text-[#1296e8] focus:ring-2 focus:ring-[#1296e8]/35 disabled:opacity-60"
+                        />
+                        <span className="text-sm leading-snug text-[#35556c]">
+                          <RegisterAcceptTermsLabel />
+                        </span>
+                      </label>
+                      {termsError ? (
+                        <p
+                          className="mt-2 text-sm font-medium text-[#b42318]"
+                          role="alert"
+                        >
+                          {termsError}
+                        </p>
+                      ) : null}
+                      <p className="mt-2.5 text-xs leading-relaxed text-[#5a7389]">
+                        {t("auth.register.legalNote")}
+                      </p>
+                    </div>
+
                     <button
                       type="submit"
                       disabled={loading || formDisabled}
@@ -183,6 +253,13 @@ export default function Register() {
                         : t("auth.register.submit")}
                     </button>
                   </form>
+
+                  <a
+                    href={supportMailHref}
+                    className="mt-5 flex h-12 w-full items-center justify-center rounded-full border border-[#cfe8f7] bg-white/70 text-sm font-semibold text-[#28475d] shadow-sm backdrop-blur-sm transition hover:border-[#1296e8]/40 hover:bg-white/90"
+                  >
+                    {t("auth.register.contactSupport")}
+                  </a>
 
                   {errorMessage && (
                     <div className="mt-4 rounded-2xl bg-[#fff1f0] px-4 py-3 text-sm text-[#b42318] shadow-sm">

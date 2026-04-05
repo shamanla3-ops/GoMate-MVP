@@ -26,6 +26,9 @@ function mapUser(user: typeof users.$inferSelect, reviewCount: number) {
     co2SavedKg: user.co2SavedKg,
     createdAt: user.createdAt,
     emailVerified: user.emailVerified,
+    termsAccepted: user.termsAccepted,
+    termsAcceptedAt: user.termsAcceptedAt,
+    termsVersion: user.termsVersion,
     reviewCount,
   };
 }

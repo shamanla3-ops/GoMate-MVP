@@ -332,17 +332,42 @@ export default {
   "auth.register.formTitle": "Rejestracja",
   "auth.register.subtitle": "Utwórz konto i zacznij korzystać z GoMate",
   "auth.register.name": "Imię",
+  "auth.register.namePlaceholder": "Twoje imię",
+  "auth.register.email": "E-mail",
+  "auth.register.emailPlaceholder": "twoj@email.pl",
   "auth.register.passwordHint": "Minimum 6 znaków",
+  "auth.register.acceptTerms":
+    "Akceptuję [[terms]] i rozumiem, że GoMate jest platformą łączącą użytkowników i nie świadczy usług transportowych.",
+  "auth.register.termsOfUse": "Regulamin",
+  "auth.register.mustAcceptTerms":
+    "Musisz zaakceptować Regulamin, aby kontynuować.",
+  "auth.register.legalNote":
+    "GoMate jest platformą cyfrową łączącą kierowców i pasażerów. Wszystkie przejazdy są realizowane bezpośrednio między użytkownikami. GoMate nie jest firmą transportową ani przewoźnikiem.",
+  "auth.register.contactSupport": "Skontaktuj się z nami",
+  "auth.register.supportEmail": "support@getgomate.com",
+  "auth.register.supportMailSubject": "Zgłoszenie do wsparcia GoMate",
   "auth.register.submit": "Utwórz konto",
   "auth.register.submitting": "Tworzenie…",
   "auth.register.hasAccount": "Masz już konto?",
   "auth.register.signInLink": "Zaloguj się",
   "auth.register.error": "Rejestracja nie powiodła się",
   "auth.register.noToken": "Serwer nie zwrócił tokenu",
-  "auth.register.verifySuccess": "Konto utworzone. Potwierdź adres e-mail.",
+  "auth.register.verifySuccess":
+    "Konto zostało utworzone. Zweryfikuj swój email przed zalogowaniem.",
   "auth.register.goToLogin": "Przejdź do logowania",
   "auth.register.redirectHint": "Za chwilę nastąpi przekierowanie do logowania.",
   "auth.register.serverError": "Nie można połączyć z serwerem",
+
+  "auth.termsGate.title": "Aktualizacja Regulaminu",
+  "auth.termsGate.body":
+    "Aby kontynuować, musisz zaakceptować Regulamin GoMate. GoMate to platforma cyfrowa łącząca kierowców i pasażerów i nie świadczy usług transportowych.",
+  "auth.termsGate.viewTerms": "Przeczytaj Regulamin",
+  "auth.termsGate.accept": "Akceptuję i kontynuuję",
+  "auth.termsGate.accepting": "Zapisywanie…",
+  "auth.termsGate.logout": "Wyloguj się",
+  "auth.termsGate.loading": "Sprawdzanie konta…",
+  "auth.termsGate.acceptError":
+    "Nie udało się zapisać akceptacji. Spróbuj ponownie.",
 
   "auth.verify.title": "Potwierdzenie e-maila",
   "auth.verify.subtitle": "Potwierdź adres e-mail, aby korzystać z GoMate.",
@@ -606,6 +631,9 @@ export default {
   "errors.AUTH_TOKEN_INVALID": "Nieprawidłowy lub wygasły token",
   "errors.AUTH_REGISTER_FIELDS_MISSING":
     "Brakuje wymaganych pól: e-mail, hasło, imię",
+  "errors.AUTH_TERMS_REQUIRED":
+    "Musisz zaakceptować Regulamin, aby się zarejestrować",
+  "errors.AUTH_ACCEPT_TERMS_FAILED": "Nie udało się zapisać akceptacji regulaminu",
   "errors.AUTH_EMAIL_IN_USE": "Ten e-mail jest już zarejestrowany",
   "errors.AUTH_REGISTRATION_FAILED": "Rejestracja nie powiodła się",
   "errors.AUTH_LOGIN_FIELDS_MISSING": "Brakuje e-maila lub hasła",

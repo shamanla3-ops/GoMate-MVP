@@ -332,17 +332,43 @@ Object.assign(es, {
   "auth.register.formTitle": "Registro",
   "auth.register.subtitle": "Crea una cuenta y empieza a usar GoMate",
   "auth.register.name": "Nombre",
+  "auth.register.namePlaceholder": "Tu nombre",
+  "auth.register.email": "Correo",
+  "auth.register.emailPlaceholder": "tu@ejemplo.com",
   "auth.register.passwordHint": "Al menos 6 caracteres",
+  "auth.register.acceptTerms":
+    "Acepto los [[terms]] y entiendo que GoMate es una plataforma que conecta usuarios y no proporciona servicios de transporte.",
+  "auth.register.termsOfUse": "Términos de uso",
+  "auth.register.mustAcceptTerms":
+    "Debes aceptar los Términos de uso para continuar.",
+  "auth.register.legalNote":
+    "GoMate es una plataforma digital que conecta conductores y pasajeros. Todos los viajes se organizan directamente entre los usuarios. GoMate no es una empresa de transporte.",
+  "auth.register.contactSupport": "Contactar con soporte",
+  "auth.register.supportEmail": "support@getgomate.com",
+  "auth.register.supportMailSubject": "Solicitud de soporte GoMate",
   "auth.register.submit": "Crear cuenta",
   "auth.register.submitting": "Creando…",
   "auth.register.hasAccount": "¿Ya tienes cuenta?",
   "auth.register.signInLink": "Iniciar sesión",
   "auth.register.error": "Error en el registro",
   "auth.register.noToken": "El servidor no devolvió el token",
-  "auth.register.verifySuccess": "Cuenta creada. Verifica tu correo.",
-  "auth.register.goToLogin": "Ir al inicio de sesión",
+  "auth.register.verifySuccess":
+    "Cuenta creada. Por favor verifica tu correo antes de iniciar sesión.",
+  "auth.register.goToLogin": "Ir a iniciar sesión",
   "auth.register.redirectHint": "Serás redirigido al inicio de sesión en unos segundos.",
   "auth.register.serverError": "No se puede conectar con el servidor",
+
+  "auth.termsGate.title": "Actualización de los Términos de uso",
+  "auth.termsGate.body":
+    "Antes de continuar, debes aceptar los Términos de uso de GoMate. GoMate es una plataforma digital que conecta conductores y pasajeros y no presta servicios de transporte.",
+  "auth.termsGate.viewTerms": "Leer Términos de uso",
+  "auth.termsGate.accept": "Aceptar y continuar",
+  "auth.termsGate.accepting": "Guardando…",
+  "auth.termsGate.logout": "Cerrar sesión",
+  "auth.termsGate.loading": "Comprobando tu cuenta…",
+  "auth.termsGate.acceptError":
+    "No se pudo guardar tu aceptación. Inténtalo de nuevo.",
+
   "auth.verify.title": "Verificar correo",
   "auth.verify.subtitle": "Confirma tu correo para usar GoMate.",
   "auth.verify.loading": "Verificando tu correo...",
@@ -604,6 +630,9 @@ Object.assign(es, {
   "errors.AUTH_TOKEN_INVALID": "Token no válido o caducado",
   "errors.AUTH_REGISTER_FIELDS_MISSING":
     "Faltan campos obligatorios: correo, contraseña, nombre",
+  "errors.AUTH_TERMS_REQUIRED":
+    "Debes aceptar los Términos de uso para registrarte",
+  "errors.AUTH_ACCEPT_TERMS_FAILED": "No se pudo guardar la aceptación de los términos",
   "errors.AUTH_EMAIL_IN_USE": "El correo ya está registrado",
   "errors.AUTH_REGISTRATION_FAILED": "Error en el registro",
   "errors.AUTH_LOGIN_FIELDS_MISSING": "Falta correo o contraseña",

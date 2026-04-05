@@ -13,6 +13,7 @@ const SUCCESS_LEGACY: Record<string, string> = {
   TEMPLATE_DELETED: "Template deleted",
   REVIEW_SUBMITTED: "Review submitted",
   EMAIL_VERIFIED: "Email verified",
+  TERMS_ACCEPTED: "Terms accepted",
 };
 
 export function withApiSuccess<T extends Record<string, unknown>>(

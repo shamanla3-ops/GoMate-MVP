@@ -157,6 +157,7 @@ export function SeatsPicker({ value, onChange, label, t }: SeatsPickerProps) {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls={open ? panelId : undefined}
+        aria-label={t("createTrip.seatsPickerSummary", { count: safeValue })}
         className={`group flex w-full items-center justify-between gap-3 rounded-2xl border bg-white/90 px-4 py-3 text-left shadow-sm outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#1296e8]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef4f8] active:scale-[0.99] ${
           open || entered
             ? "border-[#1296e8]/55 shadow-[0_10px_28px_rgba(18,150,232,0.18)]"
@@ -171,8 +172,9 @@ export function SeatsPicker({ value, onChange, label, t }: SeatsPickerProps) {
             className={`mt-0.5 truncate text-2xl font-extrabold tabular-nums leading-none ${
               open || entered ? "text-[#1296e8]" : "text-[#173651]"
             }`}
+            aria-hidden
           >
-            {t("createTrip.seatsPickerSummary", { count: safeValue })}
+            {safeValue}
           </p>
         </div>
         <span

@@ -7,6 +7,7 @@ const LEGACY_MESSAGES: Record<string, string> = {
   AUTH_TOKEN_INVALID: "Invalid or expired token",
 
   AUTH_REGISTER_FIELDS_MISSING: "Missing required fields: email, password, name",
+  AUTH_TERMS_REQUIRED: "You must accept the Terms of Use to register",
   AUTH_EMAIL_IN_USE: "Email already registered",
   AUTH_REGISTRATION_FAILED: "Registration failed",
 
@@ -14,6 +15,8 @@ const LEGACY_MESSAGES: Record<string, string> = {
   AUTH_INVALID_CREDENTIALS: "Invalid email or password",
   AUTH_EMAIL_NOT_VERIFIED: "Please verify your email",
   AUTH_LOGIN_FAILED: "Login failed",
+
+  AUTH_ACCEPT_TERMS_FAILED: "Could not save terms acceptance",
 
   AUTH_VERIFY_TOKEN_MISSING: "Verification token is required",
   AUTH_VERIFY_TOKEN_INVALID: "Invalid or expired verification token",

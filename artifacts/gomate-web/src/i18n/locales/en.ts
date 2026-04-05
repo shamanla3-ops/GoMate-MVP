@@ -328,17 +328,41 @@ export default {
   "auth.register.formTitle": "Register",
   "auth.register.subtitle": "Create an account and start using GoMate",
   "auth.register.name": "Name",
+  "auth.register.namePlaceholder": "Your name",
+  "auth.register.email": "Email",
+  "auth.register.emailPlaceholder": "you@example.com",
   "auth.register.passwordHint": "At least 6 characters",
+  "auth.register.acceptTerms":
+    "I agree to the [[terms]] and understand that GoMate is a platform connecting users and does not provide transportation services.",
+  "auth.register.termsOfUse": "Terms of Use",
+  "auth.register.mustAcceptTerms":
+    "You must accept the Terms of Use to continue.",
+  "auth.register.legalNote":
+    "GoMate is a digital platform that connects drivers and passengers. All transportation is arranged directly between users. GoMate is not a transport company or carrier.",
+  "auth.register.contactSupport": "Contact support",
+  "auth.register.supportEmail": "support@getgomate.com",
+  "auth.register.supportMailSubject": "GoMate Support Request",
   "auth.register.submit": "Create account",
   "auth.register.submitting": "Creating…",
   "auth.register.hasAccount": "Already have an account?",
   "auth.register.signInLink": "Sign in",
   "auth.register.error": "Registration failed",
   "auth.register.noToken": "Token was not returned by server",
-  "auth.register.verifySuccess": "Account created. Please verify your email.",
+  "auth.register.verifySuccess":
+    "Account created. Please verify your email before logging in.",
   "auth.register.goToLogin": "Go to login",
   "auth.register.redirectHint": "You will be redirected to sign in in a few seconds.",
   "auth.register.serverError": "Cannot connect to server",
+
+  "auth.termsGate.title": "Terms of Use update",
+  "auth.termsGate.body":
+    "Before continuing, you need to accept the Terms of Use for GoMate. GoMate is a digital platform connecting drivers and passengers and does not provide transportation services.",
+  "auth.termsGate.viewTerms": "Read Terms of Use",
+  "auth.termsGate.accept": "Accept and continue",
+  "auth.termsGate.accepting": "Saving…",
+  "auth.termsGate.logout": "Log out",
+  "auth.termsGate.loading": "Checking your account…",
+  "auth.termsGate.acceptError": "Could not save your acceptance. Please try again.",
 
   "auth.verify.title": "Verify email",
   "auth.verify.subtitle": "Confirm your email address to use GoMate.",
@@ -602,6 +626,9 @@ export default {
   "errors.AUTH_TOKEN_INVALID": "Invalid or expired token",
   "errors.AUTH_REGISTER_FIELDS_MISSING":
     "Missing required fields: email, password, name",
+  "errors.AUTH_TERMS_REQUIRED":
+    "You must accept the Terms of Use to register",
+  "errors.AUTH_ACCEPT_TERMS_FAILED": "Could not save terms acceptance",
   "errors.AUTH_EMAIL_IN_USE": "Email already registered",
   "errors.AUTH_REGISTRATION_FAILED": "Registration failed",
   "errors.AUTH_LOGIN_FIELDS_MISSING": "Missing email or password",

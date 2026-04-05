@@ -328,17 +328,42 @@ export default {
   "auth.register.formTitle": "Регистрация",
   "auth.register.subtitle": "Создай аккаунт и начни пользоваться GoMate",
   "auth.register.name": "Имя",
+  "auth.register.namePlaceholder": "Ваше имя",
+  "auth.register.email": "Email",
+  "auth.register.emailPlaceholder": "you@example.com",
   "auth.register.passwordHint": "Минимум 6 символов",
+  "auth.register.acceptTerms":
+    "Я принимаю [[terms]] и понимаю, что GoMate — это платформа для соединения пользователей и не оказывает транспортные услуги.",
+  "auth.register.termsOfUse": "условия использования",
+  "auth.register.mustAcceptTerms":
+    "Вы должны принять условия использования.",
+  "auth.register.legalNote":
+    "GoMate — это цифровая платформа, соединяющая водителей и пассажиров. Все поездки организуются напрямую между пользователями. GoMate не является транспортной компанией.",
+  "auth.register.contactSupport": "Связаться с поддержкой",
+  "auth.register.supportEmail": "support@getgomate.com",
+  "auth.register.supportMailSubject": "Обращение в поддержку GoMate",
   "auth.register.submit": "Создать аккаунт",
   "auth.register.submitting": "Создаём...",
   "auth.register.hasAccount": "Уже есть аккаунт?",
   "auth.register.signInLink": "Войти",
   "auth.register.error": "Ошибка регистрации",
   "auth.register.noToken": "Сервер не вернул токен",
-  "auth.register.verifySuccess": "Аккаунт создан. Подтвердите email.",
-  "auth.register.goToLogin": "Перейти ко входу",
+  "auth.register.verifySuccess":
+    "Аккаунт создан. Подтвердите email перед входом.",
+  "auth.register.goToLogin": "Перейти к входу",
   "auth.register.redirectHint": "Через несколько секунд вы будете перенаправлены на страницу входа.",
   "auth.register.serverError": "Не удалось подключиться к серверу",
+
+  "auth.termsGate.title": "Обновление условий использования",
+  "auth.termsGate.body":
+    "Чтобы продолжить, примите условия использования GoMate. GoMate — это цифровая платформа, соединяющая водителей и пассажиров; она не оказывает транспортные услуги.",
+  "auth.termsGate.viewTerms": "Открыть условия использования",
+  "auth.termsGate.accept": "Принять и продолжить",
+  "auth.termsGate.accepting": "Сохранение…",
+  "auth.termsGate.logout": "Выйти",
+  "auth.termsGate.loading": "Проверяем аккаунт…",
+  "auth.termsGate.acceptError":
+    "Не удалось сохранить согласие. Попробуйте ещё раз.",
 
   "auth.verify.title": "Подтверждение email",
   "auth.verify.subtitle": "Подтвердите email, чтобы пользоваться GoMate.",
@@ -602,6 +627,9 @@ export default {
   "errors.AUTH_TOKEN_INVALID": "Недействительный или просроченный токен",
   "errors.AUTH_REGISTER_FIELDS_MISSING":
     "Не хватает обязательных полей: email, пароль, имя",
+  "errors.AUTH_TERMS_REQUIRED":
+    "Чтобы зарегистрироваться, нужно принять условия использования",
+  "errors.AUTH_ACCEPT_TERMS_FAILED": "Не удалось сохранить принятие условий",
   "errors.AUTH_EMAIL_IN_USE": "Этот email уже зарегистрирован",
   "errors.AUTH_REGISTRATION_FAILED": "Регистрация не удалась",
   "errors.AUTH_LOGIN_FIELDS_MISSING": "Не хватает email или пароля",

@@ -48,6 +48,10 @@ export const users = pgTable("users", {
     withTimezone: true,
   }),
 
+  termsAccepted: boolean("terms_accepted").notNull().default(false),
+  termsAcceptedAt: timestamp("terms_accepted_at", { withTimezone: true }),
+  termsVersion: text("terms_version"),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
