@@ -7,6 +7,10 @@ import {
   sendRequestRejectedNotification,
   sendRequestCancelledByPassengerNotification,
 } from "../lib/notifications.js";
+import {
+  sendTripRequestEmail,
+  sendTripRequestAcceptedEmail,
+} from "../lib/email.js";
 import { jsonApiError } from "../lib/apiErrors.js";
 import { withApiSuccess } from "../lib/apiSuccess.js";
 
@@ -177,6 +181,27 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
+    const driver = await db.query.users.findFirst({
+      where: eq(users.id, trip.driverId),
+    });
+
+    const driverEmail = driver?.email?.trim();
+    if (driver && driverEmail) {
+      try {
+        await sendTripRequestEmail({
+          driverEmail,
+          driverName: driver.name,
+          passengerName: passenger?.name,
+          origin: trip.origin,
+          destination: trip.destination,
+          departureTime: trip.departureTime,
+          tripId: trip.id,
+        });
+      } catch (mailErr) {
+        console.error("sendTripRequestEmail (create trip request):", mailErr);
+      }
+    }
+
     res.status(201).json(withApiSuccess({ request }, "REQUEST_SENT"));
   } catch (err) {
     console.error("Create trip request error:", err);
@@ -320,6 +345,30 @@ router.patch("/:id/accept", authMiddleware, async (req: AuthRequest, res: Respon
         row.trip.origin,
         row.trip.destination
       );
+    }
+
+    const passenger = await db.query.users.findFirst({
+      where: eq(users.id, row.request.passengerId),
+    });
+
+    const passengerEmail = passenger?.email?.trim();
+    if (passenger && passengerEmail) {
+      try {
+        await sendTripRequestAcceptedEmail({
+          passengerEmail,
+          passengerName: passenger.name,
+          driverName: driver?.name,
+          origin: row.trip.origin,
+          destination: row.trip.destination,
+          departureTime: row.trip.departureTime,
+          tripId: row.trip.id,
+        });
+      } catch (mailErr) {
+        console.error(
+          "sendTripRequestAcceptedEmail (accept trip request):",
+          mailErr
+        );
+      }
     }
 
     res.json(

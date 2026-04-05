@@ -4,6 +4,7 @@ import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
+import { SeatsPicker } from "../components/SeatsPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
@@ -30,6 +31,11 @@ function weekdayLabel(value: (typeof WEEKDAY_VALUES)[number]) {
     sun: "weekday.sun",
   };
   return keys[value];
+}
+
+function clampSeatsTotal(n: number): number {
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(9, Math.max(1, Math.round(n)));
 }
 
 export default function CreateTrip() {
@@ -90,10 +96,7 @@ export default function CreateTrip() {
       return;
     }
 
-    if (seatsTotal < 1) {
-      setMessage(t("createTrip.validation.seats"));
-      return;
-    }
+    const seatsToSend = clampSeatsTotal(seatsTotal);
 
     if (tripType === "regular" && weekdays.length === 0) {
       setMessage(t("createTrip.validation.weekdays"));
@@ -136,7 +139,7 @@ export default function CreateTrip() {
           destinationLat: destination.lat,
           destinationLng: destination.lng,
           departureTime,
-          seatsTotal,
+          seatsTotal: seatsToSend,
           price: priceCents,
           currency,
           tripType,
@@ -251,12 +254,11 @@ export default function CreateTrip() {
                   placeholder=""
                 />
 
-                <Field
+                <SeatsPicker
                   label={t("createTrip.seats")}
-                  type="number"
-                  value={String(seatsTotal)}
-                  onChange={(value) => setSeatsTotal(Number(value) || 1)}
-                  placeholder="1"
+                  value={seatsTotal}
+                  onChange={setSeatsTotal}
+                  t={t}
                 />
 
                 <Field

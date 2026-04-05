@@ -11,6 +11,8 @@ import { sendVerificationEmail } from "../lib/email.js";
 const router: Router = Router();
 const SALT_ROUNDS = 10;
 
+const VERIFICATION_EMAIL_RESEND_COOLDOWN_MS = 60_000;
+
 type UserLanguage = (typeof users.$inferSelect)["language"];
 
 function signToken(userId: string, email: string): string {
@@ -60,6 +62,18 @@ function mapUser(user: typeof users.$inferSelect, reviewCount?: number) {
   };
 }
 
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+function isWithinVerificationResendCooldown(sentAt: Date | null): boolean {
+  if (sentAt === null) {
+    return false;
+  }
+  const ageMs = Date.now() - sentAt.getTime();
+  return ageMs >= 0 && ageMs < VERIFICATION_EMAIL_RESEND_COOLDOWN_MS;
+}
+
 router.post("/register", async (req: Request, res: Response) => {
   try {
     const { email, password, name, language } = req.body as {
@@ -74,8 +88,10 @@ router.post("/register", async (req: Request, res: Response) => {
       return;
     }
 
+    const normalizedEmail = normalizeEmail(email);
+
     const existing = await db.query.users.findFirst({
-      where: eq(users.email, email.toLowerCase()),
+      where: eq(users.email, normalizedEmail),
     });
 
     if (existing) {
@@ -86,21 +102,27 @@ router.post("/register", async (req: Request, res: Response) => {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const normalizedLanguage = normalizeLanguage(language);
     const emailVerificationToken = randomUUID();
+    const emailVerificationSentAt = new Date();
 
     const [user] = await db
       .insert(users)
       .values({
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         passwordHash,
         name: name.trim(),
         language: normalizedLanguage,
         emailVerified: false,
         emailVerificationToken,
+        emailVerificationSentAt,
       })
       .returning();
 
     try {
-      await sendVerificationEmail(user.email, emailVerificationToken);
+      await sendVerificationEmail(
+        user.email,
+        emailVerificationToken,
+        user.name
+      );
     } catch (mailErr) {
       console.error("sendVerificationEmail (register):", mailErr);
     }
@@ -139,7 +161,7 @@ router.post("/login", async (req: Request, res: Response) => {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, email.toLowerCase()));
+      .where(eq(users.email, normalizeEmail(email)));
 
     if (!user) {
       jsonApiError(res, 401, "AUTH_INVALID_CREDENTIALS");
@@ -194,7 +216,7 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
       return;
     }
 
-    const normalizedEmail = raw.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(raw);
 
     const row = await db.query.users.findFirst({
       where: eq(users.email, normalizedEmail),
@@ -208,15 +230,27 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
       return;
     }
 
+    if (isWithinVerificationResendCooldown(row.emailVerificationSentAt)) {
+      res.json({
+        success: true,
+        message: RESEND_VERIFICATION_GENERIC_MESSAGE,
+      });
+      return;
+    }
+
     const newToken = randomUUID();
+    const sentAt = new Date();
 
     await db
       .update(users)
-      .set({ emailVerificationToken: newToken })
+      .set({
+        emailVerificationToken: newToken,
+        emailVerificationSentAt: sentAt,
+      })
       .where(eq(users.id, row.id));
 
     try {
-      await sendVerificationEmail(row.email, newToken);
+      await sendVerificationEmail(row.email, newToken, row.name);
     } catch (mailErr) {
       console.error("sendVerificationEmail (resend-verification):", mailErr);
     }

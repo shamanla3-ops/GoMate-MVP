@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../lib/api";
-import { messageFromApiError } from "../lib/errorMessages";
+import {
+  messageFromApiError,
+  type ApiErrorPayload,
+} from "../lib/errorMessages";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 
@@ -10,6 +13,26 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [resendOpen, setResendOpen] = useState(false);
+  const [resendEmail, setResendEmail] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
+  const [resendError, setResendError] = useState("");
+
+  function openResendPanel() {
+    setResendOpen(true);
+    setResendSuccess("");
+    setResendError("");
+    setResendEmail((prev) => (prev.trim() ? prev : email));
+  }
+
+  function closeResendPanel() {
+    setResendOpen(false);
+    setResendSuccess("");
+    setResendError("");
+    setResendLoading(false);
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +72,55 @@ export default function Login() {
       setMessage(t("auth.login.serverError"));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendVerification(e: React.FormEvent) {
+    e.preventDefault();
+    setResendSuccess("");
+    setResendError("");
+
+    const addr = resendEmail.trim();
+    if (!addr) {
+      setResendError(t("auth.login.resendVerificationEmailRequired"));
+      return;
+    }
+
+    setResendLoading(true);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/resend-verification`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: addr }),
+        }
+      );
+
+      const data = (await response.json()) as Record<string, unknown>;
+
+      if (!response.ok) {
+        setResendError(
+          messageFromApiError(
+            data as ApiErrorPayload,
+            t,
+            "auth.login.resendVerificationError"
+          )
+        );
+        return;
+      }
+
+      const rawMsg = data.message;
+      const apiText =
+        typeof rawMsg === "string" && rawMsg.trim() !== ""
+          ? rawMsg.trim()
+          : t("auth.login.resendVerificationSuccess");
+      setResendSuccess(apiText);
+    } catch {
+      setResendError(t("auth.login.serverError"));
+    } finally {
+      setResendLoading(false);
     }
   }
 
@@ -147,6 +219,74 @@ export default function Login() {
                   {message && (
                     <div className="mt-4 rounded-2xl bg-white/85 px-4 py-3 text-sm text-[#b42318] shadow-sm">
                       {message}
+                    </div>
+                  )}
+
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        resendOpen ? closeResendPanel() : openResendPanel()
+                      }
+                      className="text-sm font-semibold text-[#138fe3] underline-offset-2 hover:underline"
+                    >
+                      {t("auth.login.resendVerificationLink")}
+                    </button>
+                  </div>
+
+                  {resendOpen && (
+                    <div className="mt-4 rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-sm">
+                      <p className="text-xs leading-relaxed text-[#5a7389]">
+                        {t("auth.login.resendVerificationHint")}
+                      </p>
+                      <form
+                        onSubmit={handleResendVerification}
+                        className="mt-3 space-y-3"
+                      >
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-[#28475d]">
+                            {t("auth.login.resendVerificationEmailLabel")}
+                          </label>
+                          <input
+                            type="email"
+                            className="w-full rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-sm text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                            placeholder="you@example.com"
+                            value={resendEmail}
+                            onChange={(e) => setResendEmail(e.target.value)}
+                            disabled={resendLoading}
+                            autoComplete="email"
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="submit"
+                            disabled={resendLoading}
+                            className="inline-flex min-h-[40px] flex-1 items-center justify-center rounded-full bg-[#163c59] px-4 text-sm font-bold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
+                          >
+                            {resendLoading
+                              ? t("auth.login.resendVerificationSubmitting")
+                              : t("auth.login.resendVerificationSubmit")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={closeResendPanel}
+                            disabled={resendLoading}
+                            className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-white/80 bg-white/80 px-4 text-sm font-semibold text-[#28475d] shadow-sm hover:bg-white disabled:opacity-60"
+                          >
+                            {t("auth.login.resendVerificationClose")}
+                          </button>
+                        </div>
+                      </form>
+                      {resendSuccess && (
+                        <div className="mt-3 rounded-xl border border-[#b6e6b6] bg-[#e8f7e8] px-3 py-2 text-xs font-medium leading-relaxed text-[#17663a]">
+                          {resendSuccess}
+                        </div>
+                      )}
+                      {resendError && (
+                        <div className="mt-3 rounded-xl border border-[#fecdca] bg-[#fff1f0] px-3 py-2 text-xs font-medium leading-relaxed text-[#b42318]">
+                          {resendError}
+                        </div>
+                      )}
                     </div>
                   )}
 

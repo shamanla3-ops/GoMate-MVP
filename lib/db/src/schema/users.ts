@@ -44,6 +44,9 @@ export const users = pgTable("users", {
 
   emailVerified: boolean("email_verified").notNull().default(true),
   emailVerificationToken: text("email_verification_token"),
+  emailVerificationSentAt: timestamp("email_verification_sent_at", {
+    withTimezone: true,
+  }),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

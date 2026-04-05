@@ -4,6 +4,7 @@
   "private": true,
   "description": "GoMate – global carpooling platform monorepo",
   "scripts": {
+    "postinstall": "pnpm --filter @gomate/db build",
     "dev:api": "pnpm --filter api-server dev",
     "dev:web": "pnpm --filter gomate-web dev",
     "build": "pnpm --filter @gomate/db build && pnpm --filter api-server build && pnpm --filter gomate-web build",
