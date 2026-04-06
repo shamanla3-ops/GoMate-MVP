@@ -185,6 +185,26 @@ const LEGACY_MESSAGES: Record<string, string> = {
   PP_LOAD_SKIPS_FAILED: "Failed to load skips",
   PP_TRIP_CONTEXT_LOAD_FAILED: "Failed to load trip context for permanent passengers",
 
+  MATCH_PREF_ROLE_INVALID: "role must be passenger, driver, or both",
+  MATCH_PREF_ORIGIN_DEST_REQUIRED: "origin and destination are required",
+  MATCH_PREF_TIME_REQUIRED: "preferredTime is required",
+  MATCH_PREF_TIME_INVALID: "preferredTime must be HH:MM",
+  MATCH_PREF_WEEKDAYS_INVALID: "weekdays must be a non-empty list of valid codes",
+  MATCH_PREF_FLEX_INVALID: "timeFlexMinutes must be between 0 and 120",
+  MATCH_PREF_ID_REQUIRED: "Preference id is required",
+  MATCH_PREF_NOT_FOUND: "Match preference not found",
+  MATCH_PREFERENCES_LIST_FAILED: "Failed to load match preferences",
+  MATCH_PREFERENCE_CREATE_FAILED: "Failed to create match preference",
+  MATCH_PREFERENCE_UPDATE_FAILED: "Failed to update match preference",
+  MATCH_PREFERENCE_DELETE_FAILED: "Failed to delete match preference",
+  MATCH_SUGGESTIONS_FAILED: "Failed to load match suggestions",
+  MATCH_DISMISS_TYPE_INVALID: "targetType must be trip, template, or preference",
+  MATCH_DISMISS_ID_REQUIRED: "targetId is required",
+  MATCH_DISMISS_FAILED: "Failed to dismiss suggestion",
+  MATCH_SEEN_KEYS_INVALID: "suggestionKeys must be an array of strings",
+  MATCH_SEEN_KEYS_EMPTY: "suggestionKeys cannot be empty",
+  MATCH_SEEN_FAILED: "Failed to update match suggestion state",
+
   SERVER_ERROR: "Something went wrong",
 };
 

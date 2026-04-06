@@ -18,6 +18,7 @@ import Cookies from "./pages/Cookies";
 import Terms from "./pages/Terms";
 import LegalInfo from "./pages/LegalInfo";
 import PermanentPassengers from "./pages/PermanentPassengers";
+import SmartMatches from "./pages/SmartMatches";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
 import { ReviewPendingModal } from "./components/ReviewPendingModal";
 import { Footer } from "./components/Footer";
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/trips/:id" element={<TripDetails />} />
               <Route path="/create-trip" element={<CreateTrip />} />
               <Route path="/templates" element={<Templates />} />
+              <Route path="/smart-matches" element={<SmartMatches />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/permanent-passengers" element={<PermanentPassengers />} />
               <Route path="/driver-requests" element={<DriverRequests />} />

@@ -12,6 +12,7 @@ import {
   count,
 } from "@gomate/db";
 import { countReconciledPendingReviewTasks } from "./reviewTaskStale.js";
+import { getMatchSuggestionPollSnapshot } from "./matchSuggestionPoll.js";
 
 function getReadAtForUser(
   chat: typeof tripChats.$inferSelect,
@@ -34,6 +35,8 @@ export async function getNotificationCounts(userId: string): Promise<{
   outgoingPending: number;
   requestsPending: number;
   reviewTasksPending: number;
+  matchSuggestionsNew: number;
+  matchNewNotifiedKeys: string[];
 }> {
   const allChats = await db.query.tripChats.findMany({
     orderBy: [desc(tripChats.createdAt)],
@@ -105,11 +108,23 @@ export async function getNotificationCounts(userId: string): Promise<{
     reviewTaskRows
   );
 
+  let matchSuggestionsNew = 0;
+  let matchNewNotifiedKeys: string[] = [];
+  try {
+    const match = await getMatchSuggestionPollSnapshot(userId);
+    matchSuggestionsNew = match.newMatchCount;
+    matchNewNotifiedKeys = match.matchNewNotifiedKeys;
+  } catch {
+    /* ignore match poll failures; core counts still useful */
+  }
+
   return {
     chatsUnread,
     incomingPending,
     outgoingPending,
     requestsPending: incomingPending + outgoingPending,
     reviewTasksPending,
+    matchSuggestionsNew,
+    matchNewNotifiedKeys,
   };
 }

@@ -6,17 +6,33 @@ import {
   count,
   desc,
   eq,
+  gt,
   inArray,
   isNotNull,
   isNull,
   lte,
+  ne,
   or,
   sql,
 } from "drizzle-orm";
 
 import * as schema from "./schema/index.js";
 export * from "./schema/index.js";
-export { and, asc, count, desc, eq, inArray, isNotNull, isNull, lte, or, sql };
+export {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  ne,
+  or,
+  sql,
+};
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

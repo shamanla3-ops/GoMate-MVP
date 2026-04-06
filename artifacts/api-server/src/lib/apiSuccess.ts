@@ -20,6 +20,15 @@ const SUCCESS_LEGACY: Record<string, string> = {
   PP_REQUEST_CANCELLED: "Regular ride request withdrawn",
   PP_RELATIONSHIP_ENDED: "Regular ride relationship ended",
   PP_SKIP_REGISTERED: "Skip registered for this date",
+  MATCH_PREFERENCES_LISTED: "Match preferences loaded",
+  MATCH_PREFERENCE_CREATED: "Match preference saved",
+  MATCH_PREFERENCE_UPDATED: "Match preference updated",
+  MATCH_PREFERENCE_DELETED: "Match preference removed",
+  MATCH_SUGGESTIONS_LISTED: "Suggestions loaded",
+  MATCH_SUGGESTION_DISMISSED: "Suggestion dismissed",
+  MATCH_SUGGESTIONS_SEEN: "Match suggestions marked as seen",
+  MATCH_SUGGESTIONS_POLL: "Match poll snapshot loaded",
+  MATCH_SUGGESTIONS_RECONCILED: "Match suggestions reconciled",
 };
 
 export function withApiSuccess<T extends Record<string, unknown>>(

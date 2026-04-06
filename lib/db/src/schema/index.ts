@@ -8,3 +8,6 @@ export * from "./pushSubscriptions.js";
 export * from "./userReviews.js";
 export * from "./reviewTasks.js";
 export * from "./permanentPassengers.js";
+export * from "./routeMatchPreferences.js";
+export * from "./matchSuggestionDismissals.js";
+export * from "./matchSuggestionStates.js";

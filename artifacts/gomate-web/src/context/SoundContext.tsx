@@ -17,6 +17,7 @@ import {
   playNewRideRequestSound,
   playRequestApprovedSound,
   playRideMatchSound,
+  playSmartMatchNewSound,
   playUiClickSound,
   playUiSuccessSound,
   playWelcomeOpenSound,
@@ -89,6 +90,8 @@ type SoundContextValue = {
   playRequestApproved: () => void;
   /** Passenger: match / connected moment */
   playRideMatch: () => void;
+  /** Auto-match: new suggestion surfaced (debounced by caller) */
+  playSmartMatchNew: () => void;
   /** One soft startup chime per session when welcome overlay runs; no-op if already played or audio not running */
   playWelcomeOpening: () => void;
 };
@@ -101,6 +104,8 @@ let lastChatReceiveSoundAt = 0;
 const CHAT_RECEIVE_DEBOUNCE_MS = 380;
 let lastNewRideRequestSoundAt = 0;
 const NEW_RIDE_REQUEST_DEBOUNCE_MS = 720;
+let lastSmartMatchSoundAt = 0;
+const SMART_MATCH_SOUND_DEBOUNCE_MS = 1400;
 
 export function SoundProvider({ children }: { children: ReactNode }) {
   const [soundEnabled, setSoundEnabledState] = useState(readStoredEnabled);
@@ -313,6 +318,21 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     });
   }, [effectiveSoundOn]);
 
+  const playSmartMatchNew = useCallback(() => {
+    if (!effectiveSoundOn) return;
+    const now = performance.now();
+    if (now - lastSmartMatchSoundAt < SMART_MATCH_SOUND_DEBOUNCE_MS) return;
+    lastSmartMatchSoundAt = now;
+    void resumeAudioContext().then((ctx) => {
+      if (!ctx || !effectiveSoundOn) return;
+      try {
+        playSmartMatchNewSound(ctx, 0.03);
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [effectiveSoundOn]);
+
   const playWelcomeOpening = useCallback(() => {
     if (!effectiveSoundOn) return;
     if (welcomeChimeAlreadyPlayed()) return;
@@ -346,6 +366,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       playNewRideRequest,
       playRequestApproved,
       playRideMatch,
+      playSmartMatchNew,
       playWelcomeOpening,
     }),
     [
@@ -365,6 +386,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       playNewRideRequest,
       playRequestApproved,
       playRideMatch,
+      playSmartMatchNew,
       playWelcomeOpening,
     ]
   );
@@ -394,6 +416,7 @@ export function useSound(): SoundContextValue {
       playNewRideRequest: noop,
       playRequestApproved: noop,
       playRideMatch: noop,
+      playSmartMatchNew: noop,
       playWelcomeOpening: noop,
     };
   }

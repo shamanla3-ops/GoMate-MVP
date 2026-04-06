@@ -113,6 +113,27 @@
       "when": 1774600000000,
       "tag": "0016_permanent_passengers",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1774700000000,
+      "tag": "0017_route_match_smart",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1774800000000,
+      "tag": "0018_match_suggestion_states",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1774900000000,
+      "tag": "0019_match_poll_delivered_at",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import { getCurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { PermanentPassengerModal } from "../components/PermanentPassengerModal";
+import { SmartMatchesTeaser } from "../components/SmartMatchesTeaser";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
@@ -129,7 +130,7 @@ function getActiveOutgoingRequest(
 
 export default function Trips() {
   const { t, locale } = useTranslation();
-  const { reviewTasksPending } = useNotificationCounts();
+  const { reviewTasksPending, matchSuggestionsNew } = useNotificationCounts();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -445,6 +446,22 @@ export default function Trips() {
               <a href="/permanent-passengers" className="gomate-nav-pill font-medium">
                 {t("nav.permanentPassengers")}
               </a>
+              <a
+                href="/smart-matches"
+                className="gomate-nav-pill font-medium inline-flex items-center gap-1.5"
+                title={
+                  matchSuggestionsNew > 0
+                    ? t("nav.badge.smartMatches", { count: matchSuggestionsNew })
+                    : undefined
+                }
+              >
+                <span>{t("nav.smartMatches")}</span>
+                {matchSuggestionsNew > 0 ? (
+                  <span className="inline-flex min-h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-[#1296e8] px-1.5 text-[10px] font-extrabold leading-none text-white shadow-sm">
+                    {matchSuggestionsNew > 99 ? "99+" : matchSuggestionsNew}
+                  </span>
+                ) : null}
+              </a>
               {reviewTasksPending > 0 ? (
                 <span
                   className="gomate-badge-reviews"
@@ -455,6 +472,8 @@ export default function Trips() {
               ) : null}
             </div>
           </AppPageHeader>
+
+          <SmartMatchesTeaser />
 
           <div className="gomate-glass-panel">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">

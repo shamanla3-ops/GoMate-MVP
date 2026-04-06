@@ -13,6 +13,8 @@ import profileRoutes from "./routes/profile.js";
 import reviewsRoutes from "./routes/reviews.js";
 import reviewTasksRoutes from "./routes/reviewTasks.js";
 import permanentPassengersRoutes from "./routes/permanentPassengers.js";
+import matchPreferencesRoutes from "./routes/matchPreferences.js";
+import matchSuggestionsRoutes from "./routes/matchSuggestions.js";
 import testEmailRouter from "./routes/testEmail.js";
 import { startTripMaintenanceJobs } from "./jobs/autoCompleteTrips.js";
 
@@ -45,6 +47,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/review-tasks", reviewTasksRoutes);
 app.use("/api/permanent-passengers", permanentPassengersRoutes);
+app.use("/api/match-preferences", matchPreferencesRoutes);
+app.use("/api/match-suggestions", matchSuggestionsRoutes);
 app.use("/api/test-email", testEmailRouter);
 
 app.get("/", (_req, res) => {

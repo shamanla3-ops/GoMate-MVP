@@ -361,3 +361,24 @@ export function playRideMatchSound(ctx: AudioContext, masterGain = 0.046): void 
     osc.stop(t0 + 0.3);
   });
 }
+
+/** Auto-match: single airy chime — softer and shorter than ride match */
+export function playSmartMatchNewSound(ctx: AudioContext, masterGain = 0.03): void {
+  const t0 = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  const f = ctx.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(2400, t0);
+  f.frequency.exponentialRampToValueAtTime(900, t0 + 0.14);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(523.25, t0);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+  osc.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + 0.22);
+}
