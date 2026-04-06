@@ -67,6 +67,30 @@ type ReviewItem = {
   createdAt: string;
 };
 
+type EcoSummary = {
+  totalCo2Kg: number;
+  driverCo2Kg: number;
+  passengerCo2Kg: number;
+  completedRides: number;
+  badges: { code: string; awardedAt: string }[];
+  nextBadge: {
+    code: string;
+    thresholdKg: number;
+    progressKg: number;
+  } | null;
+};
+
+function formatKgOneDecimal(value: number): string {
+  if (!Number.isFinite(value)) return "0.0";
+  return value.toFixed(1);
+}
+
+function ecoBadgeTitle(badgeCode: string, t: (key: string) => string): string {
+  const key = `profilePage.ecoBadge.${badgeCode}`;
+  const label = t(key);
+  return label === key ? badgeCode : label;
+}
+
 function ProfileHeader({
   userName,
   avatarUrl,
@@ -138,6 +162,7 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [ecoSummary, setEcoSummary] = useState<EcoSummary | null>(null);
 
   async function loadProfile() {
     const token = localStorage.getItem("token");
@@ -172,6 +197,8 @@ export default function Profile() {
       }
 
       setUser(profileUser);
+      const rawEco = (data as { ecoSummary?: EcoSummary }).ecoSummary;
+      setEcoSummary(rawEco ?? null);
       setForm({
         name: profileUser.name ?? "",
         phoneNumber: profileUser.phoneNumber ?? "",
@@ -289,6 +316,8 @@ export default function Profile() {
           new CustomEvent<CurrentUser>("gomate-user-updated", { detail: savedUser })
         );
       }
+      const nextEco = (data as { ecoSummary?: EcoSummary }).ecoSummary;
+      if (nextEco) setEcoSummary(nextEco);
       setMessage(messageFromApiSuccess(data, t, "profilePage.saved"));
     } catch {
       setError(t("profilePage.serverError"));
@@ -304,7 +333,8 @@ export default function Profile() {
 
   const displayAvatar = form.avatarUrl || user?.avatarUrl || "";
   const rating = user?.rating ?? 0;
-  const co2SavedKg = user?.co2SavedKg ?? 0;
+  const co2SavedKg =
+    ecoSummary != null ? Math.round(ecoSummary.totalCo2Kg) : (user?.co2SavedKg ?? 0);
   const reviewCount = user?.reviewCount ?? reviews.length;
 
   if (loading) {
@@ -375,19 +405,97 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="mt-4 w-full rounded-2xl border border-[#cfe9d8]/80 bg-[linear-gradient(165deg,#e6f6df_0%,#eef8ff_100%)] p-5 shadow-[0_12px_32px_rgba(23,54,81,0.06)]">
+                <div className="mt-4 w-full rounded-2xl border border-[#cfe9d8]/80 bg-[linear-gradient(165deg,#e6f6df_0%,#eef8ff_100%)] p-5 text-left shadow-[0_12px_32px_rgba(23,54,81,0.06)]">
                   <div className="text-sm font-semibold text-[#4e6b5f]">
-                    {t("profilePage.co2Title")}
+                    {t("profilePage.ecoImpact.sectionTitle")}
                   </div>
-                  <div className="mt-2 text-4xl font-extrabold text-[#173651]">
-                    {co2SavedKg}
+                  <div className="mt-2 text-4xl font-extrabold tabular-nums text-[#173651]">
+                    {ecoSummary != null
+                      ? formatKgOneDecimal(ecoSummary.totalCo2Kg)
+                      : co2SavedKg}
                     <span className="ml-2 text-lg font-semibold text-[#5d7485]">
                       {t("common.kg")}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-[#486476]">
-                    {t("profilePage.co2Hint")}
+                    {t("profilePage.ecoImpact.subtitle")}
                   </p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-2xl border border-white/70 bg-white/70 px-3 py-2.5 shadow-sm">
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8294]">
+                        {t("profilePage.ecoImpact.ridesLabel")}
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold tabular-nums text-[#173651]">
+                        {ecoSummary?.completedRides ?? 0}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border border-white/70 bg-white/70 px-3 py-2.5 shadow-sm">
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8294]">
+                        {t("profilePage.ecoImpact.driverShare")}
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold tabular-nums text-[#173651]">
+                        {formatKgOneDecimal(ecoSummary?.driverCo2Kg ?? 0)}
+                        <span className="ml-1 text-xs font-semibold text-[#5d7485]">
+                          {t("common.kg")}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-2 rounded-2xl border border-white/70 bg-white/70 px-3 py-2.5 shadow-sm">
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8294]">
+                        {t("profilePage.ecoImpact.passengerShare")}
+                      </div>
+                      <div className="mt-1 text-lg font-extrabold tabular-nums text-[#173651]">
+                        {formatKgOneDecimal(ecoSummary?.passengerCo2Kg ?? 0)}
+                        <span className="ml-1 text-xs font-semibold text-[#5d7485]">
+                          {t("common.kg")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {ecoSummary && ecoSummary.badges.length > 0 ? (
+                    <div className="mt-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#6b8294]">
+                        {t("profilePage.ecoImpact.badgesTitle")}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {ecoSummary.badges.map((b) => (
+                          <span
+                            key={`${b.code}-${b.awardedAt}`}
+                            className="inline-flex items-center rounded-full border border-[#cfe9c8] bg-white/85 px-3 py-1.5 text-xs font-bold text-[#1d5d2f] shadow-sm"
+                          >
+                            {ecoBadgeTitle(b.code, t)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {ecoSummary?.nextBadge ? (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#6b8294]">
+                        <span>{t("profilePage.ecoImpact.nextTitle")}</span>
+                        <span className="tabular-nums text-[#35556c]">
+                          {formatKgOneDecimal(ecoSummary.nextBadge.progressKg)} /{" "}
+                          {ecoSummary.nextBadge.thresholdKg} {t("common.kg")}
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-white/70 ring-1 ring-[#d7e4eb]">
+                        <div
+                          className="h-full rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)]"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              (ecoSummary.nextBadge.progressKg /
+                                Math.max(1e-6, ecoSummary.nextBadge.thresholdKg)) *
+                                100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mt-5 w-full rounded-2xl border border-white/85 bg-white/92 p-5 text-left shadow-[0_10px_28px_rgba(23,54,81,0.06)]">

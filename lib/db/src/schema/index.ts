@@ -11,3 +11,4 @@ export * from "./permanentPassengers.js";
 export * from "./routeMatchPreferences.js";
 export * from "./matchSuggestionDismissals.js";
 export * from "./matchSuggestionStates.js";
+export * from "./ecoImpact.js";

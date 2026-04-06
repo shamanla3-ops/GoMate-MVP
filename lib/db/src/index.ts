@@ -14,6 +14,7 @@ import {
   ne,
   or,
   sql,
+  sum,
 } from "drizzle-orm";
 
 import * as schema from "./schema/index.js";
@@ -32,6 +33,7 @@ export {
   ne,
   or,
   sql,
+  sum,
 };
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;

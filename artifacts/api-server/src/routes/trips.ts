@@ -11,7 +11,7 @@ import {
   desc,
 } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
-import { resolveDrivingDurationMinutes } from "../lib/osrmDuration.js";
+import { haversineKm, resolveDrivingDurationMinutes } from "../lib/osrmDuration.js";
 import { jsonApiError } from "../lib/apiErrors.js";
 import { withApiSuccess } from "../lib/apiSuccess.js";
 
@@ -71,6 +71,7 @@ function mapTripWithDriver(
     expectedEndTime: trip.expectedEndTime ?? null,
     completedAt: trip.completedAt ?? null,
     completionMode: trip.completionMode ?? null,
+    distanceKm: trip.distanceKm ?? null,
     estimatedCo2SavingKg: estimateCo2SavingKg(trip.seatsTotal),
     driver: {
       id: driver.id,
@@ -251,6 +252,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       departureDate.getTime() + durationMinutes * 60 * 1000
     );
 
+    const distanceKm = haversineKm(oLat, oLng, dLat, dLng);
+
     const insertValues: NewTrip = {
       driverId: user.userId,
       origin: origin.trim(),
@@ -269,6 +272,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
       status: "scheduled",
       estimatedDurationMinutes: durationMinutes,
       expectedEndTime,
+      distanceKm,
     };
 
     const [trip] = await db.insert(trips).values(insertValues).returning();

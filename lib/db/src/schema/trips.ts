@@ -59,10 +59,25 @@ export const trips = pgTable("trips", {
   /** Driving duration from routing (OSRM), minutes */
   estimatedDurationMinutes: integer("estimated_duration_minutes"),
 
+  /**
+   * Route distance (km), typically great-circle / haversine between origin & destination.
+   * Used for eco impact; persisted when coordinates are known.
+   */
+  distanceKm: doublePrecision("distance_km"),
+
   /** departure_time + estimated route duration */
   expectedEndTime: timestamp("expected_end_time", { withTimezone: true }),
 
   completedAt: timestamp("completed_at", { withTimezone: true }),
+
+  /**
+   * Total CO₂ (kg) attributed to this completed carpool (passengers avoided solo trips).
+   * Set once when eco impact is awarded (idempotency via ecoAwardedAt).
+   */
+  ecoTotalCo2Kg: doublePrecision("eco_total_co2_kg"),
+
+  /** When eco impact rows + user totals were recorded for this trip (prevents double award). */
+  ecoAwardedAt: timestamp("eco_awarded_at", { withTimezone: true }),
 
   /** "automatic" | "manual" — set when trip is completed */
   completionMode: text("completion_mode"),

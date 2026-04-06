@@ -3,6 +3,7 @@ import { db, users, userReviews, eq, and, count, isNotNull } from "@gomate/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 import { jsonApiError } from "../lib/apiErrors.js";
 import { withApiSuccess } from "../lib/apiSuccess.js";
+import { getEcoProfileSummary } from "../lib/ecoProfileSummary.js";
 
 const router: Router = Router();
 
@@ -61,7 +62,12 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
         )
       );
 
-    res.json({ user: mapUser(user, Number(countRow?.c ?? 0)) });
+    const ecoSummary = await getEcoProfileSummary(userId);
+
+    res.json({
+      user: mapUser(user, Number(countRow?.c ?? 0)),
+      ecoSummary,
+    });
   } catch (err) {
     console.error("Profile GET error:", err);
     jsonApiError(res, 500, "PROFILE_LOAD_FAILED");
@@ -147,9 +153,11 @@ router.put("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
         )
       );
 
+    const ecoSummary = await getEcoProfileSummary(userId);
+
     res.json(
       withApiSuccess(
-        { user: mapUser(updated, Number(countRow?.c ?? 0)) },
+        { user: mapUser(updated, Number(countRow?.c ?? 0)), ecoSummary },
         "PROFILE_SAVED"
       )
     );

@@ -13,6 +13,7 @@ import {
   repairScheduledTripTiming,
   shouldAutoCompleteScheduledTrip,
 } from "../lib/tripTiming.js";
+import { awardEcoImpactForCompletedTrip } from "../lib/ecoImpact.js";
 
 /** Pending review tasks older than this → expired */
 const REVIEW_TASK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -97,12 +98,14 @@ export async function runAutoCompleteTrips(): Promise<{
       });
     }
 
+    const completedAt = new Date();
+
     const result = await db.transaction(async (tx) => {
       const [updatedTrip] = await tx
         .update(trips)
         .set({
           status: "completed",
-          completedAt: new Date(),
+          completedAt,
           completionMode: "automatic",
         })
         .where(and(eq(trips.id, trip.id), eq(trips.status, "scheduled")))
@@ -111,6 +114,8 @@ export async function runAutoCompleteTrips(): Promise<{
       if (!updatedTrip) {
         return { completed: false as const, inserted: [] as { id: string }[] };
       }
+
+      await awardEcoImpactForCompletedTrip(tx, trip.id, completedAt);
 
       if (taskRows.length === 0) {
         return { completed: true as const, inserted: [] as { id: string }[] };

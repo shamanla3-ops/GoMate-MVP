@@ -15,6 +15,7 @@ import reviewTasksRoutes from "./routes/reviewTasks.js";
 import permanentPassengersRoutes from "./routes/permanentPassengers.js";
 import matchPreferencesRoutes from "./routes/matchPreferences.js";
 import matchSuggestionsRoutes from "./routes/matchSuggestions.js";
+import impactRoutes from "./routes/impact.js";
 import testEmailRouter from "./routes/testEmail.js";
 import { startTripMaintenanceJobs } from "./jobs/autoCompleteTrips.js";
 
@@ -49,6 +50,7 @@ app.use("/api/review-tasks", reviewTasksRoutes);
 app.use("/api/permanent-passengers", permanentPassengersRoutes);
 app.use("/api/match-preferences", matchPreferencesRoutes);
 app.use("/api/match-suggestions", matchSuggestionsRoutes);
+app.use("/api/impact", impactRoutes);
 app.use("/api/test-email", testEmailRouter);
 
 app.get("/", (_req, res) => {

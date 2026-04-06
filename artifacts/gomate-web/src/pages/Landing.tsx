@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser, type CurrentUser } from "../lib/auth";
 import { useTranslation, LanguageSwitcher } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
@@ -41,6 +42,10 @@ export default function Landing() {
   const { chatsUnread, requestsPending, refresh } = useNotificationCounts();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [publicImpact, setPublicImpact] = useState<{
+    completedTrips: number;
+    totalCo2KgSaved: number;
+  } | null>(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -50,6 +55,27 @@ export default function Landing() {
     }
 
     loadUser();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(`${API_BASE_URL}/api/impact/public`)
+      .then((r) => r.json())
+      .then((d: unknown) => {
+        if (cancelled || !d || typeof d !== "object") return;
+        const o = d as Record<string, unknown>;
+        const trips = o.completedTrips;
+        const co2 = o.totalCo2KgSaved;
+        if (typeof trips === "number" && typeof co2 === "number") {
+          setPublicImpact({ completedTrips: trips, totalCo2KgSaved: co2 });
+        }
+      })
+      .catch(() => {
+        /* public stats are optional */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -245,6 +271,35 @@ export default function Landing() {
                   <p className="mt-5 text-base font-medium leading-snug text-[#3d5a6e] sm:text-lg">
                     {t("landing.ecoLine")}
                   </p>
+
+                  {publicImpact != null ? (
+                    <div className="mt-6 w-full max-w-xl">
+                      <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#5d7485]">
+                        {t("landing.impact.title")}
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-white/70 bg-white/70 px-4 py-4 shadow-[0_12px_32px_rgba(23,54,81,0.08)] backdrop-blur-sm">
+                          <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#5d7485]">
+                            {t("landing.impact.successfulTrips")}
+                          </div>
+                          <div className="mt-2 text-3xl font-extrabold tabular-nums text-[#173651]">
+                            {publicImpact.completedTrips}
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-white/70 bg-white/70 px-4 py-4 shadow-[0_12px_32px_rgba(23,54,81,0.08)] backdrop-blur-sm">
+                          <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#5d7485]">
+                            {t("landing.impact.totalCo2Saved")}
+                          </div>
+                          <div className="mt-2 text-3xl font-extrabold tabular-nums text-[#173651]">
+                            {publicImpact.totalCo2KgSaved.toFixed(1)}
+                            <span className="ml-1.5 text-lg font-semibold text-[#5d7485]">
+                              {t("common.kg")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <a
