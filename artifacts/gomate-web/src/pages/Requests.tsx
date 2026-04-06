@@ -1168,7 +1168,7 @@ export default function Requests() {
           onClose={() => setMatchOpen(false)}
         />
 
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
+        <div className="gomate-mobile-tab-root md:hidden">
           <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
             <a href="/" className="flex flex-col items-center gap-1">
               <span className="text-[22px] leading-none">⌂</span>

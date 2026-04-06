@@ -30,10 +30,30 @@
 :root {
   --gomate-mobile-tab-bar-visual-height: 5.75rem;
   --gomate-mobile-floating-gap: 0.75rem;
+  /* Extra space so scrollable content / footer clear above the fixed tab bar */
+  --gomate-mobile-content-extra-gap: 0.5rem;
+  --gomate-mobile-content-bottom-padding: calc(
+    env(safe-area-inset-bottom, 0px) + var(--gomate-mobile-tab-bar-visual-height) +
+      var(--gomate-mobile-content-extra-gap)
+  );
   --gomate-mobile-fab-bottom-offset: calc(
     env(safe-area-inset-bottom, 0px) + var(--gomate-mobile-tab-bar-visual-height) +
       var(--gomate-mobile-floating-gap)
   );
+}
+
+/*
+ * Global shell: reserves space at the bottom on small screens so main + footer stay
+ * above the fixed mobile tab bar (see .gomate-mobile-tab-root). Desktop: no extra padding.
+ */
+.gomate-app-shell {
+  padding-bottom: var(--gomate-mobile-content-bottom-padding);
+}
+
+@media (min-width: 768px) {
+  .gomate-app-shell {
+    padding-bottom: 0;
+  }
 }
 
 /* --- GoMate global UI polish (premium feel, respects reduced motion) --- */
@@ -239,6 +259,8 @@
     @apply fixed bottom-0 left-0 right-0 z-20 border-t backdrop-blur-xl shadow-[0_-14px_44px_rgba(23,54,81,0.1)];
     border-top-color: rgb(255 255 255 / 0.78);
     background-color: rgb(255 255 255 / 0.92);
+    /* Keeps tab labels/icons above the iOS home indicator / Android gesture bar */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .gomate-mobile-tab-link {

@@ -9,6 +9,7 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "../lib/motionVariants";
+import { ProfileAvatarCircle } from "../components/ProfileAvatarCircle";
 
 function getUserShortName(name: string, profileFallback: string) {
   const clean = name.trim();
@@ -16,16 +17,6 @@ function getUserShortName(name: string, profileFallback: string) {
 
   const parts = clean.split(" ").filter(Boolean);
   return parts[0] || profileFallback;
-}
-
-function getProfileAvatarLetters(name: string) {
-  return name
-    .trim()
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "?";
 }
 
 function NavBadge({ count }: { count: number }) {
@@ -140,12 +131,15 @@ export default function Landing() {
                   className="md:hidden flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/90 px-2 text-[11px] font-extrabold leading-none tracking-tight text-[#163c59] shadow-[0_8px_22px_rgba(23,54,81,0.12)] ring-1 ring-white/90 backdrop-blur-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef4f8] motion-safe:active:scale-[0.97]"
                   aria-label={user ? t("nav.profile") : t("nav.login")}
                 >
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-[12px] font-extrabold text-white shadow-inner ring-2 ring-white/70"
-                    aria-hidden
-                  >
-                    {user ? getProfileAvatarLetters(user.name) : "?"}
-                  </span>
+                  {user ? (
+                    <ProfileAvatarCircle
+                      name={user.name}
+                      avatarUrl={user.avatarUrl}
+                      size="md"
+                    />
+                  ) : (
+                    <ProfileAvatarCircle name="" avatarUrl={null} size="md" />
+                  )}
                 </a>
               </div>
               <nav className="hidden items-center gap-3 md:flex">
@@ -184,8 +178,19 @@ export default function Landing() {
                 </a>
 
                 {user ? (
-                  <a href="/profile" className="gomate-nav-pill-dark">
-                    {getUserShortName(user.name, t("profile.shortName"))}
+                  <a
+                    href="/profile"
+                    className="gomate-nav-pill-dark inline-flex max-w-[14rem] items-center gap-2.5 pl-2 pr-4"
+                    title={getUserShortName(user.name, t("profile.shortName"))}
+                  >
+                    <ProfileAvatarCircle
+                      name={user.name}
+                      avatarUrl={user.avatarUrl}
+                      size="sm"
+                    />
+                    <span className="min-w-0 truncate font-semibold">
+                      {getUserShortName(user.name, t("profile.shortName"))}
+                    </span>
                   </a>
                 ) : (
                   <a href="/login" className="gomate-nav-pill-dark">

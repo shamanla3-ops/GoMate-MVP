@@ -32,7 +32,7 @@ export default function App() {
     <>
       <div className="gomate-app-ambient" aria-hidden />
       <TermsAcceptanceGate />
-      <div className="flex min-h-screen min-h-[100dvh] flex-col">
+      <div className="gomate-app-shell flex min-h-screen min-h-[100dvh] flex-col">
         <main className="relative z-10 min-w-0 flex-1">
           <Routes>
             <Route element={<PageTransitionLayout />}>

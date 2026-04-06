@@ -3,6 +3,7 @@ import { API_BASE_URL } from "../lib/api";
 import { type CurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { ProfileAvatarCircle } from "../components/ProfileAvatarCircle";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
@@ -64,10 +65,12 @@ type ReviewItem = {
 
 function ProfileHeader({
   userName,
+  avatarUrl,
   onLogout,
   reviewTasksPending,
 }: {
   userName: string;
+  avatarUrl?: string | null;
   onLogout: () => void;
   reviewTasksPending: number;
 }) {
@@ -87,8 +90,13 @@ function ProfileHeader({
         <a href="/permanent-passengers" className="gomate-nav-pill">
           {t("nav.permanentPassengers")}
         </a>
-        <a href="/profile" className="gomate-nav-pill-dark max-w-[10rem] truncate" title={userName}>
-          {userName}
+        <a
+          href="/profile"
+          className="gomate-nav-pill-dark inline-flex max-w-[12rem] items-center gap-2.5 pl-2 pr-4"
+          title={userName}
+        >
+          <ProfileAvatarCircle name={userName} avatarUrl={avatarUrl} size="sm" />
+          <span className="min-w-0 truncate font-semibold">{userName}</span>
         </a>
         {reviewTasksPending > 0 ? (
           <span
@@ -309,6 +317,7 @@ export default function Profile() {
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:px-10">
           <ProfileHeader
             userName={displayName}
+            avatarUrl={displayAvatar || null}
             onLogout={handleLogout}
             reviewTasksPending={reviewTasksPending}
           />
