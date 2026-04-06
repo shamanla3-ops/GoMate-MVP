@@ -17,11 +17,13 @@ import Privacy from "./pages/Privacy";
 import Cookies from "./pages/Cookies";
 import Terms from "./pages/Terms";
 import LegalInfo from "./pages/LegalInfo";
+import PermanentPassengers from "./pages/PermanentPassengers";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
 import { ReviewPendingModal } from "./components/ReviewPendingModal";
 import { Footer } from "./components/Footer";
 import { TermsAcceptanceGate } from "./components/TermsAcceptanceGate";
 import { PageTransitionLayout } from "./components/PageTransitionLayout";
+import { SoundToggle } from "./components/SoundToggle";
 
 export default function App() {
   return (
@@ -41,6 +43,7 @@ export default function App() {
               <Route path="/create-trip" element={<CreateTrip />} />
               <Route path="/templates" element={<Templates />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/permanent-passengers" element={<PermanentPassengers />} />
               <Route path="/driver-requests" element={<DriverRequests />} />
               <Route path="/my-requests" element={<MyRequests />} />
               <Route path="/requests" element={<Requests />} />
@@ -56,6 +59,7 @@ export default function App() {
         <Footer />
       </div>
 
+      <SoundToggle />
       <ReviewPendingModal />
       <PushPermissionPrompt />
     </>

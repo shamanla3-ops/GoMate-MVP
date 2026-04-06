@@ -84,6 +84,9 @@ function ProfileHeader({
         <a href="/templates" className="gomate-nav-pill">
           {t("profilePage.navTemplates")}
         </a>
+        <a href="/permanent-passengers" className="gomate-nav-pill">
+          {t("nav.permanentPassengers")}
+        </a>
         <a href="/profile" className="gomate-nav-pill-dark max-w-[10rem] truncate" title={userName}>
           {userName}
         </a>

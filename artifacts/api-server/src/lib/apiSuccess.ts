@@ -14,6 +14,12 @@ const SUCCESS_LEGACY: Record<string, string> = {
   REVIEW_SUBMITTED: "Review submitted",
   EMAIL_VERIFIED: "Email verified",
   TERMS_ACCEPTED: "Terms accepted",
+  PP_REQUEST_CREATED: "Regular ride request sent",
+  PP_REQUEST_ACCEPTED: "Regular ride accepted",
+  PP_REQUEST_REJECTED: "Regular ride request declined",
+  PP_REQUEST_CANCELLED: "Regular ride request withdrawn",
+  PP_RELATIONSHIP_ENDED: "Regular ride relationship ended",
+  PP_SKIP_REGISTERED: "Skip registered for this date",
 };
 
 export function withApiSuccess<T extends Record<string, unknown>>(

@@ -4,6 +4,7 @@ import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { PermanentPassengerModal } from "../components/PermanentPassengerModal";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
@@ -12,6 +13,7 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "../lib/motionVariants";
+import { preferredTimeFromDeparture } from "../lib/permanentPassengersApi";
 
 type CurrentUserLike = {
   id?: string;
@@ -139,6 +141,7 @@ export default function Trips() {
   const [pendingIncomingCount, setPendingIncomingCount] = useState(0);
   const [outgoingRequests, setOutgoingRequests] = useState<OutgoingRequest[]>([]);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [ppModalTrip, setPpModalTrip] = useState<Trip | null>(null);
 
   async function loadTrips() {
     try {
@@ -439,6 +442,9 @@ export default function Trips() {
                 {t("tripsPage.chats")}
                 {chatUnreadCount > 0 ? ` (${chatUnreadCount})` : ""}
               </a>
+              <a href="/permanent-passengers" className="gomate-nav-pill font-medium">
+                {t("nav.permanentPassengers")}
+              </a>
               {reviewTasksPending > 0 ? (
                 <span
                   className="gomate-badge-reviews"
@@ -665,12 +671,23 @@ export default function Trips() {
                               : t("tripsPage.cancelRequest")}
                           </button>
                         ) : trip.availableSeats > 0 ? (
-                          <a
-                            href={`/trips/${trip.id}`}
-                            className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-semibold text-[#29485d] shadow-sm"
-                          >
-                            {t("tripsPage.join")}
-                          </a>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                            <a
+                              href={`/trips/${trip.id}`}
+                              className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-semibold text-[#29485d] shadow-sm"
+                            >
+                              {t("tripsPage.join")}
+                            </a>
+                            {currentUserId && !isOwnTrip && trip.status === "scheduled" ? (
+                              <button
+                                type="button"
+                                onClick={() => setPpModalTrip(trip)}
+                                className="flex h-12 items-center justify-center rounded-full border border-[#cfe9c8] bg-[#f1faf4] px-6 text-sm font-bold text-[#1d5d2f] shadow-sm"
+                              >
+                                {t("tripsPage.ppCta")}
+                              </button>
+                            ) : null}
+                          </div>
                         ) : (
                           <span className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-semibold text-[#9b1c1c] shadow-sm">
                             {t("tripsPage.noSeatsLeft")}
@@ -685,6 +702,22 @@ export default function Trips() {
           </div>
         </div>
       </div>
+
+      {ppModalTrip ? (
+        <PermanentPassengerModal
+          open
+          onClose={() => setPpModalTrip(null)}
+          direction="request"
+          targetUserId={ppModalTrip.driverId}
+          targetDisplayName={ppModalTrip.driver.name}
+          defaultWeekdays={ppModalTrip.weekdays ?? undefined}
+          defaultPreferredTime={preferredTimeFromDeparture(ppModalTrip.departureTime)}
+          tripId={ppModalTrip.id}
+          originText={ppModalTrip.origin}
+          destinationText={ppModalTrip.destination}
+          onSuccess={() => setPpModalTrip(null)}
+        />
+      ) : null}
     </div>
   );
 }

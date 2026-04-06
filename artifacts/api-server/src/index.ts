@@ -12,6 +12,7 @@ import notificationSummaryRoutes from "./routes/notificationSummary.js";
 import profileRoutes from "./routes/profile.js";
 import reviewsRoutes from "./routes/reviews.js";
 import reviewTasksRoutes from "./routes/reviewTasks.js";
+import permanentPassengersRoutes from "./routes/permanentPassengers.js";
 import testEmailRouter from "./routes/testEmail.js";
 import { startTripMaintenanceJobs } from "./jobs/autoCompleteTrips.js";
 
@@ -43,6 +44,7 @@ app.use("/api/notifications", notificationSummaryRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/review-tasks", reviewTasksRoutes);
+app.use("/api/permanent-passengers", permanentPassengersRoutes);
 app.use("/api/test-email", testEmailRouter);
 
 app.get("/", (_req, res) => {

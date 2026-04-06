@@ -6,6 +6,7 @@ import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
+import { isDepartureStrictlyPast } from "../lib/tripDeparture";
 
 type RequestStatus =
   | "pending"
@@ -142,12 +143,28 @@ function getStatusClasses(status: RequestStatus) {
   }
 }
 
-function isActiveStatus(status: RequestStatus) {
+function isLifecycleActiveStatus(status: RequestStatus) {
   return status === "pending" || status === "accepted";
 }
 
-function isHistoryStatus(status: RequestStatus) {
-  return !isActiveStatus(status);
+/** Active tab: pending/accepted and trip departure not strictly in the past. */
+function isRequestInActiveTab(
+  status: RequestStatus,
+  departureIso: string,
+  nowMs: number
+) {
+  if (!isLifecycleActiveStatus(status)) return false;
+  return !isDepartureStrictlyPast(departureIso, nowMs);
+}
+
+/** History tab: terminal lifecycle OR pending/accepted but departure already passed. */
+function isRequestInHistoryTab(
+  status: RequestStatus,
+  departureIso: string,
+  nowMs: number
+) {
+  if (!isLifecycleActiveStatus(status)) return true;
+  return isDepartureStrictlyPast(departureIso, nowMs);
 }
 
 export default function Requests() {
@@ -166,6 +183,7 @@ export default function Requests() {
   const [activeTab, setActiveTab] = useState<TabKey>("incoming");
   const [viewMode, setViewMode] = useState<ViewMode>("active");
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   async function loadRequests() {
     const token = localStorage.getItem("token");
@@ -219,6 +237,7 @@ export default function Requests() {
       setIncomingRequests([]);
       setOutgoingRequests([]);
     } finally {
+      setNowMs(Date.now());
       setLoading(false);
     }
   }
@@ -265,6 +284,11 @@ export default function Requests() {
 
     return () => clearInterval(interval);
   }, [refreshNotificationCounts]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   async function handleIncomingAction(id: string, action: "accept" | "reject") {
     const token = localStorage.getItem("token");
@@ -464,40 +488,52 @@ export default function Requests() {
   );
 
   const incomingActiveCount = useMemo(
-    () => incomingRequests.filter((request) => isActiveStatus(request.status)).length,
-    [incomingRequests]
+    () =>
+      incomingRequests.filter((request) =>
+        isRequestInActiveTab(request.status, request.trip.departureTime, nowMs)
+      ).length,
+    [incomingRequests, nowMs]
   );
 
   const incomingHistoryCount = useMemo(
-    () => incomingRequests.filter((request) => isHistoryStatus(request.status)).length,
-    [incomingRequests]
+    () =>
+      incomingRequests.filter((request) =>
+        isRequestInHistoryTab(request.status, request.trip.departureTime, nowMs)
+      ).length,
+    [incomingRequests, nowMs]
   );
 
   const outgoingActiveCount = useMemo(
-    () => outgoingRequests.filter((request) => isActiveStatus(request.status)).length,
-    [outgoingRequests]
+    () =>
+      outgoingRequests.filter((request) =>
+        isRequestInActiveTab(request.status, request.trip.departureTime, nowMs)
+      ).length,
+    [outgoingRequests, nowMs]
   );
 
   const outgoingHistoryCount = useMemo(
-    () => outgoingRequests.filter((request) => isHistoryStatus(request.status)).length,
-    [outgoingRequests]
+    () =>
+      outgoingRequests.filter((request) =>
+        isRequestInHistoryTab(request.status, request.trip.departureTime, nowMs)
+      ).length,
+    [outgoingRequests, nowMs]
   );
 
   const visibleIncomingRequests = useMemo(() => {
     return incomingRequests.filter((request) =>
       viewMode === "active"
-        ? isActiveStatus(request.status)
-        : isHistoryStatus(request.status)
+        ? isRequestInActiveTab(request.status, request.trip.departureTime, nowMs)
+        : isRequestInHistoryTab(request.status, request.trip.departureTime, nowMs)
     );
-  }, [incomingRequests, viewMode]);
+  }, [incomingRequests, viewMode, nowMs]);
 
   const visibleOutgoingRequests = useMemo(() => {
     return outgoingRequests.filter((request) =>
       viewMode === "active"
-        ? isActiveStatus(request.status)
-        : isHistoryStatus(request.status)
+        ? isRequestInActiveTab(request.status, request.trip.departureTime, nowMs)
+        : isRequestInHistoryTab(request.status, request.trip.departureTime, nowMs)
     );
-  }, [outgoingRequests, viewMode]);
+  }, [outgoingRequests, viewMode, nowMs]);
 
   const currentVisibleCount =
     activeTab === "incoming"

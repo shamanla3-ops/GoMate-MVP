@@ -5,9 +5,10 @@ import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { LocationPicker } from "../components/LocationPicker";
 import { SeatsPicker } from "../components/SeatsPicker";
+import { useSound } from "../context/SoundContext";
+import { TripCreatedSuccessModal } from "../components/successModals/TripCreatedSuccessModal";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 import { messageFromApiError } from "../lib/errorMessages";
-import { messageFromApiSuccess } from "../lib/successMessages";
 import { fetchDrivingDurationMinutes } from "../lib/osrmClient";
 
 const WEEKDAY_VALUES = [
@@ -41,6 +42,7 @@ function clampSeatsTotal(n: number): number {
 export default function CreateTrip() {
   const navigate = useNavigate();
   const { t, locale } = useTranslation();
+  const { playClick } = useSound();
 
   const [origin, setOrigin] = useState<MapPointValue>({
     label: "",
@@ -60,7 +62,8 @@ export default function CreateTrip() {
   const [weekdays, setWeekdays] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [tripCreatedModalOpen, setTripCreatedModalOpen] = useState(false);
+  const [createdTripId, setCreatedTripId] = useState<string | null>(null);
 
   function toggleWeekday(value: string) {
     setWeekdays((prev) =>
@@ -71,7 +74,6 @@ export default function CreateTrip() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
-    setIsSuccess(false);
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -157,8 +159,11 @@ export default function CreateTrip() {
         return;
       }
 
-      setIsSuccess(true);
-      setMessage(messageFromApiSuccess(data, t, "createTrip.success"));
+      setMessage("");
+      const newId =
+        typeof data?.trip?.id === "string" ? (data.trip.id as string) : null;
+      setCreatedTripId(newId);
+      setTripCreatedModalOpen(true);
 
       setOrigin({ label: "", lat: null, lng: null });
       setDestination({ label: "", lat: null, lng: null });
@@ -168,10 +173,6 @@ export default function CreateTrip() {
       setCurrency("EUR");
       setTripType("one-time");
       setWeekdays([]);
-
-      setTimeout(() => {
-        navigate("/trips");
-      }, 1200);
     } catch {
       setMessage(t("createTrip.connectError"));
     } finally {
@@ -332,17 +333,17 @@ export default function CreateTrip() {
                 )}
               </div>
 
-              {message &&
-                (isSuccess ? (
-                  <div className="gomate-alert-success">{message}</div>
-                ) : (
-                  <div className="gomate-alert-error">{message}</div>
-                ))}
+              {message ? (
+                <div className="gomate-alert-error">{message}</div>
+              ) : null}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                 <button
                   type="submit"
                   disabled={loading}
+                  onPointerDown={(e) => {
+                    if (e.button === 0 && !loading) playClick();
+                  }}
                   className="gomate-btn-gradient flex h-14 flex-1 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70 sm:max-w-xs"
                 >
                   {loading ? t("createTrip.submitting") : t("createTrip.submit")}
@@ -356,6 +357,17 @@ export default function CreateTrip() {
           </div>
         </div>
       </div>
+
+      <TripCreatedSuccessModal
+        open={tripCreatedModalOpen}
+        onClose={() => {
+          setTripCreatedModalOpen(false);
+          setCreatedTripId(null);
+        }}
+        tripId={createdTripId}
+        onViewTrips={() => navigate("/trips")}
+        onViewTrip={(tripId) => navigate(`/trips/${tripId}`)}
+      />
     </div>
   );
 }

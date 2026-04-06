@@ -1,14 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useTranslation, type Locale } from "../i18n";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
 import { TripRoutePreviewMap } from "../components/TripRoutePreviewMap";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { PermanentPassengerModal } from "../components/PermanentPassengerModal";
+import { useSound } from "../context/SoundContext";
+import { JoinRequestSuccessModal } from "../components/successModals/JoinRequestSuccessModal";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
+import {
+  fetchPpTripContext,
+  preferredTimeFromDeparture,
+  registerPpSkip,
+  localCalendarYmd,
+  type PpTripContext,
+} from "../lib/permanentPassengersApi";
 
 type CurrentUserLike = {
   id?: string;
@@ -71,6 +81,25 @@ type OutgoingRequest = {
 
 type ReviewTarget = { userId: string; name: string };
 
+type DriverIncomingTripRequest = {
+  id: string;
+  tripId: string;
+  passengerId: string;
+  seatsRequested: number;
+  status: string;
+  createdAt: string;
+  passenger: {
+    id: string;
+    name: string;
+    avatarUrl?: string | null;
+    rating?: number | null;
+  };
+};
+
+type PpModalState =
+  | { direction: "request" }
+  | { direction: "invitation"; passengerId: string; passengerName: string };
+
 function formatPrice(price: number, currency: "EUR" | "USD" | "PLN", locale: Locale) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -125,7 +154,9 @@ function getRequestBadgeClasses(status: OutgoingRequest["status"]) {
 
 export default function TripDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, locale } = useTranslation();
+  const { playClick } = useSound();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
 
   const [trip, setTrip] = useState<TripDetailsData | null>(null);
@@ -144,6 +175,13 @@ export default function TripDetails() {
   const [reviewComment, setReviewComment] = useState<Record<string, string>>({});
   const [reviewSubmitting, setReviewSubmitting] = useState<string | null>(null);
   const [reviewMessage, setReviewMessage] = useState("");
+
+  const [ppContext, setPpContext] = useState<PpTripContext | null>(null);
+  const [ppModal, setPpModal] = useState<PpModalState | null>(null);
+  const [ppBusy, setPpBusy] = useState(false);
+  const [driverTripRequests, setDriverTripRequests] = useState<DriverIncomingTripRequest[]>([]);
+  const [driverTripRequestsLoading, setDriverTripRequestsLoading] = useState(false);
+  const [joinRequestSuccessOpen, setJoinRequestSuccessOpen] = useState(false);
 
   async function loadTrip() {
     try {
@@ -205,6 +243,47 @@ export default function TripDetails() {
       setChatUnreadCount(total);
     } catch {
       setChatUnreadCount(0);
+    }
+  }
+
+  async function loadPpContext() {
+    const token = localStorage.getItem("token");
+    if (!token || !id) {
+      setPpContext(null);
+      return;
+    }
+    try {
+      const ctx = await fetchPpTripContext(id);
+      setPpContext(ctx);
+    } catch {
+      setPpContext(null);
+    }
+  }
+
+  async function loadDriverTripRequests() {
+    const token = localStorage.getItem("token");
+    if (!token || !id) {
+      setDriverTripRequests([]);
+      return;
+    }
+
+    setDriverTripRequestsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/trip-requests/incoming`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setDriverTripRequests([]);
+        return;
+      }
+      const list = Array.isArray(data.requests) ? data.requests : [];
+      const forTrip = (list as DriverIncomingTripRequest[]).filter((r) => r.tripId === id);
+      setDriverTripRequests(forTrip);
+    } catch {
+      setDriverTripRequests([]);
+    } finally {
+      setDriverTripRequestsLoading(false);
     }
   }
 
@@ -411,8 +490,9 @@ export default function TripDetails() {
         return;
       }
 
-      setMessage(messageFromApiSuccess(data, t, "tripDetails.requestSent"));
-      await Promise.all([loadTrip(), loadMyRequest()]);
+      setMessage("");
+      setJoinRequestSuccessOpen(true);
+      await Promise.all([loadTrip(), loadMyRequest(), loadPpContext()]);
       void refreshNotificationCounts();
     } catch {
       setMessage(t("tripDetails.connectError"));
@@ -455,7 +535,7 @@ export default function TripDetails() {
       }
 
       setMessage(messageFromApiSuccess(data, t, "tripDetails.cancelSuccess"));
-      await Promise.all([loadTrip(), loadMyRequest()]);
+      await Promise.all([loadTrip(), loadMyRequest(), loadPpContext()]);
     } catch {
       setMessage(t("tripDetails.connectError"));
     } finally {
@@ -480,6 +560,20 @@ export default function TripDetails() {
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? "";
 
   useEffect(() => {
+    void loadPpContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, currentUserId]);
+
+  useEffect(() => {
+    if (!id || !currentUserId || !trip || trip.driverId !== currentUserId) {
+      setDriverTripRequests([]);
+      return;
+    }
+    void loadDriverTripRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, currentUserId, trip?.driverId]);
+
+  useEffect(() => {
     if (!id || !trip) {
       return;
     }
@@ -497,6 +591,33 @@ export default function TripDetails() {
 
   const canCancelRequest =
     myRequest?.status === "pending" || myRequest?.status === "accepted";
+
+  async function handlePpSkipToday() {
+    const rel = ppContext?.activeRelationshipWithDriver;
+    if (!rel?.id) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+    setPpBusy(true);
+    setMessage("");
+    try {
+      await registerPpSkip(rel.id, localCalendarYmd());
+      setMessage(t("tripDetails.pp.skipSuccess"));
+      await loadPpContext();
+    } catch (e: unknown) {
+      setMessage(messageFromApiError(e as { errorCode?: string }, t, "tripDetails.pp.skipError"));
+    } finally {
+      setPpBusy(false);
+    }
+  }
+
+  const riderRequestsForOwner = useMemo(() => {
+    return driverTripRequests.filter(
+      (r) => r.status === "pending" || r.status === "accepted"
+    );
+  }, [driverTripRequests]);
 
   const requestStatusText = myRequest
     ? myRequest.status === "pending"
@@ -573,6 +694,12 @@ export default function TripDetails() {
               >
                 {t("nav.profile")}
               </a>
+              <a
+                href="/permanent-passengers"
+                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
+              >
+                {t("nav.permanentPassengers")}
+              </a>
             </div>
           </AppPageHeader>
 
@@ -595,6 +722,14 @@ export default function TripDetails() {
                       {trip.status}
                     </span>
                   )}
+
+                  {ppContext?.activeRelationshipWithDriver && (
+                    <span className="gomate-chip-success">
+                      {ppContext.activeRelationshipWithDriver.skippingToday
+                        ? t("tripDetails.pp.badge.skippingToday")
+                        : t("tripDetails.pp.badge.regularRider")}
+                    </span>
+                  )}
                 </div>
 
                 <p className="mt-3 text-[#4a6678]">
@@ -609,6 +744,55 @@ export default function TripDetails() {
                 >
                   {t("tripDetails.backToTrips")}
                 </a>
+
+                {currentUserId &&
+                  isOwnTrip &&
+                  ppContext &&
+                  typeof ppContext.driverPermanentPassengerCount === "number" &&
+                  ppContext.driverPermanentPassengerCount > 0 && (
+                    <div className="gomate-benefit-strip">
+                      {t("tripDetails.pp.driverHasRegular", {
+                        count: ppContext.driverPermanentPassengerCount,
+                      })}
+                    </div>
+                  )}
+
+                {currentUserId && ppContext?.seatMessageHint && (
+                  <div className="gomate-alert-neutral text-sm leading-relaxed">
+                    {ppContext.seatMessageHint === "permanent_passenger_priority_hint"
+                      ? t("tripDetails.pp.prioritySeatHint")
+                      : ppContext.seatMessageHint === "permanent_passenger_skipping_hint"
+                        ? t("tripDetails.pp.skippingHint")
+                        : null}
+                  </div>
+                )}
+
+                {currentUserId &&
+                  !isOwnTrip &&
+                  trip.status === "scheduled" &&
+                  !ppContext?.activeRelationshipWithDriver && (
+                    <button
+                      type="button"
+                      onClick={() => setPpModal({ direction: "request" })}
+                      className="flex h-12 items-center justify-center rounded-full border border-[#cfe9c8] bg-[#f1faf4] px-6 text-sm font-bold text-[#1d5d2f] shadow-sm"
+                    >
+                      {t("tripDetails.pp.cta.becomeRegular")}
+                    </button>
+                  )}
+
+                {currentUserId &&
+                  !isOwnTrip &&
+                  ppContext?.activeRelationshipWithDriver &&
+                  !ppContext.activeRelationshipWithDriver.skippingToday && (
+                    <button
+                      type="button"
+                      onClick={() => void handlePpSkipToday()}
+                      disabled={ppBusy}
+                      className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-bold text-[#29485d] shadow-sm disabled:opacity-60"
+                    >
+                      {ppBusy ? t("tripDetails.pp.skipWorking") : t("tripDetails.pp.skipToday")}
+                    </button>
+                  )}
 
                 {!isOwnTrip && !hasActiveRequest && (
                   <>
@@ -641,6 +825,15 @@ export default function TripDetails() {
                     <button
                       type="button"
                       onClick={handleJoinTrip}
+                      onPointerDown={(e) => {
+                        if (
+                          e.button === 0 &&
+                          !joiningTrip &&
+                          trip.availableSeats >= 1
+                        ) {
+                          playClick();
+                        }
+                      }}
                       disabled={joiningTrip || trip.availableSeats < 1}
                       className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] disabled:cursor-not-allowed disabled:opacity-70"
                     >
@@ -726,6 +919,15 @@ export default function TripDetails() {
                     className="flex h-12 items-center justify-center rounded-full bg-[#163c59] px-6 text-sm font-bold text-white shadow-sm"
                   >
                     {t("tripDetails.openChats")}
+                  </a>
+                )}
+
+                {isOwnTrip && (
+                  <a
+                    href="/permanent-passengers"
+                    className="flex h-12 items-center justify-center rounded-full border border-white/90 bg-white/88 px-6 text-sm font-bold text-[#29485d] shadow-sm"
+                  >
+                    {t("tripDetails.pp.manageRegularRides")}
                   </a>
                 )}
               </div>
@@ -823,6 +1025,88 @@ export default function TripDetails() {
                 </div>
               </div>
             </div>
+
+            {isOwnTrip && currentUserId && trip.status === "scheduled" && (
+              <div className="mt-8 rounded-[28px] border border-white/80 bg-white/80 p-5 shadow-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <h2 className="text-xl font-extrabold text-[#173651]">
+                    {t("tripDetails.pp.section.riders")}
+                  </h2>
+                  <a
+                    href="/driver-requests"
+                    className="text-sm font-semibold text-[#1296e8] underline-offset-2 hover:underline"
+                  >
+                    {t("tripDetails.pp.riders.openRequestsPage")}
+                  </a>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-[#4a6678]">
+                  {t("tripDetails.pp.riders.hint")}
+                </p>
+
+                {driverTripRequestsLoading ? (
+                  <p className="mt-4 text-sm text-[#35556c]">{t("tripDetails.pp.riders.loading")}</p>
+                ) : riderRequestsForOwner.length === 0 ? (
+                  <div className="gomate-empty-state mt-4 py-10">
+                    <p className="text-sm font-semibold text-[#35556c]">
+                      {t("tripDetails.pp.riders.empty")}
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="mt-4 space-y-3">
+                    {riderRequestsForOwner.map((r) => (
+                      <li
+                        key={r.id}
+                        className="flex flex-col gap-3 rounded-[22px] border border-[#e3eef3] bg-[#f7fbfd] p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-base font-extrabold text-[#173651]">
+                              {r.passenger?.name ?? t("tripDetails.pp.riders.unknownPassenger")}
+                            </span>
+                            {r.status === "pending" ? (
+                              <span className="gomate-chip-warn">
+                                {t("tripDetails.pp.riders.pendingBadge")}
+                              </span>
+                            ) : (
+                              <span className="gomate-chip-success">
+                                {t("tripDetails.pp.riders.acceptedBadge")}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-[#5a7389]">
+                            {t("tripDetails.pp.riders.seats", { count: r.seatsRequested })}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:items-end">
+                          {r.status === "accepted" ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPpModal({
+                                  direction: "invitation",
+                                  passengerId: r.passengerId,
+                                  passengerName: r.passenger?.name ?? "",
+                                })
+                              }
+                              className="flex h-11 items-center justify-center rounded-full border border-[#cfe9c8] bg-[#f1faf4] px-5 text-sm font-bold text-[#1d5d2f] shadow-sm"
+                            >
+                              {t("tripDetails.pp.riders.inviteRegular")}
+                            </button>
+                          ) : (
+                            <a
+                              href="/driver-requests"
+                              className="flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-[#29485d] shadow-sm ring-1 ring-[#d7e4eb]"
+                            >
+                              {t("tripDetails.pp.riders.reviewRequest")}
+                            </a>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             {trip.originLat != null &&
               trip.originLng != null &&
@@ -947,6 +1231,36 @@ export default function TripDetails() {
           </div>
         </div>
       </div>
+
+      <JoinRequestSuccessModal
+        open={joinRequestSuccessOpen}
+        onClose={() => setJoinRequestSuccessOpen(false)}
+        onViewRequests={() => navigate("/my-requests")}
+      />
+
+      <PermanentPassengerModal
+        open={ppModal !== null}
+        onClose={() => setPpModal(null)}
+        direction={ppModal?.direction ?? "request"}
+        targetUserId={
+          ppModal?.direction === "invitation" ? ppModal.passengerId : trip.driverId
+        }
+        targetDisplayName={
+          ppModal?.direction === "invitation"
+            ? ppModal.passengerName
+            : trip.driver.name
+        }
+        defaultWeekdays={trip.weekdays ?? undefined}
+        defaultPreferredTime={preferredTimeFromDeparture(trip.departureTime)}
+        tripId={trip.id}
+        templateId={null}
+        originText={trip.origin}
+        destinationText={trip.destination}
+        onSuccess={() => {
+          void loadPpContext();
+          void loadDriverTripRequests();
+        }}
+      />
     </div>
   );
 }
