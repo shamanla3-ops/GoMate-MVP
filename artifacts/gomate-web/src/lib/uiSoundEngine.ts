@@ -88,3 +88,180 @@ export function playUiSuccessSound(ctx: AudioContext, masterGain = 0.065): void 
     osc.stop(t0 + 0.34);
   });
 }
+
+/** Outgoing chat — brief, bright, minimal */
+export function playChatSendSound(ctx: AudioContext, masterGain = 0.055): void {
+  const t0 = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(1180, t0);
+  osc.frequency.exponentialRampToValueAtTime(1560, t0 + 0.038);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.055);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + 0.06);
+}
+
+/** Incoming chat — warmer, lower than send */
+export function playChatReceiveSound(ctx: AudioContext, masterGain = 0.048): void {
+  const t0 = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(520, t0);
+  osc.frequency.exponentialRampToValueAtTime(680, t0 + 0.045);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + 0.1);
+}
+
+/** Soft ignition / engine settle — not a rev, ~500–650ms */
+export function playCarEngineStartSound(ctx: AudioContext, masterGain = 0.036): void {
+  const t0 = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const f = ctx.createBiquadFilter();
+  const g = ctx.createGain();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(240, t0);
+  f.frequency.exponentialRampToValueAtTime(480, t0 + 0.38);
+  osc.type = "sine";
+  osc2.type = "sine";
+  osc.frequency.setValueAtTime(52, t0);
+  osc.frequency.exponentialRampToValueAtTime(78, t0 + 0.42);
+  osc2.frequency.setValueAtTime(104, t0);
+  osc2.frequency.exponentialRampToValueAtTime(156, t0 + 0.42);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.028);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.58);
+  osc.connect(f);
+  osc2.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t0);
+  osc2.start(t0);
+  osc.stop(t0 + 0.62);
+  osc2.stop(t0 + 0.62);
+}
+
+/** Short soft acceleration / roll-off */
+export function playCarDriveAwaySound(ctx: AudioContext, masterGain = 0.03): void {
+  const t0 = ctx.currentTime;
+  const n = Math.floor(ctx.sampleRate * 0.2);
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.4;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = "bandpass";
+  f.frequency.setValueAtTime(280, t0);
+  f.frequency.exponentialRampToValueAtTime(1400, t0 + 0.12);
+  f.Q.setValueAtTime(0.65, t0);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.018);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.19);
+  src.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  src.start(t0);
+  src.stop(t0 + 0.2);
+}
+
+/** Light arrival / slow roll */
+export function playCarArrivalSound(ctx: AudioContext, masterGain = 0.026): void {
+  const t0 = ctx.currentTime;
+  const n = Math.floor(ctx.sampleRate * 0.16);
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.32;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(820, t0);
+  f.frequency.exponentialRampToValueAtTime(320, t0 + 0.12);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.035);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.15);
+  src.connect(f);
+  f.connect(g);
+  g.connect(ctx.destination);
+  src.start(t0);
+  src.stop(t0 + 0.16);
+}
+
+/** Driver: subtle “someone is interested” — airy, not alarm-like */
+export function playNewRideRequestSound(ctx: AudioContext, masterGain = 0.042): void {
+  const base = ctx.currentTime;
+  const freqs = [740, 990];
+  freqs.forEach((hz, i) => {
+    const t0 = base + i * 0.055;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.setValueAtTime(2200, t0);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(hz, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(masterGain * (1 - i * 0.15), t0 + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.11);
+    osc.connect(f);
+    f.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.12);
+  });
+}
+
+/** Passenger: warm “you’re in” confirmation */
+export function playRequestApprovedSound(ctx: AudioContext, masterGain = 0.05): void {
+  const t0 = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(392, t0);
+  osc.frequency.exponentialRampToValueAtTime(523.25, t0 + 0.07);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(masterGain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + 0.17);
+}
+
+/** Match moment: soft elegant triad, slightly more presence than default success */
+export function playRideMatchSound(ctx: AudioContext, masterGain = 0.046): void {
+  const base = ctx.currentTime;
+  const freqs = [392, 493.88, 587.33];
+  freqs.forEach((hz, i) => {
+    const t0 = base + i * 0.072;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(hz, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(masterGain * (1 - i * 0.08), t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.3);
+  });
+}

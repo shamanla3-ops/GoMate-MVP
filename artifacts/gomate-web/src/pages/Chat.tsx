@@ -1,8 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { getCurrentUser } from "../lib/auth";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { useSound } from "../context/SoundContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort, formatTimeOnly } from "../lib/intlLocale";
@@ -61,6 +68,9 @@ type ChatDetails = {
 
 const QUICK_EMOJIS = ["😀", "👍", "👌", "🚗", "⏰", "📍", "✅", "❌"];
 
+const NEAR_BOTTOM_PX = 120;
+const TEXTAREA_MAX_HEIGHT_PX = 192;
+
 function getInitials(name: string) {
   return name
     .trim()
@@ -71,10 +81,20 @@ function getInitials(name: string) {
     .join("");
 }
 
+function isNearBottom(el: HTMLElement, thresholdPx: number): boolean {
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  return scrollHeight - scrollTop - clientHeight <= thresholdPx;
+}
+
+function scrollContainerToBottom(el: HTMLElement, behavior: ScrollBehavior) {
+  el.scrollTo({ top: el.scrollHeight, behavior });
+}
+
 export default function Chat() {
   const { t, locale } = useTranslation();
   const { chatId } = useParams();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
+  const { playChatSend, playChatReceive } = useSound();
   const [currentUser, setCurrentUser] = useState<CurrentUserLike | null>(null);
   const [chat, setChat] = useState<ChatDetails | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -82,7 +102,22 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+
+  const messagesRef = useRef<ChatMessage[]>(messages);
+  messagesRef.current = messages;
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const wasNearBottomBeforeLoadRef = useRef(true);
+  const forceScrollToBottomRef = useRef(false);
+  const initialScrollDoneRef = useRef(false);
+  const prevLastMessageIdRef = useRef<string | null>(null);
+  const prevMessageCountRef = useRef(0);
+  const chatSoundBootstrappedRef = useRef(false);
+  const seenMessageIdsForSoundRef = useRef<Set<string>>(new Set());
 
   async function loadCurrentUser() {
     const user = (await getCurrentUser()) as CurrentUserLike | null;
@@ -137,6 +172,13 @@ export default function Chat() {
         return;
       }
 
+      const scrollEl = scrollContainerRef.current;
+      const priorMessages = messagesRef.current;
+      wasNearBottomBeforeLoadRef.current =
+        !scrollEl || priorMessages.length === 0
+          ? true
+          : isNearBottom(scrollEl, NEAR_BOTTOM_PX);
+
       setChat(data.chat ?? null);
       setMessages(Array.isArray(data.messages) ? data.messages : []);
       setMessage("");
@@ -165,6 +207,7 @@ export default function Chat() {
     try {
       setSending(true);
       setMessage("");
+      forceScrollToBottomRef.current = true;
 
       const res = await fetch(`${API_BASE_URL}/api/trip-chats/${chatId}/messages`, {
         method: "POST",
@@ -178,13 +221,16 @@ export default function Chat() {
       const data = await res.json();
 
       if (!res.ok) {
+        forceScrollToBottomRef.current = false;
         setMessage(messageFromApiError(data, t, "chatPage.sendError"));
         return;
       }
 
+      playChatSend();
       setText("");
       await loadMessages();
     } catch {
+      forceScrollToBottomRef.current = false;
       setMessage(t("chatPage.sendError"));
     } finally {
       setSending(false);
@@ -195,6 +241,42 @@ export default function Chat() {
     e.preventDefault();
     sendMessage(text);
   }
+
+  function insertQuickEmoji(emoji: string) {
+    const el = textareaRef.current;
+    if (!el) {
+      setText((prev) => prev + emoji);
+      return;
+    }
+
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+
+    setText((prev) => {
+      const safeStart = Math.min(Math.max(0, start), prev.length);
+      const safeEnd = Math.min(Math.max(0, end), prev.length);
+      const next = prev.slice(0, safeStart) + emoji + prev.slice(safeEnd);
+      const caret = safeStart + emoji.length;
+
+      requestAnimationFrame(() => {
+        const node = textareaRef.current;
+        if (!node) return;
+        node.focus();
+        try {
+          node.setSelectionRange(caret, caret);
+        } catch {
+          /* ignore */
+        }
+      });
+
+      return next;
+    });
+  }
+
+  useEffect(() => {
+    chatSoundBootstrappedRef.current = false;
+    seenMessageIdsForSoundRef.current = new Set();
+  }, [chatId]);
 
   useEffect(() => {
     loadCurrentUser();
@@ -207,9 +289,92 @@ export default function Chat() {
     return () => clearInterval(interval);
   }, [chatId]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  useLayoutEffect(() => {
+    const uid = currentUser?.id ?? currentUser?.userId ?? "";
+    if (!chatId || !uid || messages.length === 0) return;
+    if (chat?.id !== chatId) return;
+
+    const seen = seenMessageIdsForSoundRef.current;
+    if (!chatSoundBootstrappedRef.current) {
+      messages.forEach((m) => seen.add(m.id));
+      chatSoundBootstrappedRef.current = true;
+      return;
+    }
+
+    let playedReceive = false;
+    for (const m of messages) {
+      if (seen.has(m.id)) continue;
+      seen.add(m.id);
+      if (m.senderId !== uid && !playedReceive) {
+        playChatReceive();
+        playedReceive = true;
+      }
+    }
+  }, [messages, currentUser, playChatReceive, chatId, chat?.id]);
+
+  useLayoutEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    if (forceScrollToBottomRef.current) {
+      forceScrollToBottomRef.current = false;
+      scrollContainerToBottom(el, "smooth");
+      setShowJumpToLatest(false);
+      prevLastMessageIdRef.current = messages[messages.length - 1]?.id ?? null;
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+
+    if (!initialScrollDoneRef.current) {
+      if (messages.length > 0) {
+        scrollContainerToBottom(el, "auto");
+        initialScrollDoneRef.current = true;
+      }
+      prevLastMessageIdRef.current = messages[messages.length - 1]?.id ?? null;
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+
+    const lastId = messages[messages.length - 1]?.id ?? null;
+    const prevLast = prevLastMessageIdRef.current;
+    const prevCount = prevMessageCountRef.current;
+    const grew = messages.length > prevCount;
+    const lastChanged = lastId !== prevLast;
+    const newActivity = grew || lastChanged;
+
+    if (wasNearBottomBeforeLoadRef.current) {
+      if (newActivity) {
+        scrollContainerToBottom(el, "smooth");
+        setShowJumpToLatest(false);
+      }
+    } else if (newActivity && messages.length > 0) {
+      setShowJumpToLatest(true);
+    }
+
+    prevLastMessageIdRef.current = lastId;
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
+
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "0px";
+    ta.style.height = `${Math.min(ta.scrollHeight, TEXTAREA_MAX_HEIGHT_PX)}px`;
+  }, [text]);
+
+  function handleMessagesScroll() {
+    const el = scrollContainerRef.current;
+    if (el && isNearBottom(el, NEAR_BOTTOM_PX)) {
+      setShowJumpToLatest(false);
+    }
+  }
+
+  function handleJumpToLatest() {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    scrollContainerToBottom(el, "smooth");
+    setShowJumpToLatest(false);
+  }
 
   const currentUserId = currentUser?.id ?? currentUser?.userId ?? "";
   const isDriver = useMemo(() => {
@@ -236,7 +401,7 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#eef4f8]">
+      <div className="flex min-h-screen items-center justify-center bg-[#eef4f8]">
         <div className="text-lg text-[#35556c]">{t("chatPage.loading")}</div>
       </div>
     );
@@ -257,7 +422,7 @@ export default function Chat() {
 
         <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-10">
           <AppPageHeader>
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden items-center gap-3 md:flex">
               <a
                 href="/trips"
                 className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
@@ -341,8 +506,12 @@ export default function Chat() {
               </div>
             )}
 
-            <div className="min-h-0 flex-1 px-4 py-4 sm:px-6">
-              <div className="flex h-[52vh] flex-col gap-3 overflow-y-auto rounded-[24px] border border-white/70 bg-white/65 p-4 shadow-sm">
+            <div className="relative min-h-0 flex-1 px-4 py-4 sm:px-6">
+              <div
+                ref={scrollContainerRef}
+                onScroll={handleMessagesScroll}
+                className="flex h-[52vh] max-h-[70dvh] flex-col gap-3 overflow-y-auto overflow-x-hidden rounded-[24px] border border-[#d0e4ef] bg-[#f8fcfe] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]"
+              >
                 {messages.length === 0 && (
                   <div className="my-auto text-center text-[#5d7485]">
                     {t("chatPage.emptyMessages")}
@@ -390,39 +559,91 @@ export default function Chat() {
 
                 <div ref={messagesEndRef} />
               </div>
+
+              {showJumpToLatest ? (
+                <div className="pointer-events-none absolute bottom-6 left-1/2 z-10 flex w-full max-w-md -translate-x-1/2 justify-center px-4">
+                  <button
+                    type="button"
+                    onClick={handleJumpToLatest}
+                    className="pointer-events-auto rounded-full border border-white/90 bg-[#163c59] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_32px_rgba(23,54,81,0.35)] transition hover:bg-[#1a4a6b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8] focus-visible:ring-offset-2"
+                  >
+                    {t("chatPage.jumpToLatest")}
+                  </button>
+                </div>
+              ) : null}
             </div>
 
-            <div className="border-t border-white/60 px-4 py-4 sm:px-6">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {QUICK_EMOJIS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => sendMessage(emoji)}
-                    disabled={sending}
-                    className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-white/90 bg-white/88 px-3 text-xl shadow-sm transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={t("chatPage.placeholder")}
-                  className="h-14 flex-1 rounded-[20px] border border-white/80 bg-white/88 px-4 text-[#173651] shadow-sm outline-none placeholder:text-[#7a94a5]"
-                />
-
-                <button
-                  type="submit"
-                  disabled={sending || !text.trim()}
-                  className="flex h-14 items-center justify-center rounded-[20px] bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] disabled:cursor-not-allowed disabled:opacity-70"
+            <div className="border-t border-white/60 bg-white/25 px-4 py-4 sm:px-6">
+              <div className="rounded-[26px] border border-[#c8dce8] bg-white/95 p-3 shadow-[0_16px_40px_rgba(23,54,81,0.1)] ring-1 ring-white/80 backdrop-blur-md">
+                <p
+                  id="chat-quick-emojis-label"
+                  className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#6f8798]"
                 >
-                  {sending ? t("chatPage.sending") : t("chatPage.send")}
-                </button>
-              </form>
+                  {t("chatPage.quickEmojisLabel")}
+                </p>
+                <div
+                  className="mb-3 flex flex-wrap gap-2"
+                  role="group"
+                  aria-labelledby="chat-quick-emojis-label"
+                >
+                  {QUICK_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        insertQuickEmoji(emoji);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === " " || e.key === "Enter") {
+                          e.preventDefault();
+                          insertQuickEmoji(emoji);
+                        }
+                      }}
+                      disabled={sending}
+                      aria-label={t("chatPage.insertEmoji", { emoji })}
+                      className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-[#dfeaf1] bg-[#f4fafc] px-3 text-xl shadow-sm transition hover:border-[#1296e8]/40 hover:bg-white disabled:cursor-not-allowed disabled:opacity-70 motion-safe:active:scale-[0.96]"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                >
+                  <label className="sr-only" htmlFor="chat-composer-input">
+                    {t("chatPage.placeholder")}
+                  </label>
+                  <textarea
+                    id="chat-composer-input"
+                    ref={textareaRef}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!sending && text.trim()) {
+                          sendMessage(text);
+                        }
+                      }
+                    }}
+                    placeholder={t("chatPage.placeholder")}
+                    rows={1}
+                    autoComplete="off"
+                    className="min-h-[52px] w-full flex-1 resize-none rounded-[22px] border border-[#d7e4eb] bg-white px-4 py-3.5 text-base leading-relaxed text-[#173651] shadow-[inset_0_1px_2px_rgba(23,54,81,0.06)] outline-none transition placeholder:text-[#7a94a5] focus-visible:border-[#1296e8]/60 focus-visible:ring-2 focus-visible:ring-[#1296e8]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:min-h-[56px] sm:text-[15px]"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={sending || !text.trim()}
+                    className="flex min-h-[52px] shrink-0 items-center justify-center rounded-[22px] bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-7 text-sm font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.38)] transition hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[56px] sm:px-8"
+                  >
+                    {sending ? t("chatPage.sending") : t("chatPage.send")}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>

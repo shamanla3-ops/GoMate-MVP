@@ -1,8 +1,39 @@
 import { motion, useReducedMotion } from "framer-motion";
+import { useEffect } from "react";
+import { useSound } from "../../context/SoundContext";
 
-/** Driver walks to car, enters; car drives away — lightweight div/SVG-free scene */
+const CAR_MS = 3850;
+const PERSON_MS = 1100;
+
+/** Driver walks to car, enters; engine; car departs — synced UI sounds */
 export function TripCreatedAnimation() {
   const reduce = useReducedMotion();
+  const {
+    playModalOpenSoft,
+    playCarEngineStart,
+    playCarDriveAway,
+    playSuccessChime,
+  } = useSound();
+
+  useEffect(() => {
+    if (reduce) return;
+    const tModal = window.setTimeout(() => playModalOpenSoft(), 70);
+    const tEngine = window.setTimeout(() => playCarEngineStart(), 1020);
+    const tDrive = window.setTimeout(() => playCarDriveAway(), 1330);
+    const tChime = window.setTimeout(() => playSuccessChime(), 3480);
+    return () => {
+      window.clearTimeout(tModal);
+      window.clearTimeout(tEngine);
+      window.clearTimeout(tDrive);
+      window.clearTimeout(tChime);
+    };
+  }, [
+    reduce,
+    playModalOpenSoft,
+    playCarEngineStart,
+    playCarDriveAway,
+    playSuccessChime,
+  ]);
 
   if (reduce) {
     return (
@@ -34,12 +65,12 @@ export function TripCreatedAnimation() {
         className="absolute bottom-[50px] left-[8%] flex flex-col items-center will-change-transform"
         initial={{ x: 0, opacity: 1 }}
         animate={{
-          x: [0, 58, 58],
+          x: [0, 56, 56],
           opacity: [1, 1, 0],
         }}
         transition={{
-          duration: 1.55,
-          times: [0, 0.72, 1],
+          duration: PERSON_MS / 1000,
+          times: [0, 0.76, 1],
           ease: [0.4, 0, 0.2, 1],
         }}
       >
@@ -50,20 +81,20 @@ export function TripCreatedAnimation() {
       <motion.div
         className="absolute bottom-[46px] left-[22%] will-change-transform"
         initial={{ x: 0 }}
-        animate={{ x: [0, 0, 200] }}
+        animate={{ x: [0, 0, 220] }}
         transition={{
-          duration: 3.6,
-          times: [0, 0.36, 1],
+          duration: CAR_MS / 1000,
+          times: [0, 0.346, 1],
           ease: [0.33, 0, 0.2, 1],
         }}
       >
         <div className="relative">
           <motion.div
             className="h-9 w-[4.5rem] rounded-xl bg-gradient-to-r from-[#1296e8] to-[#163c59] shadow-[0_14px_32px_rgba(25,151,232,0.28)] ring-1 ring-white/50"
-            animate={{ y: [0, -1.5, 0, -1, 0] }}
+            animate={{ y: [0, -1.5, 0, -1.2, 0, 0, 0] }}
             transition={{
-              duration: 3.6,
-              times: [0, 0.15, 0.4, 0.7, 1],
+              duration: CAR_MS / 1000,
+              times: [0, 0.08, 0.18, 0.28, 0.34, 0.346, 1],
               ease: "easeInOut",
             }}
           />
@@ -75,8 +106,11 @@ export function TripCreatedAnimation() {
       <motion.div
         className="pointer-events-none absolute bottom-[54px] right-[12%] h-1 w-10 rounded-full bg-gradient-to-l from-[#8ada33]/35 to-transparent opacity-0"
         initial={{ opacity: 0, x: 0 }}
-        animate={{ opacity: [0, 0, 0.55, 0], x: [0, 0, 12, 24] }}
-        transition={{ duration: 3.6, times: [0, 0.5, 0.78, 1] }}
+        animate={{ opacity: [0, 0, 0, 0.52, 0], x: [0, 0, 0, 14, 28] }}
+        transition={{
+          duration: CAR_MS / 1000,
+          times: [0, 0.33, 0.346, 0.78, 1],
+        }}
       />
     </div>
   );

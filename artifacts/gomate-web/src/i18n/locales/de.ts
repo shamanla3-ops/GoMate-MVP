@@ -522,6 +522,20 @@ export default {
   "driverRequestsPage.confirm": "Bestätigen",
   "driverRequestsPage.reject": "Ablehnen",
   "driverRequestsPage.busy": "...",
+  "driverRequestsPage.newRequestHighlightAria": "Neue eingehende Mitfahr-Anfrage",
+
+  "rideMatch.title": "Ihr seid gematcht",
+  "rideMatch.subtitle":
+    "{{route}} · Du und {{driver}} seid für diese Fahrt verbunden.",
+  "rideMatch.openChat": "Chat öffnen",
+  "rideMatch.viewTrip": "Fahrt ansehen",
+  "rideMatch.ok": "Super",
+  "rideMatch.a11yClose": "Bestätigung schließen",
+  "rideMatch.chatUnavailable":
+    "Der Chat erscheint gleich — du findest ihn unter Chats.",
+  "rideMatch.chatLoading": "Chat wird gesucht…",
+  "rideMatch.roleDriver": "Fahrer:in",
+  "rideMatch.roleYou": "Du",
 
   "myRequestsPage.loadError": "Meine Anfragen konnten nicht geladen werden",
   "myRequestsPage.cancelError": "Anfrage konnte nicht storniert werden",
@@ -586,6 +600,9 @@ export default {
   "chatPage.placeholder": "Nachricht schreiben…",
   "chatPage.sending": "Senden…",
   "chatPage.send": "Senden",
+  "chatPage.jumpToLatest": "Neue Nachrichten — nach unten springen",
+  "chatPage.quickEmojisLabel": "Schnelle Emojis",
+  "chatPage.insertEmoji": "{{emoji}} in die Nachricht einfügen",
   "chatPage.navTrips": "Fahrten",
   "chatPage.navRequests": "Anfragen",
   "chatPage.navChats": "Chats",

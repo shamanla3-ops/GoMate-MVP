@@ -527,6 +527,21 @@ Object.assign(es, {
   "driverRequestsPage.confirm": "Confirmar",
   "driverRequestsPage.reject": "Rechazar",
   "driverRequestsPage.busy": "...",
+  "driverRequestsPage.newRequestHighlightAria": "Nueva solicitud de viaje entrante",
+
+  "rideMatch.title": "¡Hay match!",
+  "rideMatch.subtitle":
+    "{{route}} · Tú y {{driver}} ya estáis conectados para este viaje.",
+  "rideMatch.openChat": "Abrir chat",
+  "rideMatch.viewTrip": "Ver viaje",
+  "rideMatch.ok": "Genial",
+  "rideMatch.a11yClose": "Cerrar confirmación del viaje",
+  "rideMatch.chatUnavailable":
+    "El chat aparecerá en breve — puedes abrirlo desde Chats.",
+  "rideMatch.chatLoading": "Buscando tu chat…",
+  "rideMatch.roleDriver": "Conductor",
+  "rideMatch.roleYou": "Tú",
+
   "myRequestsPage.loadError": "No se pudieron cargar mis solicitudes",
   "myRequestsPage.cancelError": "No se pudo cancelar la solicitud",
   "myRequestsPage.serverError": "No se pudo conectar con el servidor",
@@ -588,6 +603,9 @@ Object.assign(es, {
   "chatPage.placeholder": "Escribe un mensaje…",
   "chatPage.sending": "Enviando…",
   "chatPage.send": "Enviar",
+  "chatPage.jumpToLatest": "Mensajes nuevos — ir al final",
+  "chatPage.quickEmojisLabel": "Emoji rápido",
+  "chatPage.insertEmoji": "Insertar {{emoji}} en el mensaje",
   "chatPage.navTrips": "Viajes",
   "chatPage.navRequests": "Solicitudes",
   "chatPage.navChats": "Chats",

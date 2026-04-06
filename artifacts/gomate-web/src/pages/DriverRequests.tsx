@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { useSound } from "../context/SoundContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
+import { consumeNewIncomingPendingRequestIds } from "../lib/rideEventFeedback";
 
 type IncomingRequest = {
   id: string;
@@ -55,49 +57,80 @@ function renderStars(rating: number) {
 
 export default function DriverRequests() {
   const { t, locale } = useTranslation();
+  const { playNewRideRequest } = useSound();
   const [requests, setRequests] = useState<IncomingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [highlightRequestId, setHighlightRequestId] = useState<string | null>(null);
 
-  async function loadRequests() {
-    const token = localStorage.getItem("token");
+  const loadRequests = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/trip-requests/incoming`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(messageFromApiError(data, t, "driverRequestsPage.loadError"));
-        setRequests([]);
+      if (!token) {
+        window.location.href = "/login";
         return;
       }
 
-      setRequests(data.requests ?? []);
-    } catch {
-      setMessage(t("driverRequestsPage.serverError"));
-      setRequests([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+      if (!options?.silent) {
+        setLoading(true);
+        setMessage("");
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/trip-requests/incoming`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (!options?.silent) {
+            setMessage(messageFromApiError(data, t, "driverRequestsPage.loadError"));
+          }
+          setRequests([]);
+          return;
+        }
+
+        const list = (data.requests ?? []) as IncomingRequest[];
+        setRequests(list);
+
+        const pendingIds = list
+          .filter((r) => r.status === "pending")
+          .map((r) => r.id);
+        const freshPendingIds = consumeNewIncomingPendingRequestIds(pendingIds);
+        if (freshPendingIds.length > 0) {
+          playNewRideRequest();
+          const focusId = freshPendingIds[freshPendingIds.length - 1]!;
+          setHighlightRequestId(focusId);
+          window.setTimeout(() => {
+            setHighlightRequestId((current) => (current === focusId ? null : current));
+          }, 4200);
+        }
+      } catch {
+        if (!options?.silent) {
+          setMessage(t("driverRequestsPage.serverError"));
+        }
+        setRequests([]);
+      } finally {
+        if (!options?.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [t, playNewRideRequest]
+  );
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    void loadRequests();
+    const poll = window.setInterval(() => {
+      void loadRequests({ silent: true });
+    }, 20_000);
+    return () => window.clearInterval(poll);
+  }, [loadRequests]);
 
   async function handleAction(id: string, action: "accept" | "reject") {
     const token = localStorage.getItem("token");
@@ -207,7 +240,16 @@ export default function DriverRequests() {
                   return (
                     <div
                       key={request.id}
-                      className="rounded-[26px] border border-white/80 bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
+                      className={`rounded-[26px] border bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-shadow duration-500 ${
+                        highlightRequestId === request.id
+                          ? "border-[#1296e8]/55 ring-2 ring-[#1296e8]/35 ring-offset-2 ring-offset-[#eef4f8]"
+                          : "border-white/80"
+                      }`}
+                      aria-label={
+                        highlightRequestId === request.id
+                          ? t("driverRequestsPage.newRequestHighlightAria")
+                          : undefined
+                      }
                     >
                       <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
                         <div className="flex gap-4">

@@ -521,6 +521,20 @@ export default {
   "driverRequestsPage.confirm": "Подтвердить",
   "driverRequestsPage.reject": "Отклонить",
   "driverRequestsPage.busy": "...",
+  "driverRequestsPage.newRequestHighlightAria": "Новая входящая заявка на поездку",
+
+  "rideMatch.title": "Вы нашли попутчика",
+  "rideMatch.subtitle":
+    "{{route}} · Вы и {{driver}} теперь связаны для этой поездки.",
+  "rideMatch.openChat": "Открыть чат",
+  "rideMatch.viewTrip": "Открыть поездку",
+  "rideMatch.ok": "Отлично",
+  "rideMatch.a11yClose": "Закрыть подтверждение поездки",
+  "rideMatch.chatUnavailable":
+    "Чат скоро появится — его можно открыть в разделе «Чаты».",
+  "rideMatch.chatLoading": "Ищем ваш чат…",
+  "rideMatch.roleDriver": "Водитель",
+  "rideMatch.roleYou": "Вы",
 
   "myRequestsPage.loadError": "Не удалось загрузить мои заявки",
   "myRequestsPage.cancelError": "Не удалось отменить заявку",
@@ -585,6 +599,9 @@ export default {
   "chatPage.placeholder": "Напиши сообщение...",
   "chatPage.sending": "Отправка...",
   "chatPage.send": "Отправить",
+  "chatPage.jumpToLatest": "Новые сообщения — вниз",
+  "chatPage.quickEmojisLabel": "Быстрые эмодзи",
+  "chatPage.insertEmoji": "Вставить {{emoji}} в сообщение",
   "chatPage.navTrips": "Поездки",
   "chatPage.navRequests": "Заявки",
   "chatPage.navChats": "Чаты",

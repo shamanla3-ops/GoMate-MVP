@@ -522,6 +522,20 @@ export default {
   "driverRequestsPage.confirm": "Підтвердити",
   "driverRequestsPage.reject": "Відхилити",
   "driverRequestsPage.busy": "...",
+  "driverRequestsPage.newRequestHighlightAria": "Нова вхідна заявка на поїздку",
+
+  "rideMatch.title": "Ви знайшли поїздку",
+  "rideMatch.subtitle":
+    "{{route}} · Ви та {{driver}} тепер пов’язані для цієї поїздки.",
+  "rideMatch.openChat": "Відкрити чат",
+  "rideMatch.viewTrip": "Дивитися поїздку",
+  "rideMatch.ok": "Чудово",
+  "rideMatch.a11yClose": "Закрити підтвердження поїздки",
+  "rideMatch.chatUnavailable":
+    "Чат з’явиться незабаром — відкрити можна в розділі «Чати».",
+  "rideMatch.chatLoading": "Шукаємо ваш чат…",
+  "rideMatch.roleDriver": "Водій",
+  "rideMatch.roleYou": "Ви",
 
   "myRequestsPage.loadError": "Не вдалося завантажити мої заявки",
   "myRequestsPage.cancelError": "Не вдалося скасувати заявку",
@@ -586,6 +600,9 @@ export default {
   "chatPage.placeholder": "Напиши повідомлення…",
   "chatPage.sending": "Надсилання…",
   "chatPage.send": "Надіслати",
+  "chatPage.jumpToLatest": "Нові повідомлення — вниз",
+  "chatPage.quickEmojisLabel": "Швидкі емодзі",
+  "chatPage.insertEmoji": "Вставити {{emoji}} у повідомлення",
   "chatPage.navTrips": "Поїздки",
   "chatPage.navRequests": "Заявки",
   "chatPage.navChats": "Чати",

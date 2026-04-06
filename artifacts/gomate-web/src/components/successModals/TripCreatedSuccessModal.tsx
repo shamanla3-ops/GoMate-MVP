@@ -29,7 +29,7 @@ export function TripCreatedSuccessModal({
       title={t("successModal.tripCreated.title")}
       description={t("successModal.tripCreated.body")}
       a11yCloseLabel={t("successModal.tripCreated.a11yClose")}
-      celebrationSound
+      celebrationSound={false}
       illustration={<TripCreatedAnimation />}
       footer={
         <>

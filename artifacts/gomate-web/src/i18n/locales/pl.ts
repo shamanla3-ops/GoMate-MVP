@@ -525,6 +525,20 @@ export default {
   "driverRequestsPage.confirm": "Potwierdź",
   "driverRequestsPage.reject": "Odrzuć",
   "driverRequestsPage.busy": "...",
+  "driverRequestsPage.newRequestHighlightAria": "Nowe przychodzące zgłoszenie o przejazd",
+
+  "rideMatch.title": "Masz dopasowanie",
+  "rideMatch.subtitle":
+    "{{route}} · Ty i {{driver}} jesteście połączeni w tej podróży.",
+  "rideMatch.openChat": "Otwórz czat",
+  "rideMatch.viewTrip": "Zobacz przejazd",
+  "rideMatch.ok": "Świetnie",
+  "rideMatch.a11yClose": "Zamknij potwierdzenie przejazdu",
+  "rideMatch.chatUnavailable":
+    "Czat pojawi się wkrótce — możesz go otworzyć z listy Czaty.",
+  "rideMatch.chatLoading": "Szukamy Twojego czatu…",
+  "rideMatch.roleDriver": "Kierowca",
+  "rideMatch.roleYou": "Ty",
 
   "myRequestsPage.loadError": "Nie udało się wczytać moich zgłoszeń",
   "myRequestsPage.cancelError": "Nie udało się anulować zgłoszenia",
@@ -589,6 +603,9 @@ export default {
   "chatPage.placeholder": "Napisz wiadomość…",
   "chatPage.sending": "Wysyłanie…",
   "chatPage.send": "Wyślij",
+  "chatPage.jumpToLatest": "Nowe wiadomości — przewiń w dół",
+  "chatPage.quickEmojisLabel": "Szybkie emoji",
+  "chatPage.insertEmoji": "Wstaw {{emoji}} do wiadomości",
   "chatPage.navTrips": "Przejazdy",
   "chatPage.navRequests": "Zgłoszenia",
   "chatPage.navChats": "Czaty",

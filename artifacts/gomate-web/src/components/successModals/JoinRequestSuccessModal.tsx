@@ -21,7 +21,7 @@ export function JoinRequestSuccessModal({ open, onClose, onViewRequests }: Props
       title={t("successModal.joinRequest.title")}
       description={t("successModal.joinRequest.body")}
       a11yCloseLabel={t("successModal.joinRequest.a11yClose")}
-      celebrationSound
+      celebrationSound={false}
       illustration={<JoinRequestAnimation />}
       footer={
         <>

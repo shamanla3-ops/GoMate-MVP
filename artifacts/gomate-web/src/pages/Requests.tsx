@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
 import { useNotificationCounts } from "../context/NotificationCountsContext";
+import { useSound } from "../context/SoundContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import {
+  RideMatchModal,
+  type RideMatchModalPayload,
+} from "../components/rideMatch/RideMatchModal";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
 import { isDepartureStrictlyPast } from "../lib/tripDeparture";
+import {
+  consumeMatchCelebrationOnce,
+  consumeNewIncomingPendingRequestIds,
+  consumePendingToAcceptedOutgoing,
+} from "../lib/rideEventFeedback";
 
 type RequestStatus =
   | "pending"
@@ -170,6 +180,7 @@ function isRequestInHistoryTab(
 export default function Requests() {
   const { t, locale } = useTranslation();
   const { refresh: refreshNotificationCounts } = useNotificationCounts();
+  const { playNewRideRequest, playRequestApproved, playRideMatch } = useSound();
 
   function statusLabel(status: RequestStatus) {
     return t(`requests.status.${status}`);
@@ -184,6 +195,9 @@ export default function Requests() {
   const [viewMode, setViewMode] = useState<ViewMode>("active");
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [pulseIncomingId, setPulseIncomingId] = useState<string | null>(null);
+  const [matchOpen, setMatchOpen] = useState(false);
+  const [matchPayload, setMatchPayload] = useState<RideMatchModalPayload | null>(null);
 
   async function loadRequests() {
     const token = localStorage.getItem("token");
@@ -289,6 +303,45 @@ export default function Requests() {
     const id = window.setInterval(() => setNowMs(Date.now()), 60_000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    const pendingIds = incomingRequests
+      .filter((request) => request.status === "pending")
+      .map((request) => request.id);
+    const newIds = consumeNewIncomingPendingRequestIds(pendingIds);
+    if (newIds.length > 0) {
+      playNewRideRequest();
+      const focusId = newIds[newIds.length - 1]!;
+      setPulseIncomingId(focusId);
+      window.setTimeout(() => {
+        setPulseIncomingId((current) => (current === focusId ? null : current));
+      }, 4200);
+    }
+  }, [incomingRequests, loading, playNewRideRequest]);
+
+  useEffect(() => {
+    if (loading) return;
+    const hits = consumePendingToAcceptedOutgoing(
+      outgoingRequests.map((r) => ({ id: r.id, status: r.status }))
+    );
+    for (const id of hits) {
+      if (!consumeMatchCelebrationOnce(id)) continue;
+      const req = outgoingRequests.find((r) => r.id === id);
+      if (!req || req.status !== "accepted") continue;
+      playRequestApproved();
+      window.setTimeout(() => playRideMatch(), 200);
+      setMatchPayload({
+        requestId: req.id,
+        tripId: req.trip.id,
+        origin: req.trip.origin,
+        destination: req.trip.destination,
+        driverName: req.driver.name,
+      });
+      setMatchOpen(true);
+      break;
+    }
+  }, [outgoingRequests, loading, playRequestApproved, playRideMatch]);
 
   async function handleIncomingAction(id: string, action: "accept" | "reject") {
     const token = localStorage.getItem("token");
@@ -748,7 +801,16 @@ export default function Requests() {
                       return (
                         <div
                           key={request.id}
-                          className="rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
+                          className={`rounded-[28px] border bg-white/80 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-shadow duration-500 ${
+                            pulseIncomingId === request.id
+                              ? "border-[#1296e8]/55 ring-2 ring-[#1296e8]/35 ring-offset-2 ring-offset-[#eef4f8]"
+                              : "border-white/70"
+                          }`}
+                          aria-label={
+                            pulseIncomingId === request.id
+                              ? t("driverRequestsPage.newRequestHighlightAria")
+                              : undefined
+                          }
                         >
                           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex gap-4">
@@ -1099,6 +1161,12 @@ export default function Requests() {
             </div>
           </div>
         </div>
+
+        <RideMatchModal
+          open={matchOpen}
+          payload={matchPayload}
+          onClose={() => setMatchOpen(false)}
+        />
 
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
           <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">

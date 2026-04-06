@@ -1,10 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
+import { useSound } from "../context/SoundContext";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import {
+  RideMatchModal,
+  type RideMatchModalPayload,
+} from "../components/rideMatch/RideMatchModal";
 import { formatDateTimeShort } from "../lib/intlLocale";
 import { messageFromApiError } from "../lib/errorMessages";
 import { messageFromApiSuccess } from "../lib/successMessages";
+import {
+  consumeMatchCelebrationOnce,
+  consumePendingToAcceptedOutgoing,
+} from "../lib/rideEventFeedback";
 
 type OutgoingRequest = {
   id: string;
@@ -94,49 +103,88 @@ function getStatusClasses(status: OutgoingRequest["status"]) {
 
 export default function MyRequests() {
   const { t, locale } = useTranslation();
+  const { playRequestApproved, playRideMatch } = useSound();
   const [requests, setRequests] = useState<OutgoingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [matchOpen, setMatchOpen] = useState(false);
+  const [matchPayload, setMatchPayload] = useState<RideMatchModalPayload | null>(null);
 
-  async function loadRequests() {
-    const token = localStorage.getItem("token");
+  const loadRequests = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/trip-requests/outgoing`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(messageFromApiError(data, t, "myRequestsPage.loadError"));
-        setRequests([]);
+      if (!token) {
+        window.location.href = "/login";
         return;
       }
 
-      setRequests(Array.isArray(data.requests) ? data.requests : []);
-    } catch {
-      setMessage(t("myRequestsPage.serverError"));
-      setRequests([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+      if (!options?.silent) {
+        setLoading(true);
+        setMessage("");
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/trip-requests/outgoing`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (!options?.silent) {
+            setMessage(messageFromApiError(data, t, "myRequestsPage.loadError"));
+          }
+          setRequests([]);
+          return;
+        }
+
+        const list = Array.isArray(data.requests) ? (data.requests as OutgoingRequest[]) : [];
+        setRequests(list);
+
+        const hits = consumePendingToAcceptedOutgoing(
+          list.map((r) => ({ id: r.id, status: r.status }))
+        );
+        for (const id of hits) {
+          if (!consumeMatchCelebrationOnce(id)) continue;
+          const req = list.find((r) => r.id === id);
+          if (!req || req.status !== "accepted") continue;
+          playRequestApproved();
+          window.setTimeout(() => playRideMatch(), 200);
+          setMatchPayload({
+            requestId: req.id,
+            tripId: req.trip.id,
+            origin: req.trip.origin,
+            destination: req.trip.destination,
+            driverName: req.driver.name,
+          });
+          setMatchOpen(true);
+          break;
+        }
+      } catch {
+        if (!options?.silent) {
+          setMessage(t("myRequestsPage.serverError"));
+        }
+        setRequests([]);
+      } finally {
+        if (!options?.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [t, playRequestApproved, playRideMatch]
+  );
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    void loadRequests();
+    const poll = window.setInterval(() => {
+      void loadRequests({ silent: true });
+    }, 20_000);
+    return () => window.clearInterval(poll);
+  }, [loadRequests]);
 
   async function handleCancel(requestId: string) {
     const token = localStorage.getItem("token");
@@ -488,6 +536,12 @@ export default function MyRequests() {
             </div>
           </div>
         </div>
+
+        <RideMatchModal
+          open={matchOpen}
+          payload={matchPayload}
+          onClose={() => setMatchOpen(false)}
+        />
 
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
           <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">

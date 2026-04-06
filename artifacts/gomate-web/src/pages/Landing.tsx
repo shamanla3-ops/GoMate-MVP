@@ -18,6 +18,16 @@ function getUserShortName(name: string, profileFallback: string) {
   return parts[0] || profileFallback;
 }
 
+function getProfileAvatarLetters(name: string) {
+  return name
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "?";
+}
+
 function NavBadge({ count }: { count: number }) {
   if (count < 1) {
     return null;
@@ -122,8 +132,22 @@ export default function Landing() {
               ) : null}
             </motion.a>
 
-            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
-              <LanguageSwitcher />
+            <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3 md:gap-3">
+                <LanguageSwitcher />
+                <a
+                  href={profileHref}
+                  className="md:hidden flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/90 px-2 text-[11px] font-extrabold leading-none tracking-tight text-[#163c59] shadow-[0_8px_22px_rgba(23,54,81,0.12)] ring-1 ring-white/90 backdrop-blur-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1296e8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef4f8] motion-safe:active:scale-[0.97]"
+                  aria-label={user ? t("nav.profile") : t("nav.login")}
+                >
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-[12px] font-extrabold text-white shadow-inner ring-2 ring-white/70"
+                    aria-hidden
+                  >
+                    {user ? getProfileAvatarLetters(user.name) : "?"}
+                  </span>
+                </a>
+              </div>
               <nav className="hidden items-center gap-3 md:flex">
                 <a href="/" className="gomate-nav-pill font-medium">
                   {t("nav.home")}
