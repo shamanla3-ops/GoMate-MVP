@@ -12,7 +12,8 @@
     "dev:web": "pnpm --filter gomate-web dev",
     "build": "pnpm --filter @gomate/db build && pnpm --filter api-server build && pnpm --filter gomate-web build",
     "db:generate": "pnpm --filter @gomate/db generate",
-    "db:migrate": "pnpm --filter @gomate/db migrate"
+    "db:migrate": "pnpm --filter @gomate/db migrate",
+    "db:seed:demo-eco": "pnpm --filter api-server seed:demo-eco"
   },
   "engines": {
     "node": ">=18"

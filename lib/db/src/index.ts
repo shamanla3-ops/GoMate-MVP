@@ -36,6 +36,7 @@ export {
   sum,
 };
 
+let _pool: Pool | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 function createDb() {
@@ -45,11 +46,11 @@ function createDb() {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const pool = new Pool({
+  _pool = new Pool({
     connectionString,
   });
 
-  return drizzle(pool, { schema });
+  return drizzle(_pool, { schema });
 }
 
 function getDb() {
@@ -58,6 +59,15 @@ function getDb() {
   }
 
   return _db;
+}
+
+/** Ends the shared pool (e.g. after CLI scripts). Safe to call once. */
+export async function closeDb(): Promise<void> {
+  if (_pool) {
+    await _pool.end();
+    _pool = null;
+    _db = null;
+  }
 }
 
 type DbInstance = ReturnType<typeof createDb>;
