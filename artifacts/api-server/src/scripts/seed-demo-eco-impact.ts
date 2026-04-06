@@ -19,8 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { count, eq } from "drizzle-orm";
-import { closeDb, db, trips, users } from "@gomate/db";
+import { closeDb, count, db, eq, isNotNull, sum, trips, users } from "@gomate/db";
 import { computeTripTotalCo2Kg } from "../lib/ecoImpact.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -77,7 +76,33 @@ const DEMO_TRIPS: DemoTripSpec[] = [
   },
 ];
 
+async function readPublicImpactSnapshot(): Promise<{
+  completedTrips: number;
+  totalCo2KgSaved: number;
+}> {
+  const [row] = await db
+    .select({
+      trips: count(),
+      co2: sum(trips.ecoTotalCo2Kg),
+    })
+    .from(trips)
+    .where(isNotNull(trips.ecoAwardedAt));
+
+  return {
+    completedTrips: Number(row?.trips ?? 0),
+    totalCo2KgSaved: row?.co2 != null ? Number(row.co2) : 0,
+  };
+}
+
 async function main(): Promise<void> {
+  const beforePublic = await readPublicImpactSnapshot();
+  if (beforePublic.completedTrips > 0 || beforePublic.totalCo2KgSaved > 0) {
+    console.log(
+      `[seed-demo-eco-impact] Skip: public impact is already non-zero (completedTrips=${beforePublic.completedTrips}, totalCo2KgSaved=${beforePublic.totalCo2KgSaved.toFixed(2)}).`
+    );
+    return;
+  }
+
   const [existingRow] = await db
     .select({ c: count() })
     .from(trips)
@@ -174,6 +199,16 @@ async function main(): Promise<void> {
   console.log(
     `[seed-demo-eco-impact] Expected public impact add: trips=+${EXPECTED_DEMO_TRIP_COUNT}, co2≈+${totalCo2.toFixed(2)} kg (existing demo trips in DB: ${Number(afterRow?.c ?? 0)}).`
   );
+
+  const afterPublic = await readPublicImpactSnapshot();
+  console.log(
+    `[seed-demo-eco-impact] Public impact now: completedTrips=${afterPublic.completedTrips}, totalCo2KgSaved=${afterPublic.totalCo2KgSaved.toFixed(2)}.`
+  );
+  if (afterPublic.completedTrips <= 0 || afterPublic.totalCo2KgSaved <= 0) {
+    throw new Error(
+      "Seed inserted demo records but public impact query is still zero. Check DATABASE_URL / environment."
+    );
+  }
 }
 
 main()
