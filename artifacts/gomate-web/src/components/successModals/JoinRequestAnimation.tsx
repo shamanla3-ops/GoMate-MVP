@@ -2,11 +2,20 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useEffect } from "react";
 import { useSound } from "../../context/SoundContext";
 
-const SCENE_MS = 4200;
+const SCENE_MS = 4500;
+
+/** Normalized times (0–1): car stops ~0.22; passenger walks ~0.24–0.38; hidden by ~0.43; depart ~0.50 */
+const T_CAR_STOP = 0.22;
+const T_PASSENGER_WALK_START = 0.24;
+const T_PASSENGER_WALK_END = 0.38;
+const T_PASSENGER_HIDDEN = 0.43;
+const T_CAR_DEPART = 0.5;
+const T_CHIME = 0.78;
 
 /**
- * Passenger waits → car arrives → passenger enters (hidden before departure) → drive away.
- * Sounds aligned to motion milestones (arrival / enter / depart / chime).
+ * Passenger stands → car arrives and stops → short pause → passenger walks → enters (fades out) →
+ * engine → car drives away. Outside passenger stays opacity 0 until scene end (no “left behind”).
+ * Sounds: arrival at stop; engine after entry; drive when wheels go.
  */
 export function JoinRequestAnimation() {
   const reduce = useReducedMotion();
@@ -21,10 +30,22 @@ export function JoinRequestAnimation() {
   useEffect(() => {
     if (reduce) return;
     const tModal = window.setTimeout(() => playModalOpenSoft(), 70);
-    const tArrive = window.setTimeout(() => playCarArrival(), 1260);
-    const tEngine = window.setTimeout(() => playCarEngineStart(), 1760);
-    const tDrive = window.setTimeout(() => playCarDriveAway(), 2020);
-    const tChime = window.setTimeout(() => playSuccessChime(), 3780);
+    const tArrive = window.setTimeout(
+      () => playCarArrival(),
+      Math.round(T_CAR_STOP * SCENE_MS),
+    );
+    const tEngine = window.setTimeout(
+      () => playCarEngineStart(),
+      Math.round(T_PASSENGER_HIDDEN * SCENE_MS) + 90,
+    );
+    const tDrive = window.setTimeout(
+      () => playCarDriveAway(),
+      Math.round(T_CAR_DEPART * SCENE_MS),
+    );
+    const tChime = window.setTimeout(
+      () => playSuccessChime(),
+      Math.round(T_CHIME * SCENE_MS),
+    );
     return () => {
       window.clearTimeout(tModal);
       window.clearTimeout(tArrive);
@@ -72,13 +93,19 @@ export function JoinRequestAnimation() {
         className="absolute bottom-[50px] left-[10%] z-[2] flex flex-col items-center will-change-transform"
         initial={{ x: 0, opacity: 1 }}
         animate={{
-          x: [0, 0, 40, 40],
-          opacity: [1, 1, 1, 0],
+          x: [0, 0, 46, 46, 46],
+          opacity: [1, 1, 1, 0, 0],
         }}
         transition={{
           duration: d,
-          times: [0, 0.26, 0.42, 0.47],
-          ease: [0.4, 0, 0.2, 1],
+          times: [
+            0,
+            T_PASSENGER_WALK_START,
+            T_PASSENGER_WALK_END,
+            T_PASSENGER_HIDDEN,
+            1,
+          ],
+          ease: "easeInOut",
         }}
       >
         <div className="h-2.5 w-2.5 rounded-full bg-[#28475d] ring-2 ring-white/90" />
@@ -92,7 +119,7 @@ export function JoinRequestAnimation() {
         animate={{ x: [148, 6, 6, 210] }}
         transition={{
           duration: d,
-          times: [0, 0.3, 0.48, 1],
+          times: [0, T_CAR_STOP, T_CAR_DEPART, 1],
           ease: [0.33, 0, 0.2, 1],
         }}
       >
@@ -102,7 +129,14 @@ export function JoinRequestAnimation() {
             animate={{ y: [0, 0, -0.8, 0, 0, 0] }}
             transition={{
               duration: d,
-              times: [0, 0.28, 0.32, 0.38, 0.48, 1],
+              times: [
+                0,
+                T_CAR_STOP * 0.85,
+                T_CAR_STOP,
+                T_CAR_STOP + 0.04,
+                T_CAR_DEPART,
+                1,
+              ],
               ease: "easeInOut",
             }}
           />
@@ -115,7 +149,10 @@ export function JoinRequestAnimation() {
         className="pointer-events-none absolute bottom-[54px] left-[18%] h-1 w-12 rounded-full bg-gradient-to-r from-[#1296e8]/30 to-transparent opacity-0"
         initial={{ opacity: 0, x: 0 }}
         animate={{ opacity: [0, 0, 0.4, 0], x: [0, 0, -8, -16] }}
-        transition={{ duration: d, times: [0, 0.28, 0.34, 0.42] }}
+        transition={{
+          duration: d,
+          times: [0, T_CAR_DEPART * 0.92, T_CAR_DEPART + 0.02, T_CAR_DEPART + 0.08],
+        }}
       />
     </div>
   );

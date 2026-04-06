@@ -314,7 +314,7 @@ export default function Landing() {
         </div>
 
         <div className="gomate-mobile-tab-root md:hidden">
-          <div className="mx-auto grid max-w-3xl grid-cols-6 items-end px-2 pb-3 pt-2.5 text-center">
+          <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center">
             <a
               href="/"
               className="gomate-mobile-tab-link gomate-mobile-tab-link--active"
@@ -365,11 +365,6 @@ export default function Landing() {
                 {user ? <NavBadge count={chatsUnread} /> : null}
               </span>
               <span>{t("nav.chats")}</span>
-            </a>
-
-            <a href={profileHref} className="gomate-mobile-tab-link">
-              <span className="text-[18px] leading-none">👤</span>
-              <span>{t("nav.profile")}</span>
             </a>
           </div>
         </div>
