@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_API_BASE_URL: string;
+  /** Optional canonical origin override (e.g. https://getgomate.com) */
+  readonly VITE_SITE_ORIGIN?: string;
 }
 
 interface ImportMeta {

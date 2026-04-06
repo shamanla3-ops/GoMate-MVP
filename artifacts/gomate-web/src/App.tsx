@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import LegalInfo from "./pages/LegalInfo";
 import PermanentPassengers from "./pages/PermanentPassengers";
 import SmartMatches from "./pages/SmartMatches";
+import SeoCityPage from "./pages/seo/SeoCityPage";
 import PushPermissionPrompt from "./components/PushPermissionPrompt";
 import { ReviewPendingModal } from "./components/ReviewPendingModal";
 import { Footer } from "./components/Footer";
@@ -56,6 +57,7 @@ export default function App() {
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/legal" element={<LegalInfo />} />
+              <Route path="/:lang/:city/:slug" element={<SeoCityPage />} />
             </Route>
           </Routes>
         </main>
