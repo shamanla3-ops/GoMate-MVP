@@ -968,5 +968,10 @@ export default {
     "Dźwięki interfejsu są wyłączone, gdy włączona jest opcja ograniczenia ruchu w systemie",
   "sound.toggle.badgeOn": "Dźwięki interfejsu włączone",
   "sound.toggle.badgeOff": "Dźwięki interfejsu wyciszone",
-  "sound.toggle.badgeReduced": "Dźwięki niedostępne (ograniczenie ruchu)"
+  "sound.toggle.badgeReduced": "Dźwięki niedostępne (ograniczenie ruchu)",
+
+  "welcome.opening.title": "Witamy w GoMate",
+  "welcome.opening.subtitle": "Jedźmy mądrzej — razem.",
+  "welcome.opening.a11yRegion": "Ekran powitalny aplikacji",
+  "welcome.opening.skip": "Dalej"
 } as const;

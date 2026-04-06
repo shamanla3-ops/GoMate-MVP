@@ -965,5 +965,10 @@ export default {
     "Звуки інтерфейсу вимкнено, доки в системі увімкнено «Зменшити рух»",
   "sound.toggle.badgeOn": "Звуки інтерфейсу увімкнено",
   "sound.toggle.badgeOff": "Звуки інтерфейсу вимкнено",
-  "sound.toggle.badgeReduced": "Звуки недоступні (зменшення руху)"
+  "sound.toggle.badgeReduced": "Звуки недоступні (зменшення руху)",
+
+  "welcome.opening.title": "Ласкаво просимо до GoMate",
+  "welcome.opening.subtitle": "Поїдемо розумніше — разом.",
+  "welcome.opening.a11yRegion": "Вітання в застосунку",
+  "welcome.opening.skip": "Далі"
 } as const;

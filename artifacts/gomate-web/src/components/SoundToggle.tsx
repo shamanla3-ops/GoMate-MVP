@@ -2,7 +2,7 @@ import { useSound } from "../context/SoundContext";
 import { useTranslation } from "../i18n";
 
 type Props = {
-  /** Floating control for all routes; sits above footer safe area. */
+  /** Floating control for all routes; sits above mobile tab bar / footer + safe area. */
   variant?: "floating" | "inline";
 };
 
@@ -59,7 +59,7 @@ export function SoundToggle({ variant = "floating" }: Props) {
 
   const baseClass =
     variant === "floating"
-      ? "fixed bottom-[max(5.5rem,env(safe-area-inset-bottom,0px)+4.5rem)] right-4 z-[165] sm:bottom-28 sm:right-6"
+      ? "fixed bottom-[var(--gomate-mobile-fab-bottom-offset)] right-4 z-[165] md:bottom-28 md:right-6"
       : "inline-flex";
 
   return (

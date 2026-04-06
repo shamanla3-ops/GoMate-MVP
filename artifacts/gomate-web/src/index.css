@@ -23,6 +23,19 @@
   min-height: 260px;
 }
 
+/*
+ * Mobile bottom tab bar (see .gomate-mobile-tab-root, FAB .gomate-fab) + safe area.
+ * Used by SoundToggle floating variant so the control clears the nav with a consistent gap.
+ */
+:root {
+  --gomate-mobile-tab-bar-visual-height: 5.75rem;
+  --gomate-mobile-floating-gap: 0.75rem;
+  --gomate-mobile-fab-bottom-offset: calc(
+    env(safe-area-inset-bottom, 0px) + var(--gomate-mobile-tab-bar-visual-height) +
+      var(--gomate-mobile-floating-gap)
+  );
+}
+
 /* --- GoMate global UI polish (premium feel, respects reduced motion) --- */
 
 @layer base {

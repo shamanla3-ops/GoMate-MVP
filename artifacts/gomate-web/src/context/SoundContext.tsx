@@ -19,10 +19,12 @@ import {
   playRideMatchSound,
   playUiClickSound,
   playUiSuccessSound,
+  playWelcomeOpenSound,
   resumeAudioContext,
 } from "../lib/uiSoundEngine";
 
 const STORAGE_KEY = "gomate-ui-sounds-enabled";
+const WELCOME_CHIME_SESSION_KEY = "gomate-welcome-chime-played-v1";
 
 function readStoredEnabled(): boolean {
   try {
@@ -37,6 +39,22 @@ function readStoredEnabled(): boolean {
 function writeStoredEnabled(on: boolean): void {
   try {
     localStorage.setItem(STORAGE_KEY, on ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
+
+function welcomeChimeAlreadyPlayed(): boolean {
+  try {
+    return sessionStorage.getItem(WELCOME_CHIME_SESSION_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function markWelcomeChimePlayed(): void {
+  try {
+    sessionStorage.setItem(WELCOME_CHIME_SESSION_KEY, "1");
   } catch {
     /* ignore */
   }
@@ -71,6 +89,8 @@ type SoundContextValue = {
   playRequestApproved: () => void;
   /** Passenger: match / connected moment */
   playRideMatch: () => void;
+  /** One soft startup chime per session when welcome overlay runs; no-op if already played or audio not running */
+  playWelcomeOpening: () => void;
 };
 
 const SoundContext = createContext<SoundContextValue | null>(null);
@@ -98,8 +118,21 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       void resumeAudioContext();
     };
     window.addEventListener("pointerdown", unlock, { capture: true, passive: true });
-    return () =>
+    window.addEventListener("touchstart", unlock, { capture: true, passive: true });
+    return () => {
       window.removeEventListener("pointerdown", unlock, { capture: true });
+      window.removeEventListener("touchstart", unlock, { capture: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        void resumeAudioContext();
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   const effectiveSoundOn = soundEnabled && !reducedMotion;
@@ -280,6 +313,21 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     });
   }, [effectiveSoundOn]);
 
+  const playWelcomeOpening = useCallback(() => {
+    if (!effectiveSoundOn) return;
+    if (welcomeChimeAlreadyPlayed()) return;
+    void resumeAudioContext().then((ctx) => {
+      if (!ctx || !effectiveSoundOn) return;
+      if (ctx.state !== "running") return;
+      try {
+        playWelcomeOpenSound(ctx, 0.024);
+        markWelcomeChimePlayed();
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [effectiveSoundOn]);
+
   const value = useMemo(
     () => ({
       soundEnabled,
@@ -298,6 +346,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       playNewRideRequest,
       playRequestApproved,
       playRideMatch,
+      playWelcomeOpening,
     }),
     [
       soundEnabled,
@@ -316,6 +365,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       playNewRideRequest,
       playRequestApproved,
       playRideMatch,
+      playWelcomeOpening,
     ]
   );
 
@@ -344,6 +394,7 @@ export function useSound(): SoundContextValue {
       playNewRideRequest: noop,
       playRequestApproved: noop,
       playRideMatch: noop,
+      playWelcomeOpening: noop,
     };
   }
   return ctx;

@@ -966,5 +966,10 @@ export default {
     "UI-Sounds bleiben aus, solange „Bewegung reduzieren“ in den Systemeinstellungen aktiv ist",
   "sound.toggle.badgeOn": "UI-Sounds an",
   "sound.toggle.badgeOff": "UI-Sounds stumm",
-  "sound.toggle.badgeReduced": "UI-Sounds nicht verfügbar (reduzierte Bewegung)"
+  "sound.toggle.badgeReduced": "UI-Sounds nicht verfügbar (reduzierte Bewegung)",
+
+  "welcome.opening.title": "Willkommen bei GoMate",
+  "welcome.opening.subtitle": "Gemeinsam smarter unterwegs.",
+  "welcome.opening.a11yRegion": "App-Willkommen",
+  "welcome.opening.skip": "Weiter"
 } as const;

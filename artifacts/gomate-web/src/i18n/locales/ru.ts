@@ -964,5 +964,10 @@ export default {
     "Звуки интерфейса отключены, пока в системе включено «Уменьшить движение»",
   "sound.toggle.badgeOn": "Звуки интерфейса включены",
   "sound.toggle.badgeOff": "Звуки интерфейса выключены",
-  "sound.toggle.badgeReduced": "Звуки недоступны (уменьшение движения)"
+  "sound.toggle.badgeReduced": "Звуки недоступны (уменьшение движения)",
+
+  "welcome.opening.title": "Добро пожаловать в GoMate",
+  "welcome.opening.subtitle": "Поедем умнее — вместе.",
+  "welcome.opening.a11yRegion": "Приветствие приложения",
+  "welcome.opening.skip": "Продолжить"
 } as const;

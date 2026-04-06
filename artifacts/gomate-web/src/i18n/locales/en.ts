@@ -959,5 +959,10 @@ export default {
     "UI sounds stay off while reduced motion is enabled in your system settings",
   "sound.toggle.badgeOn": "UI sounds on",
   "sound.toggle.badgeOff": "UI sounds muted",
-  "sound.toggle.badgeReduced": "UI sounds unavailable (reduced motion)"
+  "sound.toggle.badgeReduced": "UI sounds unavailable (reduced motion)",
+
+  "welcome.opening.title": "Welcome to GoMate",
+  "welcome.opening.subtitle": "Let's ride smarter together.",
+  "welcome.opening.a11yRegion": "App welcome",
+  "welcome.opening.skip": "Continue"
 } as const;

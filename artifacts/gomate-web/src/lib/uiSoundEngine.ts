@@ -22,7 +22,7 @@ export function getAudioContext(): AudioContext | null {
 export async function resumeAudioContext(): Promise<AudioContext | null> {
   const ctx = getAudioContext();
   if (!ctx) return null;
-  if (ctx.state === "suspended") {
+  if (ctx.state === "suspended" || ctx.state === "interrupted") {
     try {
       await ctx.resume();
     } catch {
@@ -30,6 +30,30 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     }
   }
   return ctx;
+}
+
+/** ~420ms soft startup / welcome — airy two-tone, very quiet */
+export function playWelcomeOpenSound(ctx: AudioContext, masterGain = 0.026): void {
+  const base = ctx.currentTime;
+  const freqs = [392, 493.88];
+  freqs.forEach((hz, i) => {
+    const t0 = base + i * 0.065;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.setValueAtTime(2000, t0);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(hz, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(masterGain * (1 - i * 0.18), t0 + 0.022);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.38);
+    osc.connect(f);
+    f.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.4);
+  });
 }
 
 /** ~45ms soft tick — primary taps */

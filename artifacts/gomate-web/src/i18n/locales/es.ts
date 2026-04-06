@@ -960,6 +960,11 @@ Object.assign(es, {
   "sound.toggle.badgeOn": "Sonidos de la interfaz activados",
   "sound.toggle.badgeOff": "Sonidos de la interfaz silenciados",
   "sound.toggle.badgeReduced": "Sonidos no disponibles (movimiento reducido)",
+
+  "welcome.opening.title": "Bienvenido a GoMate",
+  "welcome.opening.subtitle": "Vamos a viajar de forma más inteligente, juntos.",
+  "welcome.opening.a11yRegion": "Bienvenida a la app",
+  "welcome.opening.skip": "Continuar",
 });
 
 export default es;

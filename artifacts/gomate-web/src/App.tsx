@@ -24,6 +24,7 @@ import { Footer } from "./components/Footer";
 import { TermsAcceptanceGate } from "./components/TermsAcceptanceGate";
 import { PageTransitionLayout } from "./components/PageTransitionLayout";
 import { SoundToggle } from "./components/SoundToggle";
+import { WelcomeOverlay } from "./components/WelcomeOverlay";
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
         <Footer />
       </div>
 
+      <WelcomeOverlay />
       <SoundToggle />
       <ReviewPendingModal />
       <PushPermissionPrompt />
