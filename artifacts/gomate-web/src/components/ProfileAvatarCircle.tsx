@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAvatarInitials, resolveAvatarUrl } from "../lib/avatarDisplay";
 
 type Size = "sm" | "md";
@@ -37,9 +37,22 @@ export function ProfileAvatarCircle({
   const resolved = resolveAvatarUrl(avatarUrl);
   const initials = getAvatarInitials(name);
   const [showPhoto, setShowPhoto] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     setShowPhoto(false);
+  }, [resolved]);
+
+  /** Cached / already-decoded images may not fire `onLoad` after handlers attach. */
+  useEffect(() => {
+    if (!resolved) return;
+    const id = requestAnimationFrame(() => {
+      const el = imgRef.current;
+      if (el?.complete && el.naturalWidth > 0) {
+        setShowPhoto(true);
+      }
+    });
+    return () => cancelAnimationFrame(id);
   }, [resolved]);
 
   const sc = sizeClasses[size];
@@ -58,6 +71,8 @@ export function ProfileAvatarCircle({
       </span>
       {resolved ? (
         <img
+          ref={imgRef}
+          key={resolved}
           src={resolved}
           alt=""
           loading="eager"
@@ -65,7 +80,9 @@ export function ProfileAvatarCircle({
           className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-200 ease-out ${
             showPhoto ? "opacity-100" : "opacity-0"
           }`}
-          onLoad={() => setShowPhoto(true)}
+          onLoad={(e) => {
+            if (e.currentTarget.naturalWidth > 0) setShowPhoto(true);
+          }}
           onError={() => setShowPhoto(false)}
         />
       ) : null}

@@ -20,6 +20,7 @@ export function resolveAvatarUrl(url: string | null | undefined): string | null 
   if (!raw) return null;
   if (
     raw.startsWith("data:") ||
+    raw.startsWith("blob:") ||
     raw.startsWith("http://") ||
     raw.startsWith("https://") ||
     raw.startsWith("/")

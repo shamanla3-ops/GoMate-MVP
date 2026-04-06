@@ -53,6 +53,24 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState !== "visible") return;
+      void getCurrentUser().then(setUser);
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  useEffect(() => {
+    function onUserUpdated(e: Event) {
+      const ce = e as CustomEvent<CurrentUser>;
+      if (ce.detail) setUser(ce.detail);
+    }
+    window.addEventListener("gomate-user-updated", onUserUpdated);
+    return () => window.removeEventListener("gomate-user-updated", onUserUpdated);
+  }, []);
+
+  useEffect(() => {
     if (!loading && user) {
       void refresh();
     }

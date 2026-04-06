@@ -1,6 +1,10 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../lib/api";
-import { type CurrentUser } from "../lib/auth";
+import {
+  normalizeCurrentUserFromApi,
+  parseApiUserEnvelope,
+  type CurrentUser,
+} from "../lib/auth";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
 import { ProfileAvatarCircle } from "../components/ProfileAvatarCircle";
@@ -160,7 +164,13 @@ export default function Profile() {
         return;
       }
 
-      const profileUser: CurrentUser = data.user;
+      const rawUser = parseApiUserEnvelope(data);
+      const profileUser = normalizeCurrentUserFromApi(rawUser);
+      if (!profileUser) {
+        setError(t("profilePage.loadError"));
+        return;
+      }
+
       setUser(profileUser);
       setForm({
         name: profileUser.name ?? "",
@@ -271,7 +281,14 @@ export default function Profile() {
         return;
       }
 
-      setUser(data.user);
+      const rawSaved = parseApiUserEnvelope(data);
+      const savedUser = normalizeCurrentUserFromApi(rawSaved);
+      if (savedUser) {
+        setUser(savedUser);
+        window.dispatchEvent(
+          new CustomEvent<CurrentUser>("gomate-user-updated", { detail: savedUser })
+        );
+      }
       setMessage(messageFromApiSuccess(data, t, "profilePage.saved"));
     } catch {
       setError(t("profilePage.serverError"));
@@ -542,11 +559,11 @@ export default function Profile() {
 
                 {error && <div className="gomate-alert-error">{error}</div>}
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="mt-10 flex flex-col gap-4 pt-2 sm:mt-12">
                   <button
                     type="submit"
                     disabled={saving}
-                    className="gomate-btn-gradient flex h-14 min-w-[12rem] flex-1 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70 sm:flex-none"
+                    className="gomate-btn-gradient flex min-h-[3.75rem] w-full items-center justify-center rounded-full px-8 py-4 text-lg font-extrabold tracking-tight text-white shadow-[0_16px_42px_rgba(39,149,119,0.42)] ring-2 ring-white/35 transition-all duration-200 hover:brightness-[1.04] hover:shadow-[0_20px_48px_rgba(39,149,119,0.48)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none disabled:ring-white/15 sm:min-h-[4rem] sm:text-xl"
                   >
                     {saving ? t("profilePage.saving") : t("profilePage.save")}
                   </button>
@@ -554,7 +571,7 @@ export default function Profile() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="gomate-btn-secondary h-14 flex-1 px-8 text-lg sm:flex-none"
+                    className="flex min-h-[3rem] w-full items-center justify-center rounded-full border border-[#163c59]/28 bg-white/80 px-6 py-3 text-base font-semibold text-[#4a6678] shadow-[0_6px_18px_rgba(23,54,81,0.06)] ring-1 ring-[#d7e4eb]/90 transition hover:border-[#163c59]/40 hover:bg-white hover:text-[#29485d] sm:mx-auto sm:min-h-[3.25rem] sm:max-w-md sm:px-8"
                   >
                     {t("profilePage.logout")}
                   </button>
