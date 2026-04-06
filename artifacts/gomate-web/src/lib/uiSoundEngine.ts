@@ -32,28 +32,100 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
   return ctx;
 }
 
-/** ~420ms soft startup / welcome — airy two-tone, very quiet */
-export function playWelcomeOpenSound(ctx: AudioContext, masterGain = 0.026): void {
-  const base = ctx.currentTime;
-  const freqs = [392, 493.88];
-  freqs.forEach((hz, i) => {
-    const t0 = base + i * 0.065;
+/**
+ * Premium “system awake” welcome — layered rise + airy band, ~0.95s.
+ * Light stereo image; tuned for clarity on small speakers without harshness.
+ */
+export function playWelcomeOpenSound(ctx: AudioContext, masterGain = 0.048): void {
+  const t0 = ctx.currentTime;
+  const tail = 0.95;
+
+  const mix = ctx.createGain();
+  mix.gain.setValueAtTime(1, t0);
+
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.setValueAtTime(72, t0);
+
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(520, t0);
+  lp.frequency.exponentialRampToValueAtTime(8200, t0 + 0.11);
+  lp.frequency.exponentialRampToValueAtTime(3000, t0 + 0.62);
+  lp.Q.setValueAtTime(0.55, t0);
+
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t0);
+  env.gain.linearRampToValueAtTime(masterGain, t0 + 0.06);
+  env.gain.exponentialRampToValueAtTime(0.0001, t0 + tail);
+
+  mix.connect(hp);
+  hp.connect(lp);
+  lp.connect(env);
+
+  try {
+    const pan = ctx.createStereoPanner();
+    pan.pan.setValueAtTime(0.07, t0);
+    env.connect(pan);
+    pan.connect(ctx.destination);
+  } catch {
+    env.connect(ctx.destination);
+  }
+
+  type Layer = { hz: number; delay: number; level: number; type: OscillatorType };
+  const layers: Layer[] = [
+    { hz: 196, delay: 0, level: 0.2, type: "sine" },
+    { hz: 392, delay: 0.038, level: 0.4, type: "sine" },
+    { hz: 493.88, delay: 0.085, level: 0.36, type: "sine" },
+    { hz: 659.25, delay: 0.13, level: 0.26, type: "triangle" },
+    { hz: 987.77, delay: 0.19, level: 0.16, type: "sine" },
+  ];
+
+  layers.forEach(({ hz, delay, level, type }, i) => {
+    const start = t0 + delay;
     const osc = ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(hz * 0.988, start);
+    osc.frequency.exponentialRampToValueAtTime(hz, start + 0.09);
     const g = ctx.createGain();
-    const f = ctx.createBiquadFilter();
-    f.type = "lowpass";
-    f.frequency.setValueAtTime(2000, t0);
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(hz, t0);
-    g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(masterGain * (1 - i * 0.18), t0 + 0.022);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.38);
-    osc.connect(f);
-    f.connect(g);
-    g.connect(ctx.destination);
-    osc.start(t0);
-    osc.stop(t0 + 0.4);
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(level, start + 0.038 + i * 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + 0.74);
+    osc.connect(g);
+    try {
+      const p = ctx.createStereoPanner();
+      p.pan.setValueAtTime(i % 2 === 0 ? -0.22 : 0.22, start);
+      g.connect(p);
+      p.connect(mix);
+    } catch {
+      g.connect(mix);
+    }
+    osc.start(start);
+    osc.stop(start + 0.8);
   });
+
+  const n = Math.floor(ctx.sampleRate * 0.12);
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) {
+    data[i] = (Math.random() * 2 - 1) * 0.2;
+  }
+  const air = ctx.createBufferSource();
+  air.buffer = buf;
+  const ag = ctx.createGain();
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.setValueAtTime(1200, t0 + 0.015);
+  bp.frequency.exponentialRampToValueAtTime(6800, t0 + 0.1);
+  bp.Q.setValueAtTime(0.9, t0);
+  ag.gain.setValueAtTime(0, t0 + 0.015);
+  ag.gain.linearRampToValueAtTime(0.1, t0 + 0.055);
+  ag.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+  air.connect(bp);
+  bp.connect(ag);
+  ag.connect(mix);
+  air.start(t0 + 0.015);
+  air.stop(t0 + 0.22);
 }
 
 /** ~45ms soft tick — primary taps */

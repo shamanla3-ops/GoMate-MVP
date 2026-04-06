@@ -320,7 +320,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       if (!ctx || !effectiveSoundOn) return;
       if (ctx.state !== "running") return;
       try {
-        playWelcomeOpenSound(ctx, 0.024);
+        playWelcomeOpenSound(ctx, 0.052);
         markWelcomeChimePlayed();
       } catch {
         /* ignore */
