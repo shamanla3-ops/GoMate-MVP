@@ -194,35 +194,28 @@ export default function CreateTrip() {
 
         <div className="relative z-10 mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-10">
           <AppPageHeader>
-            <div className="hidden items-center gap-3 md:flex">
-              <a
-                href="/"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+            <div className="hidden items-center gap-2 md:flex md:gap-3">
+              <a href="/" className="gomate-nav-pill">
                 {t("createTrip.navHome")}
               </a>
-              <a
-                href="/trips"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+              <a href="/trips" className="gomate-nav-pill">
                 {t("createTrip.navTrips")}
               </a>
-              <a
-                href="/driver-requests"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+              <a href="/driver-requests" className="gomate-nav-pill">
                 {t("createTrip.navRequests")}
               </a>
             </div>
           </AppPageHeader>
 
-          <div className="rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
-            <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
+          <div className="gomate-glass-panel sm:p-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#173651] sm:text-4xl">
               {t("createTrip.title")}
             </h1>
-            <p className="mt-2 text-[#4a6678]">{t("createTrip.subtitle")}</p>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#4a6678]">
+              {t("createTrip.subtitle")}
+            </p>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            <form onSubmit={handleSubmit} className="mt-9 space-y-7">
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <LocationPicker
@@ -270,15 +263,13 @@ export default function CreateTrip() {
                 />
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                    {t("createTrip.currency")}
-                  </label>
+                  <label className="gomate-field-label">{t("createTrip.currency")}</label>
                   <select
                     value={currency}
                     onChange={(e) =>
                       setCurrency(e.target.value as "EUR" | "USD" | "PLN")
                     }
-                    className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none"
+                    className="gomate-field-input"
                   >
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
@@ -287,17 +278,15 @@ export default function CreateTrip() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                    {t("createTrip.tripType")}
-                  </label>
+                  <label className="gomate-field-label">{t("createTrip.tripType")}</label>
                   <div className="flex flex-wrap gap-3">
                     <button
                       type="button"
                       onClick={() => setTripType("one-time")}
-                      className={`rounded-full px-5 py-3 text-sm font-semibold shadow-sm ${
+                      className={`rounded-full px-5 py-3 text-sm font-bold shadow-[0_8px_22px_rgba(23,54,81,0.08)] ring-1 ring-white/90 transition ${
                         tripType === "one-time"
-                          ? "bg-[#163c59] text-white"
-                          : "bg-white/85 text-[#28475d]"
+                          ? "bg-[#163c59] text-white ring-[#1f4d73]/50"
+                          : "bg-white/90 text-[#28475d]"
                       }`}
                     >
                       {t("createTrip.tripTypeOneTime")}
@@ -305,10 +294,10 @@ export default function CreateTrip() {
                     <button
                       type="button"
                       onClick={() => setTripType("regular")}
-                      className={`rounded-full px-5 py-3 text-sm font-semibold shadow-sm ${
+                      className={`rounded-full px-5 py-3 text-sm font-bold shadow-[0_8px_22px_rgba(23,54,81,0.08)] ring-1 ring-white/90 transition ${
                         tripType === "regular"
-                          ? "bg-[#163c59] text-white"
-                          : "bg-white/85 text-[#28475d]"
+                          ? "bg-[#163c59] text-white ring-[#1f4d73]/50"
+                          : "bg-white/90 text-[#28475d]"
                       }`}
                     >
                       {t("createTrip.tripTypeRegular")}
@@ -318,9 +307,7 @@ export default function CreateTrip() {
 
                 {tripType === "regular" && (
                   <div className="md:col-span-2">
-                    <label className="mb-3 block text-sm font-semibold text-[#28475d]">
-                      {t("createTrip.weekdays")}
-                    </label>
+                    <label className="gomate-field-label mb-3">{t("createTrip.weekdays")}</label>
                     <div className="flex flex-wrap gap-3">
                       {WEEKDAY_VALUES.map((day) => {
                         const active = weekdays.includes(day);
@@ -330,10 +317,10 @@ export default function CreateTrip() {
                             key={day}
                             type="button"
                             onClick={() => toggleWeekday(day)}
-                            className={`rounded-full px-5 py-3 text-sm font-semibold shadow-sm ${
+                            className={`rounded-full px-5 py-3 text-sm font-bold shadow-[0_8px_20px_rgba(23,54,81,0.07)] ring-1 ring-white/90 transition ${
                               active
-                                ? "bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] text-white"
-                                : "bg-white/85 text-[#28475d]"
+                                ? "bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] text-white ring-transparent"
+                                : "bg-white/90 text-[#28475d]"
                             }`}
                           >
                             {t(weekdayLabel(day))}
@@ -345,31 +332,23 @@ export default function CreateTrip() {
                 )}
               </div>
 
-              {message && (
-                <div
-                  className={`rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                    isSuccess
-                      ? "bg-[#e8f7e8] text-[#17663a]"
-                      : "bg-[#fff1f0] text-[#b42318]"
-                  }`}
-                >
-                  {message}
-                </div>
-              )}
+              {message &&
+                (isSuccess ? (
+                  <div className="gomate-alert-success">{message}</div>
+                ) : (
+                  <div className="gomate-alert-error">{message}</div>
+                ))}
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="gomate-btn-gradient flex h-14 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70"
+                  className="gomate-btn-gradient flex h-14 flex-1 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70 sm:max-w-xs"
                 >
                   {loading ? t("createTrip.submitting") : t("createTrip.submit")}
                 </button>
 
-                <a
-                  href="/trips"
-                  className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
-                >
+                <a href="/trips" className="gomate-btn-secondary h-14 flex-1 px-8 text-lg sm:max-w-xs">
                   {t("createTrip.backToTrips")}
                 </a>
               </div>
@@ -396,15 +375,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-        {label}
-      </label>
+      <label className="gomate-field-label">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+        className="gomate-field-input"
       />
     </div>
   );

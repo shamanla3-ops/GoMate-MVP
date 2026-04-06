@@ -441,7 +441,7 @@ export default function Trips() {
               </a>
               {reviewTasksPending > 0 ? (
                 <span
-                  className="rounded-full bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm"
+                  className="gomate-badge-reviews"
                   title={t("nav.badge.reviewsPending", { count: reviewTasksPending })}
                 >
                   {t("nav.badge.reviewsPending", { count: reviewTasksPending })}
@@ -450,13 +450,15 @@ export default function Trips() {
             </div>
           </AppPageHeader>
 
-          <div className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
+          <div className="gomate-glass-panel">
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="min-w-0">
+                <h1 className="text-3xl font-extrabold tracking-tight text-[#173651] sm:text-4xl">
                   {t("tripsPage.title")}
                 </h1>
-                <p className="mt-2 text-[#4a6678]">{t("tripsPage.subtitle")}</p>
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#4a6678] sm:text-base">
+                  {t("tripsPage.subtitle")}
+                </p>
               </div>
 
               <a
@@ -467,24 +469,26 @@ export default function Trips() {
               </a>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div className="mt-7 grid gap-3 md:grid-cols-3">
               <input
-                className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm outline-none placeholder:text-[#7a94a5]"
+                className="gomate-field-input"
                 placeholder={t("tripsPage.originPlaceholder")}
                 value={origin}
                 onChange={(e) => setOrigin(e.target.value)}
+                autoComplete="off"
               />
               <input
-                className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm outline-none placeholder:text-[#7a94a5]"
+                className="gomate-field-input"
                 placeholder={t("tripsPage.destinationPlaceholder")}
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
+                autoComplete="off"
               />
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={handleSearch}
-                  className="w-full rounded-2xl bg-[#163c59] px-4 py-3 font-semibold text-white shadow-sm"
+                  className="w-full rounded-2xl bg-[#163c59] px-4 py-3.5 text-sm font-bold text-white shadow-[0_10px_26px_rgba(22,60,89,0.28)] ring-1 ring-[#1f4d73]/40 transition hover:bg-[#1a4a6b]"
                 >
                   {t("tripsPage.search")}
                 </button>
@@ -496,29 +500,27 @@ export default function Trips() {
                     setLoading(true);
                     refreshTripsPageData();
                   }}
-                  className="w-full rounded-2xl bg-white/85 px-4 py-3 font-semibold text-[#28475d] shadow-sm"
+                  className="w-full rounded-2xl border border-white/90 bg-white/92 py-3.5 text-sm font-bold text-[#28475d] shadow-[0_8px_22px_rgba(23,54,81,0.07)]"
                 >
                   {t("tripsPage.reset")}
                 </button>
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-7">
               {loading && (
-                <div className="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
+                <div className="gomate-alert-neutral flex items-center gap-3 py-5">
                   <span className="gomate-spinner" aria-hidden />
-                  <span>{t("tripsPage.loading")}</span>
+                  <span className="font-medium text-[#35556c]">{t("tripsPage.loading")}</span>
                 </div>
               )}
 
               {!loading && message && (
-                <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#b42318] shadow-sm">
-                  {message}
-                </div>
+                <div className="gomate-alert-error">{message}</div>
               )}
 
               {!loading && !message && visibleTrips.length === 0 && (
-                <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
+                <div className="gomate-empty-state max-w-xl text-[15px] leading-relaxed">
                   {t("tripsPage.empty")}
                 </div>
               )}
@@ -541,9 +543,9 @@ export default function Trips() {
                     <motion.div
                       key={trip.id}
                       variants={staggerItemVariants}
-                      className="gomate-lift-card rounded-[26px] border border-white/80 bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
+                      className="gomate-lift-card p-5 backdrop-blur-sm"
                     >
-                      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                         <div className="flex min-w-0 flex-1 gap-4">
                           {trip.driver.avatarUrl ? (
                             <img
@@ -558,30 +560,36 @@ export default function Trips() {
                           )}
 
                           <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-3">
-                              <h2 className="text-xl font-extrabold text-[#1f3548]">
-                                {trip.origin} → {trip.destination}
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                              <h2 className="text-lg font-extrabold tracking-tight text-[#1f3548] sm:text-xl">
+                                <span className="block text-[#173651] sm:inline">
+                                  {trip.origin}
+                                </span>
+                                <span className="mx-1 text-[#8a9faf]">→</span>
+                                <span className="block text-[#173651] sm:inline">
+                                  {trip.destination}
+                                </span>
                               </h2>
-                              <span className="rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-4 py-2 text-xs font-bold text-white shadow-sm">
+                              <span className="gomate-chip-route">
                                 {trip.tripType === "regular"
                                   ? t("tripsPage.tripType.regular")
                                   : t("tripsPage.tripType.oneTime")}
                               </span>
 
                               {activeOutgoingRequest?.status === "pending" && (
-                                <span className="rounded-full bg-[#fff6d8] px-4 py-2 text-xs font-bold text-[#8b6a14] shadow-sm">
+                                <span className="gomate-chip-warn">
                                   {t("tripsPage.badge.requestSent")}
                                 </span>
                               )}
 
                               {activeOutgoingRequest?.status === "accepted" && (
-                                <span className="rounded-full bg-[#dff7d4] px-4 py-2 text-xs font-bold text-[#24613a] shadow-sm">
+                                <span className="gomate-chip-success">
                                   {t("tripsPage.badge.seatConfirmed")}
                                 </span>
                               )}
                             </div>
 
-                            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#466175]">
+                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#466175]">
                               <span className="font-semibold">{trip.driver.name}</span>
                               <span className="text-[#f4b400]">{renderStars(rating)}</span>
                               <span>{t("common.starsOutOf5", { rating })}</span>
@@ -604,7 +612,7 @@ export default function Trips() {
                           </div>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid w-full gap-3 sm:max-w-none sm:grid-cols-2 xl:grid-cols-4 xl:min-w-[min(100%,42rem)]">
                           <InfoCard
                             label={t("tripsPage.departure")}
                             value={formatDateTimeShort(trip.departureTime, locale)}
@@ -683,11 +691,11 @@ export default function Trips() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] bg-white/80 p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6f8798]">
+    <div className="gomate-info-tile">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#6f8798]">
         {label}
       </p>
-      <p className="mt-1 text-sm font-bold text-[#1f3548]">{value}</p>
+      <p className="mt-1.5 text-sm font-bold tabular-nums text-[#1f3548]">{value}</p>
     </div>
   );
 }

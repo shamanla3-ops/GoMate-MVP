@@ -104,10 +104,10 @@
 
   /* List / trip cards */
   .gomate-lift-card {
-    @apply rounded-2xl transition-all duration-300 ease-out will-change-transform;
+    @apply rounded-3xl border border-white/55 bg-white/70 shadow-[0_14px_40px_rgba(23,54,81,0.08)] transition-all duration-300 ease-out will-change-transform;
   }
   .gomate-lift-card:hover {
-    @apply -translate-y-[3px] shadow-[0_18px_44px_rgba(23,54,81,0.12)];
+    @apply -translate-y-[3px] border-white/80 shadow-[0_22px_52px_rgba(23,54,81,0.14)];
   }
 
   .gomate-spinner {
@@ -116,18 +116,128 @@
 
   /* Header pill links (nav) */
   .gomate-nav-pill {
-    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-[#28475d] shadow-sm backdrop-blur-sm transition-all duration-200;
-    @apply bg-white/80 hover:bg-white/95 hover:shadow-md hover:scale-[1.03] active:scale-[0.97];
+    @apply relative inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-[#28475d] shadow-[0_6px_18px_rgba(23,54,81,0.07)] backdrop-blur-sm transition-all duration-200;
+    @apply bg-white/85 ring-1 ring-white/90 hover:bg-white hover:shadow-[0_10px_26px_rgba(23,54,81,0.1)] hover:scale-[1.03] active:scale-[0.97];
   }
 
   .gomate-nav-pill-dark {
-    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200;
-    @apply bg-[#163c59] hover:bg-[#1a4a6b] hover:shadow-md hover:scale-[1.03] active:scale-[0.97];
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(22,60,89,0.35)] transition-all duration-200;
+    @apply bg-[#163c59] ring-1 ring-[#1f4d73]/50 hover:bg-[#1a4a6b] hover:shadow-[0_12px_30px_rgba(22,60,89,0.42)] hover:scale-[1.03] active:scale-[0.97];
+  }
+
+  .gomate-nav-pill-active {
+    @apply bg-[#163c59] text-white shadow-[0_10px_26px_rgba(22,60,89,0.35)] ring-1 ring-white/25 hover:bg-[#1a4a6b] hover:text-white;
   }
 
   /* Icon / small control pop */
   .gomate-icon-pop {
     @apply transition-transform duration-200 motion-safe:hover:scale-110 motion-safe:active:scale-95;
+  }
+
+  /* --- Premium layout & surfaces --- */
+  .gomate-header-inner {
+    @apply mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3;
+  }
+
+  .gomate-glass-panel {
+    @apply rounded-3xl border border-white/60 bg-white/40 p-5 shadow-[0_22px_64px_rgba(23,54,81,0.09)] backdrop-blur-md sm:p-6;
+  }
+
+  /* @apply cannot use arbitrary `supports-*:` variants; use plain CSS */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .gomate-glass-panel {
+      background-color: rgb(255 255 255 / 0.34);
+    }
+  }
+
+  .gomate-glass-panel--soft {
+    @apply rounded-3xl border border-white/55 bg-white/30 p-5 shadow-[0_20px_56px_rgba(23,54,81,0.08)] backdrop-blur-md sm:p-6;
+  }
+
+  .gomate-glass-hero {
+    @apply rounded-[2rem] border border-white/65 p-5 shadow-[0_28px_80px_rgba(23,54,81,0.11)] backdrop-blur-md ring-1 ring-white/40 sm:rounded-[2.25rem] sm:p-8;
+    background-color: rgb(255 255 255 / 0.34);
+  }
+
+  .gomate-field-label {
+    @apply mb-1.5 block text-sm font-semibold tracking-tight text-[#28475d];
+  }
+
+  .gomate-field-input {
+    @apply w-full rounded-2xl border border-[#d0e3ed]/95 px-4 py-3.5 text-[#193549] shadow-[0_6px_18px_rgba(23,54,81,0.06)] outline-none placeholder:text-[#8a9faf];
+    background-color: rgb(255 255 255 / 0.96);
+  }
+
+  .gomate-btn-secondary {
+    @apply inline-flex min-h-[3.25rem] items-center justify-center rounded-full border border-white/90 px-8 text-base font-semibold text-[#29485d] shadow-[0_12px_32px_rgba(23,54,81,0.09)] backdrop-blur-sm transition-all duration-200 hover:border-white hover:bg-white hover:shadow-[0_16px_40px_rgba(23,54,81,0.12)];
+    background-color: rgb(255 255 255 / 0.92);
+  }
+
+  .gomate-benefit-strip {
+    @apply rounded-2xl border px-4 py-3.5 text-[15px] font-medium leading-snug text-[#28475d] shadow-[0_10px_28px_rgba(23,54,81,0.06)] backdrop-blur-sm;
+    border-color: rgb(255 255 255 / 0.72);
+    background-color: rgb(255 255 255 / 0.58);
+  }
+
+  .gomate-empty-state {
+    @apply flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-white/75 bg-white/50 px-6 py-14 text-center text-[#4a6678] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-sm;
+  }
+
+  .gomate-empty-state::before {
+    content: "";
+    @apply mb-1 h-12 w-12 rounded-2xl bg-[linear-gradient(145deg,rgba(18,150,232,0.18)_0%,rgba(138,218,51,0.22)_100%)] opacity-90;
+  }
+
+  .gomate-alert-error {
+    @apply rounded-2xl border border-[#f0bcbc]/95 bg-[#fff8f8] px-4 py-3.5 text-sm font-medium leading-relaxed text-[#b42318] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)];
+  }
+
+  .gomate-alert-success {
+    @apply rounded-2xl border border-[#b6dfc4]/95 bg-[#f1faf4] px-4 py-3.5 text-sm font-medium leading-relaxed text-[#17663a] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)];
+  }
+
+  .gomate-alert-neutral {
+    @apply rounded-2xl border border-white/85 px-4 py-3.5 text-sm leading-relaxed text-[#4a6678] shadow-[0_8px_22px_rgba(23,54,81,0.05)];
+    background-color: rgb(255 255 255 / 0.88);
+  }
+
+  .gomate-info-tile {
+    @apply rounded-2xl border border-white/75 p-4 shadow-[0_10px_26px_rgba(23,54,81,0.07)];
+    background-color: rgb(255 255 255 / 0.92);
+  }
+
+  .gomate-chip-route {
+    @apply inline-flex items-center rounded-full bg-[linear-gradient(92deg,#1296e8_0%,#8ada33_100%)] px-3.5 py-1.5 text-xs font-bold tracking-wide text-white shadow-[0_8px_20px_rgba(25,151,232,0.28)];
+  }
+
+  .gomate-chip-warn {
+    @apply inline-flex items-center rounded-full bg-[#fff7e8] px-3.5 py-1.5 text-xs font-bold text-[#7a5b12] shadow-[0_6px_16px_rgba(139,106,20,0.12)] ring-1 ring-[#f2e3c4]/90;
+  }
+
+  .gomate-chip-success {
+    @apply inline-flex items-center rounded-full bg-[#ecf8ea] px-3.5 py-1.5 text-xs font-bold text-[#1d5d2f] shadow-[0_6px_16px_rgba(36,97,58,0.12)] ring-1 ring-[#cfe9c8]/95;
+  }
+
+  .gomate-badge-reviews {
+    @apply inline-flex items-center rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-[0_8px_22px_rgba(217,119,6,0.35)];
+  }
+
+  .gomate-mobile-tab-root {
+    @apply fixed bottom-0 left-0 right-0 z-20 border-t backdrop-blur-xl shadow-[0_-14px_44px_rgba(23,54,81,0.1)];
+    border-top-color: rgb(255 255 255 / 0.78);
+    background-color: rgb(255 255 255 / 0.92);
+  }
+
+  .gomate-mobile-tab-link {
+    @apply flex flex-col items-center gap-1 rounded-xl px-1 py-1 text-[11px] font-semibold text-[#5a7389] transition-colors duration-200;
+  }
+
+  .gomate-mobile-tab-link--active {
+    @apply text-[#163c59];
+  }
+
+  .gomate-fab {
+    @apply flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,#6fd456_0%,#1296e8_100%)] text-[34px] font-light text-white shadow-[0_14px_32px_rgba(25,151,232,0.38)];
   }
 }
 
@@ -163,6 +273,11 @@
   [type="submit"]:not(:disabled):active,
   [type="button"]:not(:disabled):active,
   [type="reset"]:not(:disabled):active {
+    transform: none;
+  }
+
+  .gomate-btn-secondary:hover,
+  .gomate-btn-secondary:active {
     transform: none;
   }
 }

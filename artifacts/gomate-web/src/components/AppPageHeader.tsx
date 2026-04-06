@@ -17,9 +17,9 @@ export function AppPageHeader({ children }: Props) {
       animate="show"
       variants={headerRevealVariants}
       transition={headerRevealTransition}
-      className="sticky top-0 z-40 -mx-4 mb-6 border-b border-white/55 bg-white/50 px-4 py-3 shadow-[0_10px_40px_rgba(23,54,81,0.07)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/40 sm:-mx-6 sm:px-6"
+      className="sticky top-0 z-40 -mx-4 mb-6 border-b border-white/60 bg-white/55 px-4 py-3.5 shadow-[0_12px_48px_rgba(23,54,81,0.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/42 sm:-mx-6 sm:px-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="gomate-header-inner">
         <motion.a
           href="/"
           className="gomate-icon-pop flex shrink-0 items-center"

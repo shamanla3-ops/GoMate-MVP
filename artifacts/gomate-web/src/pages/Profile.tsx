@@ -74,44 +74,28 @@ function ProfileHeader({
   const { t } = useTranslation();
   return (
     <AppPageHeader>
-      <nav className="hidden items-center gap-3 md:flex">
-        <a
-          href="/"
-          className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-        >
+      <nav className="hidden items-center gap-2 md:flex md:gap-3">
+        <a href="/" className="gomate-nav-pill">
           {t("profilePage.navHome")}
         </a>
-        <a
-          href="/trips"
-          className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-        >
+        <a href="/trips" className="gomate-nav-pill">
           {t("profilePage.navTrips")}
         </a>
-        <a
-          href="/templates"
-          className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-        >
+        <a href="/templates" className="gomate-nav-pill">
           {t("profilePage.navTemplates")}
         </a>
-        <a
-          href="/profile"
-          className="rounded-full bg-[#163c59] px-4 py-2 text-sm font-semibold text-white shadow-sm"
-        >
+        <a href="/profile" className="gomate-nav-pill-dark max-w-[10rem] truncate" title={userName}>
           {userName}
         </a>
         {reviewTasksPending > 0 ? (
           <span
-            className="rounded-full bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm"
+            className="gomate-badge-reviews"
             title={t("nav.badge.reviewsPending", { count: reviewTasksPending })}
           >
             {t("nav.badge.reviewsPending", { count: reviewTasksPending })}
           </span>
         ) : null}
-        <button
-          type="button"
-          onClick={onLogout}
-          className="rounded-full border border-white/90 bg-white/88 px-4 py-2 text-sm font-semibold text-[#29485d] shadow-sm backdrop-blur-sm"
-        >
+        <button type="button" onClick={onLogout} className="gomate-nav-pill">
           {t("profilePage.logout")}
         </button>
       </nav>
@@ -297,8 +281,9 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#eef4f8] text-[#193549]">
-        {t("profilePage.loading")}
+      <div className="flex min-h-screen items-center justify-center gap-3 bg-[#eef4f8] px-4 text-[#4a6678]">
+        <span className="gomate-spinner" aria-hidden />
+        <span className="text-base font-medium">{t("profilePage.loading")}</span>
       </div>
     );
   }
@@ -325,8 +310,8 @@ export default function Profile() {
             reviewTasksPending={reviewTasksPending}
           />
 
-          <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
-            <aside className="rounded-[30px] border border-white/60 bg-white/50 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+            <aside className="gomate-glass-panel lg:p-7">
               <div className="flex flex-col items-center text-center">
                 {displayAvatar ? (
                   <img
@@ -340,13 +325,13 @@ export default function Profile() {
                   </div>
                 )}
 
-                <h1 className="mt-4 text-3xl font-extrabold text-[#173651]">
+                <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-[#173651] sm:text-3xl">
                   {displayName}
                 </h1>
 
-                <p className="mt-1 text-sm text-[#5d7485]">{user?.email}</p>
+                <p className="mt-1.5 text-sm text-[#5d7485]">{user?.email}</p>
 
-                <div className="mt-5 w-full rounded-[24px] bg-white/85 p-4 shadow-sm">
+                <div className="mt-6 w-full rounded-2xl border border-white/80 bg-white/90 p-5 shadow-[0_12px_32px_rgba(23,54,81,0.07)]">
                   <div className="text-sm font-semibold text-[#5d7485]">
                     {t("profilePage.ratingTitle")}
                   </div>
@@ -361,7 +346,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="mt-4 w-full rounded-[24px] bg-[linear-gradient(180deg,#dff7d4_0%,#ebf8ff_100%)] p-4 shadow-sm">
+                <div className="mt-4 w-full rounded-2xl border border-[#cfe9d8]/80 bg-[linear-gradient(165deg,#e6f6df_0%,#eef8ff_100%)] p-5 shadow-[0_12px_32px_rgba(23,54,81,0.06)]">
                   <div className="text-sm font-semibold text-[#4e6b5f]">
                     {t("profilePage.co2Title")}
                   </div>
@@ -376,7 +361,7 @@ export default function Profile() {
                   </p>
                 </div>
 
-                <div className="mt-5 w-full rounded-[24px] bg-white/85 p-4 text-left shadow-sm">
+                <div className="mt-5 w-full rounded-2xl border border-white/85 bg-white/92 p-5 text-left shadow-[0_10px_28px_rgba(23,54,81,0.06)]">
                   <div className="text-sm font-semibold text-[#5d7485]">
                     {t("profilePage.reviewsAboutYou")}
                   </div>
@@ -424,12 +409,14 @@ export default function Profile() {
               </div>
             </aside>
 
-            <section className="rounded-[30px] border border-white/60 bg-white/50 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
+            <section className="gomate-glass-panel sm:p-8">
               <div>
-                <h2 className="text-3xl font-extrabold text-[#173651]">
+                <h2 className="text-3xl font-extrabold tracking-tight text-[#173651]">
                   {t("profilePage.formTitle")}
                 </h2>
-                <p className="mt-2 text-[#4a6678]">{t("profilePage.formSubtitle")}</p>
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#4a6678]">
+                  {t("profilePage.formSubtitle")}
+                </p>
               </div>
 
               <form onSubmit={handleSave} className="mt-8 space-y-6">
@@ -502,8 +489,8 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="rounded-[24px] bg-white/80 p-5 shadow-sm">
-                  <h3 className="text-xl font-extrabold text-[#173651]">
+                <div className="rounded-2xl border border-white/85 bg-white/90 p-5 shadow-[0_10px_28px_rgba(23,54,81,0.06)] sm:p-6">
+                  <h3 className="text-xl font-extrabold tracking-tight text-[#173651]">
                     {t("profilePage.previewTitle")}
                   </h3>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -539,23 +526,15 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {message && (
-                  <div className="rounded-2xl bg-[#e8f7e8] px-4 py-3 text-sm text-[#17663a] shadow-sm">
-                    {message}
-                  </div>
-                )}
+                {message && <div className="gomate-alert-success">{message}</div>}
 
-                {error && (
-                  <div className="rounded-2xl bg-[#fff1f0] px-4 py-3 text-sm text-[#b42318] shadow-sm">
-                    {error}
-                  </div>
-                )}
+                {error && <div className="gomate-alert-error">{error}</div>}
 
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
+                    className="gomate-btn-gradient flex h-14 min-w-[12rem] flex-1 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70 sm:flex-none"
                   >
                     {saving ? t("profilePage.saving") : t("profilePage.save")}
                   </button>
@@ -563,7 +542,7 @@ export default function Profile() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                    className="gomate-btn-secondary h-14 flex-1 px-8 text-lg sm:flex-none"
                   >
                     {t("profilePage.logout")}
                   </button>
@@ -573,33 +552,28 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
-          <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
-            <a
-              href="/"
-              className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
-            >
+        <div className="gomate-mobile-tab-root md:hidden">
+          <div className="mx-auto grid max-w-3xl grid-cols-5 items-end px-3 pb-3 pt-2.5 text-center">
+            <a href="/" className="gomate-mobile-tab-link gomate-mobile-tab-link--active">
               <span className="text-[22px] leading-none">⌂</span>
               <span>{t("profilePage.mobileHome")}</span>
             </a>
 
-            <a href="/trips" className="flex flex-col items-center gap-1">
+            <a href="/trips" className="gomate-mobile-tab-link">
               <span className="text-[18px] leading-none">🧳</span>
               <span>{t("profilePage.mobileTrips")}</span>
             </a>
 
             <a href="/create-trip" className="-mt-6 flex flex-col items-center gap-1">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-[34px] text-white shadow-[0_10px_20px_rgba(31,145,140,0.35)]">
-                +
-              </span>
+              <span className="gomate-fab">+</span>
             </a>
 
-            <a href="/templates" className="flex flex-col items-center gap-1">
+            <a href="/templates" className="gomate-mobile-tab-link">
               <span className="text-[18px] leading-none">🛣️</span>
               <span>{t("profilePage.mobileTemplates")}</span>
             </a>
 
-            <button type="button" onClick={handleLogout} className="flex flex-col items-center gap-1">
+            <button type="button" onClick={handleLogout} className="gomate-mobile-tab-link">
               <span className="text-[18px] leading-none">👤</span>
               <span>{t("profilePage.mobileLogout")}</span>
             </button>
@@ -625,15 +599,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-        {label}
-      </label>
+      <label className="gomate-field-label">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+        className="gomate-field-input"
       />
     </div>
   );
@@ -641,9 +613,9 @@ function Field({
 
 function PreviewCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-white/80 bg-[#f8fcff] p-4 shadow-sm">
+    <div className="gomate-info-tile border-[#e2eef5] bg-[#f9fcff]">
       <div className="text-sm font-semibold text-[#5d7485]">{label}</div>
-      <div className="mt-2 text-base font-semibold text-[#173651]">{value}</div>
+      <div className="mt-2 text-base font-semibold leading-snug text-[#173651]">{value}</div>
     </div>
   );
 }

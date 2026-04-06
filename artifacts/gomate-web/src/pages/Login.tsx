@@ -173,41 +173,39 @@ export default function Login() {
                   variants={staggerItemVariants}
                   initial="hidden"
                   animate="show"
-                  className="rounded-[32px] border border-white/70 bg-white/78 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8"
+                  className="gomate-glass-panel p-6 sm:p-8"
                 >
                   <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-[#173651]">
+                    <h2 className="text-3xl font-extrabold tracking-tight text-[#173651]">
                       {t("auth.login.formTitle")}
                     </h2>
-                    <p className="mt-2 text-sm text-[#4a6678]">
+                    <p className="mt-2 text-sm leading-relaxed text-[#4a6678]">
                       {t("auth.login.subtitle")}
                     </p>
                   </div>
 
-                  <form onSubmit={handleLogin} className="mt-6 space-y-4">
+                  <form onSubmit={handleLogin} className="mt-7 space-y-5">
                     <div>
-                      <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        Email
-                      </label>
+                      <label className="gomate-field-label">Email</label>
                       <input
                         type="email"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                        className="gomate-field-input"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        {t("auth.login.password")}
-                      </label>
+                      <label className="gomate-field-label">{t("auth.login.password")}</label>
                       <input
                         type="password"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                        className="gomate-field-input"
                         placeholder={t("auth.login.passwordPlaceholder")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
                       />
                     </div>
 
@@ -220,11 +218,7 @@ export default function Login() {
                     </button>
                   </form>
 
-                  {message && (
-                    <div className="mt-4 rounded-2xl bg-white/85 px-4 py-3 text-sm text-[#b42318] shadow-sm">
-                      {message}
-                    </div>
-                  )}
+                  {message && <div className="gomate-alert-error mt-4">{message}</div>}
 
                   <div className="mt-4 text-center">
                     <button
@@ -239,7 +233,7 @@ export default function Login() {
                   </div>
 
                   {resendOpen && (
-                    <div className="mt-4 rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-sm">
+                    <div className="mt-5 rounded-2xl border border-white/85 bg-white/65 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-sm">
                       <p className="text-xs leading-relaxed text-[#5a7389]">
                         {t("auth.login.resendVerificationHint")}
                       </p>
@@ -253,7 +247,7 @@ export default function Login() {
                           </label>
                           <input
                             type="email"
-                            className="w-full rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-sm text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                            className="gomate-field-input py-2.5 text-sm"
                             placeholder="you@example.com"
                             value={resendEmail}
                             onChange={(e) => setResendEmail(e.target.value)}
@@ -314,9 +308,5 @@ export default function Login() {
 }
 
 function Benefit({ text }: { text: string }) {
-  return (
-    <div className="rounded-[22px] border border-white/70 bg-white/55 px-4 py-3 text-[#28475d] shadow-sm backdrop-blur-sm">
-      {text}
-    </div>
-  );
+  return <div className="gomate-benefit-strip">{text}</div>;
 }

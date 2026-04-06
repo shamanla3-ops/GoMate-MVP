@@ -6,6 +6,7 @@ import { useNotificationCounts } from "../context/NotificationCountsContext";
 import {
   headerRevealTransition,
   headerRevealVariants,
+  staggerContainerVariants,
   staggerItemVariants,
 } from "../lib/motionVariants";
 
@@ -58,8 +59,9 @@ export default function Landing() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#eef4f8]">
-        <div className="text-lg text-gray-600">{t("landing.loading")}</div>
+      <div className="flex min-h-screen items-center justify-center gap-3 bg-[#eef4f8] px-4 text-[#4a6678]">
+        <span className="gomate-spinner" aria-hidden />
+        <span className="text-base font-medium">{t("landing.loading")}</span>
       </div>
     );
   }
@@ -94,7 +96,7 @@ export default function Landing() {
             animate="show"
             variants={headerRevealVariants}
             transition={headerRevealTransition}
-            className="sticky top-0 z-30 -mx-4 mb-2 flex items-center justify-between gap-3 border-b border-white/50 bg-white/45 py-3 px-4 shadow-[0_8px_32px_rgba(23,54,81,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/35 sm:-mx-6 sm:mb-3 sm:px-6"
+            className="sticky top-0 z-30 -mx-4 mb-2 flex items-center justify-between gap-3 border-b border-white/58 bg-white/52 py-3.5 px-4 shadow-[0_12px_44px_rgba(23,54,81,0.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/40 sm:-mx-6 sm:mb-4 sm:px-6"
           >
             <motion.a
               href="/"
@@ -178,8 +180,8 @@ export default function Landing() {
           >
             <div className="grid w-full items-center gap-8 py-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
               <section className="mx-auto w-full max-w-2xl lg:mx-0">
-                <div className="rounded-[34px] border border-white/60 bg-white/30 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8">
-                  <h1 className="max-w-3xl text-4xl font-extrabold leading-[0.95] text-[#173651] sm:text-5xl lg:text-6xl">
+                <div className="gomate-glass-hero">
+                  <h1 className="max-w-3xl text-4xl font-extrabold leading-[0.95] tracking-tight text-[#173651] sm:text-5xl lg:text-6xl">
                     {t("landing.title.line1")}
                     <br />
                     {t("landing.title.line2")}
@@ -189,36 +191,31 @@ export default function Landing() {
                     {t("landing.title.line4")}
                   </h1>
 
-                  <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#35556c] sm:text-xl">
+                  <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#35556c] sm:text-xl sm:leading-relaxed">
                     {t("landing.subtitle")}
                   </p>
 
-                  <p className="mt-4 text-base font-medium text-[#426277] sm:text-lg">
+                  <p className="mt-5 text-base font-medium leading-snug text-[#3d5a6e] sm:text-lg">
                     {t("landing.ecoLine")}
                   </p>
 
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <a
                       href={findTripHref}
-                      className="flex h-14 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01]"
+                      className="gomate-btn-gradient flex min-h-[3.5rem] items-center justify-center rounded-full px-8 text-lg font-bold text-white"
                     >
                       {t("landing.findTrip")}
-                      <span className="ml-3 text-2xl leading-none">›</span>
+                      <span className="ml-3 text-2xl leading-none opacity-90">›</span>
                     </a>
 
-                    <a
-                      href={publishTripHref}
-                      className="flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
-                    >
+                    <a href={publishTripHref} className="gomate-btn-secondary px-8 text-lg">
                       {t("landing.publishTrip")}
-                      <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">
-                        ›
-                      </span>
+                      <span className="ml-3 text-2xl leading-none text-[#8ca0ae]">›</span>
                     </a>
 
                     <a
                       href={requestsHref}
-                      className="relative flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      className="gomate-btn-secondary relative px-8 text-lg"
                       aria-label={
                         user && requestsPending > 0
                           ? t("nav.badge.requestsAria", {
@@ -236,7 +233,7 @@ export default function Landing() {
 
                     <a
                       href={chatsHref}
-                      className="relative flex h-14 items-center justify-center rounded-full border border-white/90 bg-white/88 px-8 text-lg font-semibold text-[#29485d] shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm transition hover:scale-[1.01]"
+                      className="gomate-btn-secondary relative px-8 text-lg"
                       aria-label={
                         user && chatsUnread > 0
                           ? t("nav.badge.chatsAria", { count: chatsUnread })
@@ -260,7 +257,12 @@ export default function Landing() {
               </section>
 
               <section className="mx-auto w-full max-w-xl lg:max-w-none">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <motion.div
+                  className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1"
+                  variants={staggerContainerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
                   <FeatureCard
                     icon="🚌"
                     title={t("landing.feature.comfort.title")}
@@ -281,23 +283,23 @@ export default function Landing() {
                     title={t("landing.feature.drivers.title")}
                     text={t("landing.feature.drivers.text")}
                   />
-                </div>
+                </motion.div>
               </section>
             </div>
           </motion.main>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/70 bg-white/88 backdrop-blur-md md:hidden">
-          <div className="mx-auto grid max-w-3xl grid-cols-6 items-end px-2 pb-3 pt-2 text-center text-[11px] text-[#4d697c]">
+        <div className="gomate-mobile-tab-root md:hidden">
+          <div className="mx-auto grid max-w-3xl grid-cols-6 items-end px-2 pb-3 pt-2.5 text-center">
             <a
               href="/"
-              className="flex flex-col items-center gap-1 font-semibold text-[#18a04f]"
+              className="gomate-mobile-tab-link gomate-mobile-tab-link--active"
             >
               <span className="text-[22px] leading-none">⌂</span>
               <span>{t("nav.home")}</span>
             </a>
 
-            <a href={findTripHref} className="flex flex-col items-center gap-1">
+            <a href={findTripHref} className="gomate-mobile-tab-link">
               <span className="text-[18px] leading-none">🧳</span>
               <span>{t("nav.trips")}</span>
             </a>
@@ -306,9 +308,7 @@ export default function Landing() {
               href={publishTripHref}
               className="-mt-6 flex flex-col items-center gap-1"
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-[34px] text-white shadow-[0_10px_20px_rgba(31,145,140,0.35)]">
-                +
-              </span>
+              <span className="gomate-fab">+</span>
             </a>
 
             <a
@@ -329,7 +329,7 @@ export default function Landing() {
 
             <a
               href={chatsHref}
-              className="relative flex flex-col items-center gap-1"
+              className="gomate-mobile-tab-link relative"
               aria-label={
                 user && chatsUnread > 0
                   ? t("nav.badge.chatsAria", { count: chatsUnread })
@@ -343,7 +343,7 @@ export default function Landing() {
               <span>{t("nav.chats")}</span>
             </a>
 
-            <a href={profileHref} className="flex flex-col items-center gap-1">
+            <a href={profileHref} className="gomate-mobile-tab-link">
               <span className="text-[18px] leading-none">👤</span>
               <span>{t("nav.profile")}</span>
             </a>
@@ -364,19 +364,22 @@ function FeatureCard({
   text: string;
 }) {
   return (
-    <div className="gomate-lift-card rounded-[28px] border border-white/80 bg-white/72 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+    <motion.div
+      variants={staggerItemVariants}
+      className="gomate-lift-card p-5 backdrop-blur-sm"
+    >
       <div className="flex items-start gap-4">
-        <div className="gomate-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#85d95a_0%,#1093e6_100%)] text-[20px] shadow-md">
-          <span>{icon}</span>
+        <div className="gomate-icon-pop flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,#8adf63_0%,#1190e6_100%)] text-[22px] shadow-[0_10px_24px_rgba(25,151,232,0.28)] ring-2 ring-white/50">
+          <span aria-hidden>{icon}</span>
         </div>
 
-        <div>
-          <h3 className="text-xl font-extrabold text-[#1f3548]">{title}</h3>
-          <p className="mt-1 text-[15px] leading-relaxed text-[#3d5668]">
-            {text}
-          </p>
+        <div className="min-w-0">
+          <h3 className="text-lg font-extrabold tracking-tight text-[#1f3548] sm:text-xl">
+            {title}
+          </h3>
+          <p className="mt-2 text-[15px] leading-relaxed text-[#3d5668]">{text}</p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

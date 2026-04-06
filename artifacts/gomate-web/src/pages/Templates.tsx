@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
 import { AppPageHeader } from "../components/AppPageHeader";
+import { staggerContainerVariants, staggerItemVariants } from "../lib/motionVariants";
 import { LocationPicker } from "../components/LocationPicker";
 import { isCompleteMapPoint, type MapPointValue } from "../lib/mapTypes";
 import { messageFromApiError } from "../lib/errorMessages";
@@ -393,25 +395,19 @@ export default function Templates() {
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
           <AppPageHeader>
-            <div className="hidden items-center gap-3 md:flex">
-              <a
-                href="/"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+            <div className="hidden items-center gap-2 md:flex md:gap-3">
+              <a href="/" className="gomate-nav-pill">
                 {t("templatesPage.navHome")}
               </a>
-              <a
-                href="/trips"
-                className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-[#28475d] shadow-sm backdrop-blur-sm"
-              >
+              <a href="/trips" className="gomate-nav-pill">
                 {t("templatesPage.navTrips")}
               </a>
             </div>
           </AppPageHeader>
 
-          <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
-            <section className="rounded-[30px] border border-white/60 bg-white/35 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
-              <h1 className="text-3xl font-extrabold text-[#173651] sm:text-4xl">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+            <section className="gomate-glass-panel">
+              <h1 className="text-3xl font-extrabold tracking-tight text-[#173651] sm:text-4xl">
                 {t("templatesPage.title")}
               </h1>
 
@@ -419,17 +415,15 @@ export default function Templates() {
                 {t("templatesPage.subtitle")}
               </p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleSubmit} className="mt-7 space-y-5">
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    {t("templatesPage.name")}
-                  </label>
+                  <label className="gomate-field-label">{t("templatesPage.name")}</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t("templatesPage.namePlaceholder")}
-                    className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                    className="gomate-field-input"
                   />
                 </div>
 
@@ -452,23 +446,19 @@ export default function Templates() {
                 />
 
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                    {t("templatesPage.departureTime")}
-                  </label>
+                  <label className="gomate-field-label">{t("templatesPage.departureTime")}</label>
                   <input
                     type="text"
                     value={defaultDepartureTime}
                     onChange={(e) => setDefaultDepartureTime(e.target.value)}
                     placeholder={t("templatesPage.departurePlaceholder")}
-                    className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                    className="gomate-field-input"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      {t("templatesPage.seats")}
-                    </label>
+                    <label className="gomate-field-label">{t("templatesPage.seats")}</label>
                     <input
                       type="number"
                       min={1}
@@ -476,14 +466,12 @@ export default function Templates() {
                       onChange={(e) =>
                         setAvailableSeats(Number(e.target.value) || 1)
                       }
-                      className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none"
+                      className="gomate-field-input"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      {t("templatesPage.price")}
-                    </label>
+                    <label className="gomate-field-label">{t("templatesPage.price")}</label>
                     <input
                       type="number"
                       min="0"
@@ -491,22 +479,20 @@ export default function Templates() {
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="5.00"
-                      className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5]"
+                      className="gomate-field-input"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      {t("templatesPage.currency")}
-                    </label>
+                    <label className="gomate-field-label">{t("templatesPage.currency")}</label>
                     <select
                       value={currency}
                       onChange={(e) =>
                         setCurrency(e.target.value as "EUR" | "USD" | "PLN")
                       }
-                      className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none"
+                      className="gomate-field-input"
                     >
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
@@ -515,15 +501,13 @@ export default function Templates() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                      {t("templatesPage.tripType")}
-                    </label>
+                    <label className="gomate-field-label">{t("templatesPage.tripType")}</label>
                     <select
                       value={tripType}
                       onChange={(e) =>
                         setTripType(e.target.value as "one-time" | "regular")
                       }
-                      className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-[#193549] shadow-sm outline-none"
+                      className="gomate-field-input"
                     >
                       <option value="one-time">
                         {t("templatesPage.tripTypeOneTime")}
@@ -537,9 +521,7 @@ export default function Templates() {
 
                 {tripType === "regular" && (
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-[#28475d]">
-                      {t("templatesPage.weekdays")}
-                    </label>
+                    <label className="gomate-field-label mb-2">{t("templatesPage.weekdays")}</label>
                     <div className="flex flex-wrap gap-2">
                       {WEEKDAY_VALUES.map((day) => {
                         const active = weekdays.includes(day);
@@ -566,43 +548,48 @@ export default function Templates() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex h-14 w-full items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-8 text-lg font-bold text-white shadow-[0_12px_30px_rgba(39,149,119,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
+                  className="gomate-btn-gradient flex h-14 w-full items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70"
                 >
                   {creating ? t("templatesPage.submitting") : t("templatesPage.submit")}
                 </button>
               </form>
             </section>
 
-            <section className="rounded-[30px] border border-white/60 bg-white/25 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
-              <div className="mb-5 flex items-center justify-between">
+            <section className="gomate-glass-panel--soft">
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-[#173651]">
+                  <h2 className="text-2xl font-extrabold tracking-tight text-[#173651]">
                     {t("templatesPage.listTitle")}
                   </h2>
-                  <p className="mt-1 text-sm text-[#4a6678]">
+                  <p className="mt-1 text-sm leading-relaxed text-[#4a6678]">
                     {t("templatesPage.listSubtitle")}
                   </p>
                 </div>
 
-                <span className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-[#28475d] shadow-sm">
+                <span className="inline-flex w-fit items-center rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-[#28475d] shadow-[0_8px_22px_rgba(23,54,81,0.08)] ring-1 ring-white/90">
                   {templates.length}
                 </span>
               </div>
 
               {loading ? (
-                <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  {t("templatesPage.loading")}
+                <div className="gomate-alert-neutral flex items-center gap-3 py-5">
+                  <span className="gomate-spinner" aria-hidden />
+                  <span className="font-medium">{t("templatesPage.loading")}</span>
                 </div>
               ) : templates.length === 0 ? (
-                <div className="rounded-[24px] border border-white/80 bg-white/75 p-6 text-[#4a6678] shadow-sm">
-                  {t("templatesPage.empty")}
-                </div>
+                <div className="gomate-empty-state text-[15px]">{t("templatesPage.empty")}</div>
               ) : (
-                <div className="grid gap-4">
+                <motion.div
+                  className="grid gap-4"
+                  variants={staggerContainerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
                   {templates.map((template) => (
-                    <div
+                    <motion.div
                       key={template.id}
-                      className="rounded-[26px] border border-white/80 bg-white/78 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm"
+                      variants={staggerItemVariants}
+                      className="gomate-lift-card p-5 backdrop-blur-sm"
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                         <div>
@@ -614,7 +601,7 @@ export default function Templates() {
                           </p>
                         </div>
 
-                        <span className="w-fit rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-4 py-2 text-sm font-bold text-white shadow-sm">
+                        <span className="gomate-chip-route w-fit px-4 py-2 text-sm">
                           {template.tripType === "regular"
                             ? t("templatesPage.regularBadge")
                             : t("templatesPage.oneTimeBadge")}
@@ -652,7 +639,7 @@ export default function Templates() {
                           type="button"
                           onClick={() => createTripFromTemplate(template)}
                           disabled={creatingTripId === template.id}
-                          className="flex h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,#1296e8_0%,#8ada33_100%)] px-6 text-sm font-bold text-white shadow-[0_10px_24px_rgba(39,149,119,0.28)] transition hover:scale-[1.01] disabled:opacity-70"
+                          className="gomate-btn-gradient flex h-12 items-center justify-center rounded-full px-6 text-sm font-bold text-white disabled:opacity-70"
                         >
                           {creatingTripId === template.id
                             ? t("templatesPage.creatingTrip")
@@ -670,9 +657,9 @@ export default function Templates() {
                             : t("templatesPage.delete")}
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </section>
           </div>
@@ -684,11 +671,11 @@ export default function Templates() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] bg-white/80 p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6f8798]">
+    <div className="gomate-info-tile">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#6f8798]">
         {label}
       </p>
-      <p className="mt-1 text-sm font-bold text-[#1f3548]">{value}</p>
+      <p className="mt-1.5 text-sm font-bold tabular-nums text-[#1f3548]">{value}</p>
     </div>
   );
 }

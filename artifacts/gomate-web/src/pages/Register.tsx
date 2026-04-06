@@ -163,25 +163,23 @@ export default function Register() {
                   variants={staggerItemVariants}
                   initial="hidden"
                   animate="show"
-                  className="rounded-[32px] border border-white/70 bg-white/78 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-8"
+                  className="gomate-glass-panel p-6 sm:p-8"
                 >
                   <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-[#173651]">
+                    <h2 className="text-3xl font-extrabold tracking-tight text-[#173651]">
                       {t("auth.register.formTitle")}
                     </h2>
-                    <p className="mt-2 text-sm text-[#4a6678]">
+                    <p className="mt-2 text-sm leading-relaxed text-[#4a6678]">
                       {t("auth.register.subtitle")}
                     </p>
                   </div>
 
-                  <form onSubmit={handleRegister} className="mt-6 space-y-4">
+                  <form onSubmit={handleRegister} className="mt-7 space-y-5">
                     <div>
-                      <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        {t("auth.register.name")}
-                      </label>
+                      <label className="gomate-field-label">{t("auth.register.name")}</label>
                       <input
                         type="text"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
+                        className="gomate-field-input disabled:opacity-60"
                         placeholder={t("auth.register.namePlaceholder")}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -190,12 +188,10 @@ export default function Register() {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        {t("auth.register.email")}
-                      </label>
+                      <label className="gomate-field-label">{t("auth.register.email")}</label>
                       <input
                         type="email"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
+                        className="gomate-field-input disabled:opacity-60"
                         placeholder={t("auth.register.emailPlaceholder")}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -204,12 +200,10 @@ export default function Register() {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-semibold text-[#28475d]">
-                        {t("auth.login.password")}
-                      </label>
+                      <label className="gomate-field-label">{t("auth.login.password")}</label>
                       <input
                         type="password"
-                        className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-[#193549] shadow-sm outline-none placeholder:text-[#7a94a5] disabled:opacity-60"
+                        className="gomate-field-input disabled:opacity-60"
                         placeholder={t("auth.register.passwordHint")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -217,7 +211,7 @@ export default function Register() {
                       />
                     </div>
 
-                    <div className="rounded-2xl border border-white/60 bg-white/40 px-3 py-3 sm:px-4 sm:py-4">
+                    <div className="rounded-2xl border border-white/70 bg-white/45 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:px-4 sm:py-4">
                       <label className="flex cursor-pointer gap-3 text-left">
                         <input
                           type="checkbox"
@@ -266,13 +260,11 @@ export default function Register() {
                   </a>
 
                   {errorMessage && (
-                    <div className="mt-4 rounded-2xl bg-[#fff1f0] px-4 py-3 text-sm text-[#b42318] shadow-sm">
-                      {errorMessage}
-                    </div>
+                    <div className="gomate-alert-error mt-4">{errorMessage}</div>
                   )}
 
                   {successMessage && (
-                    <div className="mt-4 space-y-3 rounded-2xl bg-[#e8f7e8] px-4 py-3 text-sm text-[#17663a] shadow-sm">
+                    <div className="gomate-alert-success mt-4 space-y-3">
                       <p className="font-semibold">{successMessage}</p>
                       <p className="text-xs text-[#35556c]">
                         {t("auth.register.redirectHint")}
@@ -307,9 +299,5 @@ export default function Register() {
 }
 
 function Benefit({ text }: { text: string }) {
-  return (
-    <div className="rounded-[22px] border border-white/70 bg-white/55 px-4 py-3 text-[#28475d] shadow-sm backdrop-blur-sm">
-      {text}
-    </div>
-  );
+  return <div className="gomate-benefit-strip">{text}</div>;
 }

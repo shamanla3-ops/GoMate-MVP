@@ -2,14 +2,14 @@ import type { Transition, Variants } from "framer-motion";
 
 /** ~easeInOut for page transitions */
 export const pageEase: Transition = {
-  duration: 0.36,
+  duration: 0.32,
   ease: [0.42, 0, 0.58, 1],
 };
 
 export const pageTransitionVariants: Variants = {
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
+  exit: { opacity: 0, y: -8 },
 };
 
 export const headerRevealVariants: Variants = {

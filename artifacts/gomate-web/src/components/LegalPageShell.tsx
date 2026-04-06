@@ -14,11 +14,11 @@ export function LegalSection({
   children: ReactNode;
 }) {
   return (
-    <section className="scroll-mt-4">
-      <h2 className="mb-3 text-lg font-bold tracking-tight text-[#173651] sm:text-xl">
+    <section className="scroll-mt-4 border-b border-white/55 pb-8 last:border-0 last:pb-0">
+      <h2 className="mb-4 text-lg font-extrabold tracking-tight text-[#173651] sm:text-xl">
         {title}
       </h2>
-      <div className="space-y-3 text-[15px] leading-relaxed text-[#35556c] sm:text-base">
+      <div className="space-y-3.5 text-[15px] leading-relaxed text-[#35556c] sm:text-base">
         {children}
       </div>
     </section>
@@ -59,7 +59,7 @@ export function LegalPageShell({
             variants={staggerItemVariants}
             initial="hidden"
             animate="show"
-            className="mt-6 rounded-[30px] border border-white/60 bg-white/35 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-10"
+            className="gomate-glass-panel mt-6 sm:p-10"
           >
             <h1 className="text-3xl font-extrabold tracking-tight text-[#173651] sm:text-4xl">
               {title}
