@@ -568,96 +568,91 @@ export default function Trips() {
                     <motion.div
                       key={trip.id}
                       variants={staggerItemVariants}
-                      className="gomate-lift-card p-5 backdrop-blur-sm"
+                      className="gomate-lift-card flex flex-col gap-5 p-5 backdrop-blur-sm"
                     >
-                      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="flex min-w-0 flex-1 gap-4">
-                          {trip.driver.avatarUrl ? (
-                            <img
-                              src={trip.driver.avatarUrl}
-                              alt={trip.driver.name}
-                              className="h-16 w-16 rounded-full object-cover ring-4 ring-white/80"
-                            />
-                          ) : (
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-lg font-extrabold text-white ring-4 ring-white/80">
-                              {getInitials(trip.driver.name) || "G"}
-                            </div>
+                      {/* 1. Header: departure, seats, price, CO2 — full width, no flex overlap */}
+                      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <InfoCard
+                          label={t("tripsPage.departure")}
+                          value={formatDateTimeShort(trip.departureTime, locale)}
+                        />
+                        <InfoCard
+                          label={t("tripsPage.seatsFree")}
+                          value={`${trip.availableSeats} / ${trip.seatsTotal}`}
+                        />
+                        <InfoCard
+                          label={t("tripsPage.price")}
+                          value={formatPrice(trip.price, trip.currency)}
+                        />
+                        <InfoCard
+                          label={t("tripsPage.co2")}
+                          value={`${trip.estimatedCo2SavingKg} ${t("common.kg")}`}
+                        />
+                      </div>
+
+                      {/* 2. Route + trip type / status chips */}
+                      <div className="min-w-0 space-y-2">
+                        <h2 className="text-lg font-extrabold tracking-tight text-[#1f3548] sm:text-xl">
+                          <span className="text-[#173651]">{trip.origin}</span>
+                          <span className="mx-1 text-[#8a9faf]">→</span>
+                          <span className="text-[#173651]">{trip.destination}</span>
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="gomate-chip-route">
+                            {trip.tripType === "regular"
+                              ? t("tripsPage.tripType.regular")
+                              : t("tripsPage.tripType.oneTime")}
+                          </span>
+                          {activeOutgoingRequest?.status === "pending" && (
+                            <span className="gomate-chip-warn">
+                              {t("tripsPage.badge.requestSent")}
+                            </span>
                           )}
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                              <h2 className="text-lg font-extrabold tracking-tight text-[#1f3548] sm:text-xl">
-                                <span className="block text-[#173651] sm:inline">
-                                  {trip.origin}
-                                </span>
-                                <span className="mx-1 text-[#8a9faf]">→</span>
-                                <span className="block text-[#173651] sm:inline">
-                                  {trip.destination}
-                                </span>
-                              </h2>
-                              <span className="gomate-chip-route">
-                                {trip.tripType === "regular"
-                                  ? t("tripsPage.tripType.regular")
-                                  : t("tripsPage.tripType.oneTime")}
-                              </span>
-
-                              {activeOutgoingRequest?.status === "pending" && (
-                                <span className="gomate-chip-warn">
-                                  {t("tripsPage.badge.requestSent")}
-                                </span>
-                              )}
-
-                              {activeOutgoingRequest?.status === "accepted" && (
-                                <span className="gomate-chip-success">
-                                  {t("tripsPage.badge.seatConfirmed")}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#466175]">
-                              <span className="font-semibold">{trip.driver.name}</span>
-                              <span className="text-[#f4b400]">{renderStars(rating)}</span>
-                              <span>{t("common.starsOutOf5", { rating })}</span>
-                            </div>
-
-                            {trip.tripType === "regular" &&
-                              trip.weekdays &&
-                              trip.weekdays.length > 0 && (
-                                <p className="mt-2 text-sm text-[#4a6678]">
-                                  {t("tripsPage.days")}{" "}
-                                  {formatWeekdays(trip.weekdays, t)}
-                                </p>
-                              )}
-
-                            {activeOutgoingRequest?.status === "accepted" && (
-                              <p className="mt-2 text-sm font-semibold text-[#24613a]">
-                                {t("tripsPage.confirmedPassenger")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="grid w-full gap-3 sm:max-w-none sm:grid-cols-2 xl:grid-cols-4 xl:min-w-[min(100%,42rem)]">
-                          <InfoCard
-                            label={t("tripsPage.departure")}
-                            value={formatDateTimeShort(trip.departureTime, locale)}
-                          />
-                          <InfoCard
-                            label={t("tripsPage.seatsFree")}
-                            value={`${trip.availableSeats} / ${trip.seatsTotal}`}
-                          />
-                          <InfoCard
-                            label={t("tripsPage.price")}
-                            value={formatPrice(trip.price, trip.currency)}
-                          />
-                          <InfoCard
-                            label={t("tripsPage.co2")}
-                            value={`${trip.estimatedCo2SavingKg} ${t("common.kg")}`}
-                          />
+                          {activeOutgoingRequest?.status === "accepted" && (
+                            <span className="gomate-chip-success">
+                              {t("tripsPage.badge.seatConfirmed")}
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                      {/* 3. Driver */}
+                      <div className="flex min-w-0 gap-4">
+                        {trip.driver.avatarUrl ? (
+                          <img
+                            src={trip.driver.avatarUrl}
+                            alt={trip.driver.name}
+                            className="h-16 w-16 shrink-0 rounded-full object-cover ring-4 ring-white/80"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#7fdc5a_0%,#1997e8_100%)] text-lg font-extrabold text-white ring-4 ring-white/80">
+                            {getInitials(trip.driver.name) || "G"}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#466175]">
+                            <span className="font-semibold">{trip.driver.name}</span>
+                            <span className="text-[#f4b400]">{renderStars(rating)}</span>
+                            <span>{t("common.starsOutOf5", { rating })}</span>
+                          </div>
+                          {trip.tripType === "regular" &&
+                            trip.weekdays &&
+                            trip.weekdays.length > 0 && (
+                              <p className="text-sm text-[#4a6678]">
+                                {t("tripsPage.days")}{" "}
+                                {formatWeekdays(trip.weekdays, t)}
+                              </p>
+                            )}
+                          {activeOutgoingRequest?.status === "accepted" && (
+                            <p className="text-sm font-semibold text-[#24613a]">
+                              {t("tripsPage.confirmedPassenger")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 4. Actions */}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                         <a
                           href={`/trips/${trip.id}`}
                           className="flex h-12 items-center justify-center rounded-full bg-[#163c59] px-6 text-sm font-bold text-white shadow-sm transition hover:scale-[1.01]"

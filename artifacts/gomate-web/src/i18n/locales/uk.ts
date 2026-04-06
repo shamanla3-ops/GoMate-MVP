@@ -231,6 +231,20 @@ export default {
   "smartMatch.errors.dismiss": "Не вдалося приховати підказку",
   "smartMatch.errors.network": "Помилка з’єднання",
 
+  "smartMatch.primary.joinTrip": "Приєднатися до поїздки",
+  "smartMatch.primary.joining": "Надсилання…",
+  "smartMatch.primary.requestRegular": "Запросити регулярну поїздку",
+  "smartMatch.primary.invitePassenger": "Запросити пасажира",
+  "smartMatch.primary.requestPending": "Запит очікує",
+  "smartMatch.primary.seatConfirmed": "Місце підтверджено",
+  "smartMatch.primary.noSeats": "Немає вільних місць",
+  "smartMatch.primary.connected": "Уже на зв’язку",
+  "smartMatch.primary.ppPending": "Запит очікує",
+  "smartMatch.secondary.openChat": "Повідомлення",
+  "smartMatch.secondary.viewDetails": "Деталі поїздки",
+  "smartMatch.secondary.browseTrips": "Переглянути поїздки",
+  "smartMatch.secondary.manageRegular": "Регулярні поїздки",
+
   "templatesPage.title": "Шаблони маршрутів",
   "templatesPage.subtitle": "Зберігайте частий маршрут для швидкої публікації.",
   "templatesPage.navHome": "Головна",
@@ -1054,7 +1068,16 @@ export default {
     "Водій отримав ваш запит. Ми повідомимо вас, коли він відповість.",
   "successModal.joinRequest.viewRequests": "Мої запити",
   "successModal.joinRequest.stayHere": "Залишитися на сторінці",
+  "successModal.joinRequest.openChat": "Відкрити чат",
+  "successModal.joinRequest.continueSmartMatches": "Продовжити в розумних збігах",
   "successModal.joinRequest.a11yClose": "Закрити вікно",
+
+  "successModal.ppFollowUp.title": "Запит надіслано",
+  "successModal.ppFollowUp.body":
+    "Інша людина отримає сповіщення. Регулярні поїздки можна керувати в хабі.",
+  "successModal.ppFollowUp.viewRegularRides": "Регулярні поїздки",
+  "successModal.ppFollowUp.backToSmartMatches": "Назад до розумних збігів",
+  "successModal.ppFollowUp.a11yClose": "Закрити вікно",
 
   "sound.toggle.enable": "Увімкнути звуки інтерфейсу",
   "sound.toggle.disable": "Вимкнути звуки інтерфейсу",

@@ -228,6 +228,20 @@ export default {
   "smartMatch.errors.dismiss": "Could not dismiss suggestion",
   "smartMatch.errors.network": "Connection error",
 
+  "smartMatch.primary.joinTrip": "Join trip",
+  "smartMatch.primary.joining": "Joining…",
+  "smartMatch.primary.requestRegular": "Request regular ride",
+  "smartMatch.primary.invitePassenger": "Invite passenger",
+  "smartMatch.primary.requestPending": "Request pending",
+  "smartMatch.primary.seatConfirmed": "Seat confirmed",
+  "smartMatch.primary.noSeats": "No seats left",
+  "smartMatch.primary.connected": "Already connected",
+  "smartMatch.primary.ppPending": "Request pending",
+  "smartMatch.secondary.openChat": "Message",
+  "smartMatch.secondary.viewDetails": "Trip details",
+  "smartMatch.secondary.browseTrips": "Browse trips",
+  "smartMatch.secondary.manageRegular": "Regular rides",
+
   "templatesPage.title": "Route templates",
   "templatesPage.subtitle": "Save a frequent route to publish trips faster.",
   "templatesPage.navHome": "Home",
@@ -1046,7 +1060,16 @@ export default {
     "The driver received your request. You'll get a notification when they respond.",
   "successModal.joinRequest.viewRequests": "View my requests",
   "successModal.joinRequest.stayHere": "Stay on this trip",
+  "successModal.joinRequest.openChat": "Open chat",
+  "successModal.joinRequest.continueSmartMatches": "Continue on Smart Matches",
   "successModal.joinRequest.a11yClose": "Close dialog",
+
+  "successModal.ppFollowUp.title": "Request sent",
+  "successModal.ppFollowUp.body":
+    "The other person will be notified. You can manage regular ride requests anytime from your hub.",
+  "successModal.ppFollowUp.viewRegularRides": "View regular rides",
+  "successModal.ppFollowUp.backToSmartMatches": "Back to Smart Matches",
+  "successModal.ppFollowUp.a11yClose": "Close dialog",
 
   "sound.toggle.enable": "Turn on UI sounds",
   "sound.toggle.disable": "Turn off UI sounds",

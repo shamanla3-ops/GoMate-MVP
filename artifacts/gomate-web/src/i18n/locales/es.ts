@@ -953,7 +953,16 @@ Object.assign(es, {
     "El conductor ha recibido tu solicitud. Te avisaremos cuando responda.",
   "successModal.joinRequest.viewRequests": "Ver mis solicitudes",
   "successModal.joinRequest.stayHere": "Seguir en este viaje",
+  "successModal.joinRequest.openChat": "Abrir chat",
+  "successModal.joinRequest.continueSmartMatches": "Seguir en coincidencias inteligentes",
   "successModal.joinRequest.a11yClose": "Cerrar diálogo",
+
+  "successModal.ppFollowUp.title": "Solicitud enviada",
+  "successModal.ppFollowUp.body":
+    "La otra persona recibirá una notificación. Puedes gestionar viajes regulares en el centro.",
+  "successModal.ppFollowUp.viewRegularRides": "Viajes regulares",
+  "successModal.ppFollowUp.backToSmartMatches": "Volver a coincidencias inteligentes",
+  "successModal.ppFollowUp.a11yClose": "Cerrar diálogo",
 
   "sound.toggle.enable": "Activar sonidos de la interfaz",
   "sound.toggle.disable": "Desactivar sonidos de la interfaz",
@@ -1041,6 +1050,20 @@ Object.assign(es, {
   "smartMatch.errors.delete": "No se pudo eliminar la preferencia",
   "smartMatch.errors.dismiss": "No se pudo descartar la sugerencia",
   "smartMatch.errors.network": "Error de conexión",
+
+  "smartMatch.primary.joinTrip": "Unirse al viaje",
+  "smartMatch.primary.joining": "Uniendo…",
+  "smartMatch.primary.requestRegular": "Solicitar viaje regular",
+  "smartMatch.primary.invitePassenger": "Invitar pasajero",
+  "smartMatch.primary.requestPending": "Solicitud pendiente",
+  "smartMatch.primary.seatConfirmed": "Plaza confirmada",
+  "smartMatch.primary.noSeats": "Sin plazas libres",
+  "smartMatch.primary.connected": "Ya conectados",
+  "smartMatch.primary.ppPending": "Solicitud pendiente",
+  "smartMatch.secondary.openChat": "Mensaje",
+  "smartMatch.secondary.viewDetails": "Detalles del viaje",
+  "smartMatch.secondary.browseTrips": "Ver viajes",
+  "smartMatch.secondary.manageRegular": "Viajes regulares",
 
   "errors.MATCH_PREF_ROLE_INVALID": "El rol debe ser pasajero, conductor o ambos",
   "errors.MATCH_PREF_ORIGIN_DEST_REQUIRED": "Se requieren origen y destino",

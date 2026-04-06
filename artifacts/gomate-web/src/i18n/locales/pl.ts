@@ -234,6 +234,20 @@ export default {
   "smartMatch.errors.dismiss": "Nie udało się ukryć sugestii",
   "smartMatch.errors.network": "Błąd połączenia",
 
+  "smartMatch.primary.joinTrip": "Dołącz do przejazdu",
+  "smartMatch.primary.joining": "Wysyłanie…",
+  "smartMatch.primary.requestRegular": "Poproś o stały przejazd",
+  "smartMatch.primary.invitePassenger": "Zaproś pasażera",
+  "smartMatch.primary.requestPending": "Prośba oczekuje",
+  "smartMatch.primary.seatConfirmed": "Miejsce potwierdzone",
+  "smartMatch.primary.noSeats": "Brak wolnych miejsc",
+  "smartMatch.primary.connected": "Już połączeni",
+  "smartMatch.primary.ppPending": "Prośba oczekuje",
+  "smartMatch.secondary.openChat": "Wiadomość",
+  "smartMatch.secondary.viewDetails": "Szczegóły przejazdu",
+  "smartMatch.secondary.browseTrips": "Przeglądaj przejazdy",
+  "smartMatch.secondary.manageRegular": "Stałe przejazdy",
+
   "templatesPage.title": "Szablony tras",
   "templatesPage.subtitle": "Zapisz częsty kurs, aby szybciej publikować przejazdy.",
   "templatesPage.navHome": "Strona główna",
@@ -1057,7 +1071,16 @@ export default {
     "Kierowca otrzymał Twoją prośbę. Powiadomimy Cię, gdy odpowie.",
   "successModal.joinRequest.viewRequests": "Moje prośby",
   "successModal.joinRequest.stayHere": "Zostań na tej stronie",
+  "successModal.joinRequest.openChat": "Otwórz czat",
+  "successModal.joinRequest.continueSmartMatches": "Kontynuuj inteligentne dopasowania",
   "successModal.joinRequest.a11yClose": "Zamknij okno",
+
+  "successModal.ppFollowUp.title": "Prośba wysłana",
+  "successModal.ppFollowUp.body":
+    "Druga osoba dostanie powiadomienie. Stałe przejazdy możesz zarządzać w hubie.",
+  "successModal.ppFollowUp.viewRegularRides": "Stałe przejazdy",
+  "successModal.ppFollowUp.backToSmartMatches": "Wróć do inteligentnych dopasowań",
+  "successModal.ppFollowUp.a11yClose": "Zamknij okno",
 
   "sound.toggle.enable": "Włącz dźwięki interfejsu",
   "sound.toggle.disable": "Wyłącz dźwięki interfejsu",

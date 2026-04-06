@@ -231,6 +231,20 @@ export default {
   "smartMatch.errors.dismiss": "Vorschlag konnte nicht ausgeblendet werden",
   "smartMatch.errors.network": "Verbindungsfehler",
 
+  "smartMatch.primary.joinTrip": "Mitfahren",
+  "smartMatch.primary.joining": "Wird gesendet…",
+  "smartMatch.primary.requestRegular": "Regelmäßige Fahrt anfragen",
+  "smartMatch.primary.invitePassenger": "Passagier einladen",
+  "smartMatch.primary.requestPending": "Anfrage ausstehend",
+  "smartMatch.primary.seatConfirmed": "Platz bestätigt",
+  "smartMatch.primary.noSeats": "Keine Plätze frei",
+  "smartMatch.primary.connected": "Bereits verbunden",
+  "smartMatch.primary.ppPending": "Anfrage ausstehend",
+  "smartMatch.secondary.openChat": "Nachricht",
+  "smartMatch.secondary.viewDetails": "Fahrtdetails",
+  "smartMatch.secondary.browseTrips": "Fahrten durchsuchen",
+  "smartMatch.secondary.manageRegular": "Regelmäßige Fahrten",
+
   "templatesPage.title": "Routen-Vorlagen",
   "templatesPage.subtitle": "Häufige Route speichern, um schneller zu veröffentlichen.",
   "templatesPage.navHome": "Start",
@@ -1055,7 +1069,16 @@ export default {
     "Der Fahrer hat deine Anfrage erhalten. Wir benachrichtigen dich bei einer Antwort.",
   "successModal.joinRequest.viewRequests": "Meine Anfragen",
   "successModal.joinRequest.stayHere": "Auf dieser Fahrt bleiben",
+  "successModal.joinRequest.openChat": "Chat öffnen",
+  "successModal.joinRequest.continueSmartMatches": "Weiter bei Smart Matches",
   "successModal.joinRequest.a11yClose": "Dialog schließen",
+
+  "successModal.ppFollowUp.title": "Anfrage gesendet",
+  "successModal.ppFollowUp.body":
+    "Die andere Person wird benachrichtigt. Regelmäßige Fahrten verwaltest du im Hub.",
+  "successModal.ppFollowUp.viewRegularRides": "Regelmäßige Fahrten",
+  "successModal.ppFollowUp.backToSmartMatches": "Zurück zu Smart Matches",
+  "successModal.ppFollowUp.a11yClose": "Dialog schließen",
 
   "sound.toggle.enable": "UI-Sounds einschalten",
   "sound.toggle.disable": "UI-Sounds ausschalten",

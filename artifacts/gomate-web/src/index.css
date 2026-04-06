@@ -117,7 +117,7 @@
 
   /* List / trip cards */
   .gomate-lift-card {
-    @apply rounded-3xl border border-white/55 bg-white/70 shadow-[0_14px_40px_rgba(23,54,81,0.08)] transition-all duration-300 ease-out will-change-transform;
+    @apply rounded-3xl border border-white/55 bg-white/70 shadow-[0_14px_40px_rgba(23,54,81,0.08)] transition-all duration-300 ease-out;
   }
   .gomate-lift-card:hover {
     @apply -translate-y-[3px] border-white/80 shadow-[0_22px_52px_rgba(23,54,81,0.14)];

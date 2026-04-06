@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api";
 import { useTranslation } from "../i18n";
@@ -70,6 +70,17 @@ export default function CreateTrip() {
       prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value]
     );
   }
+
+  const canSubmit = useMemo(() => {
+    const parsedPrice = parseFloat(price);
+    if (Number.isNaN(parsedPrice) || parsedPrice < 0) return false;
+    if (!isCompleteMapPoint(origin) || !isCompleteMapPoint(destination)) {
+      return false;
+    }
+    if (!departureTime.trim()) return false;
+    if (tripType === "regular" && weekdays.length === 0) return false;
+    return true;
+  }, [price, origin, destination, departureTime, tripType, weekdays]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -337,19 +348,22 @@ export default function CreateTrip() {
                 <div className="gomate-alert-error">{message}</div>
               ) : null}
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+              <div className="mt-2 flex flex-col gap-4 border-t border-white/45 pt-8 sm:pt-10">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !canSubmit}
                   onPointerDown={(e) => {
-                    if (e.button === 0 && !loading) playClick();
+                    if (e.button === 0 && !loading && canSubmit) playClick();
                   }}
-                  className="gomate-btn-gradient flex h-14 flex-1 items-center justify-center rounded-full px-8 text-lg font-bold text-white disabled:opacity-70 sm:max-w-xs"
+                  className="gomate-btn-gradient flex min-h-[3.75rem] w-full items-center justify-center rounded-full px-8 py-4 text-lg font-extrabold tracking-tight text-white shadow-[0_16px_42px_rgba(39,149,119,0.42)] ring-2 ring-white/35 transition-all duration-200 hover:brightness-[1.04] hover:shadow-[0_20px_48px_rgba(39,149,119,0.48)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none disabled:ring-white/15 sm:min-h-[4rem] sm:text-xl"
                 >
                   {loading ? t("createTrip.submitting") : t("createTrip.submit")}
                 </button>
 
-                <a href="/trips" className="gomate-btn-secondary h-14 flex-1 px-8 text-lg sm:max-w-xs">
+                <a
+                  href="/trips"
+                  className="flex min-h-[3rem] w-full items-center justify-center rounded-full border border-white/80 bg-white/75 px-6 text-base font-semibold text-[#4a6678] shadow-[0_8px_22px_rgba(23,54,81,0.06)] ring-1 ring-white/90 transition hover:border-white hover:bg-white hover:text-[#173651]"
+                >
                   {t("createTrip.backToTrips")}
                 </a>
               </div>

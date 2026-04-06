@@ -230,6 +230,20 @@ export default {
   "smartMatch.errors.dismiss": "Не удалось скрыть подсказку",
   "smartMatch.errors.network": "Ошибка соединения",
 
+  "smartMatch.primary.joinTrip": "Присоединиться к поездке",
+  "smartMatch.primary.joining": "Отправка…",
+  "smartMatch.primary.requestRegular": "Запросить регулярную поездку",
+  "smartMatch.primary.invitePassenger": "Пригласить пассажира",
+  "smartMatch.primary.requestPending": "Запрос в ожидании",
+  "smartMatch.primary.seatConfirmed": "Место подтверждено",
+  "smartMatch.primary.noSeats": "Нет свободных мест",
+  "smartMatch.primary.connected": "Уже связаны",
+  "smartMatch.primary.ppPending": "Запрос в ожидании",
+  "smartMatch.secondary.openChat": "Сообщение",
+  "smartMatch.secondary.viewDetails": "Детали поездки",
+  "smartMatch.secondary.browseTrips": "Смотреть поездки",
+  "smartMatch.secondary.manageRegular": "Регулярные поездки",
+
   "templatesPage.title": "Шаблоны маршрутов",
   "templatesPage.subtitle": "Сохраняйте частый маршрут для быстрой публикации.",
   "templatesPage.navHome": "Главная",
@@ -1053,7 +1067,16 @@ export default {
     "Водитель получил ваш запрос. Мы уведомим вас, когда он ответит.",
   "successModal.joinRequest.viewRequests": "Мои запросы",
   "successModal.joinRequest.stayHere": "Остаться на странице",
+  "successModal.joinRequest.openChat": "Открыть чат",
+  "successModal.joinRequest.continueSmartMatches": "Продолжить в умных совпадениях",
   "successModal.joinRequest.a11yClose": "Закрыть окно",
+
+  "successModal.ppFollowUp.title": "Запрос отправлен",
+  "successModal.ppFollowUp.body":
+    "Второй пользователь получит уведомление. Регулярные поездки можно управлять в хабе.",
+  "successModal.ppFollowUp.viewRegularRides": "Регулярные поездки",
+  "successModal.ppFollowUp.backToSmartMatches": "Назад к умным совпадениям",
+  "successModal.ppFollowUp.a11yClose": "Закрыть окно",
 
   "sound.toggle.enable": "Включить звуки интерфейса",
   "sound.toggle.disable": "Выключить звуки интерфейса",
