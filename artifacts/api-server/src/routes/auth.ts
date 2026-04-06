@@ -10,6 +10,8 @@ import { sendVerificationEmail } from "../lib/email.js";
 
 const router: Router = Router();
 const SALT_ROUNDS = 10;
+const REQUIRE_EMAIL_VERIFICATION =
+  process.env.AUTH_REQUIRE_EMAIL_VERIFICATION === "true";
 
 /** Active Terms of Use version recorded on acceptance (register / accept-terms). */
 const TERMS_VERSION = "2026-04-05";
@@ -113,8 +115,10 @@ router.post("/register", async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const normalizedLanguage = normalizeLanguage(language);
-    const emailVerificationToken = randomUUID();
-    const emailVerificationSentAt = new Date();
+    const emailVerificationToken = REQUIRE_EMAIL_VERIFICATION
+      ? randomUUID()
+      : null;
+    const emailVerificationSentAt = REQUIRE_EMAIL_VERIFICATION ? new Date() : null;
     const termsAcceptedAt = new Date();
 
     const [user] = await db
@@ -124,7 +128,7 @@ router.post("/register", async (req: Request, res: Response) => {
         passwordHash,
         name: name.trim(),
         language: normalizedLanguage,
-        emailVerified: false,
+        emailVerified: !REQUIRE_EMAIL_VERIFICATION,
         emailVerificationToken,
         emailVerificationSentAt,
         termsAccepted: true,
@@ -133,14 +137,16 @@ router.post("/register", async (req: Request, res: Response) => {
       })
       .returning();
 
-    try {
-      await sendVerificationEmail(
-        user.email,
-        emailVerificationToken,
-        user.name
-      );
-    } catch (mailErr) {
-      console.error("sendVerificationEmail (register):", mailErr);
+    if (REQUIRE_EMAIL_VERIFICATION && emailVerificationToken) {
+      try {
+        await sendVerificationEmail(
+          user.email,
+          emailVerificationToken,
+          user.name
+        );
+      } catch (mailErr) {
+        console.error("sendVerificationEmail (register):", mailErr);
+      }
     }
 
     res.status(201).json({
@@ -191,7 +197,7 @@ router.post("/login", async (req: Request, res: Response) => {
       return;
     }
 
-    if (!user.emailVerified) {
+    if (REQUIRE_EMAIL_VERIFICATION && !user.emailVerified) {
       jsonApiError(res, 403, "AUTH_EMAIL_NOT_VERIFIED");
       return;
     }
@@ -226,6 +232,14 @@ router.post("/login", async (req: Request, res: Response) => {
 
 router.post("/resend-verification", async (req: Request, res: Response) => {
   try {
+    if (!REQUIRE_EMAIL_VERIFICATION) {
+      res.json({
+        success: true,
+        message: RESEND_VERIFICATION_GENERIC_MESSAGE,
+      });
+      return;
+    }
+
     const raw = (req.body as { email?: unknown }).email;
     if (typeof raw !== "string" || raw.trim() === "") {
       jsonApiError(res, 400, "AUTH_RESEND_VERIFICATION_EMAIL_MISSING");
@@ -291,6 +305,11 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
 
 router.post("/verify-email", async (req: Request, res: Response) => {
   try {
+    if (!REQUIRE_EMAIL_VERIFICATION) {
+      res.json(withApiSuccess({ success: true }, "EMAIL_VERIFIED"));
+      return;
+    }
+
     const raw = (req.body as { token?: unknown }).token;
     if (typeof raw !== "string" || raw.trim() === "") {
       jsonApiError(res, 400, "AUTH_VERIFY_TOKEN_MISSING");
